@@ -1,0 +1,90 @@
+#game-container {
+    display: none;
+    width: 90%;
+    height: 90%;
+}
+
+#mute-icon {
+    margin-right: 1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    transition: transform .3s;
+    will-change: transform;
+    &:hover {
+        transform: scale(1.2);
+    }
+}
+
+#game-message {
+    font-size: larger;
+    width: 12rem;
+    flex-shrink: 0;
+}
+
+#canvas {
+    margin: 0 2rem;
+    flex-shrink: 0;
+}
+
+#chat {
+    flex-grow: 3;
+}
+
+#chat-icon {
+    width: 2rem;
+    height: 2rem;
+}
+
+#chat-messages {
+    height: 86%;
+    list-style: none;
+    padding: 0;
+    overflow: auto;
+    & > li {
+        display: flex;
+        padding: .4rem;
+        &:nth-child(odd) {
+            background-color: antiquewhite;
+        }
+    }
+}
+
+.chat-name {
+    display: inline-block;
+    min-width: 8rem;
+    margin-right: 1rem;
+}
+
+.chat-player-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+#chat-form {
+    display: flex;
+    align-items: center;
+}
+
+#chat-input {
+    margin: .4rem;
+    padding: .4rem;
+    border-radius: .4rem;
+    width: 100%;
+}
+
+#chat-send-icon {
+    cursor: pointer;
+    background-color: thistle;
+    width: 1.4rem;
+    height: 1.4rem;
+    padding: .4rem;
+    border-radius: .4rem;
+    border: solid 2px #333333;
+    transition: background-color .3s;
+    will-change: background-color;
+    &:hover {
+        background-color: wheat;
+    }
+}

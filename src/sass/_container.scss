@@ -1,0 +1,65 @@
+#container {
+    margin-top: 3rem;
+    width: 24rem;
+}
+
+#lang {
+    list-style: none;
+    padding-left: 0;
+    width: max-content;
+    display: flex;
+    border: solid 2px #333333;
+    border-radius: .4rem;
+    & > li {
+        border-radius: .4rem;
+        transition: background-color .5s;
+        will-change: background-color;
+        &:hover {
+            background-color: #dddddd;
+        }
+        & > a {
+            text-decoration: none;
+            font-weight: bold;
+            color: #333333;
+            display: block;
+            width: 2rem;
+            height: 2rem;
+            text-align: center;
+            line-height: 2rem;
+            &:visited {
+                color: #333333;
+            }
+        }
+    }
+}
+
+#room-input, #name-input {
+    margin: .4rem;
+    padding: .4rem;
+    border-radius: .4rem;
+}
+
+#form {
+    height: 12rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.form-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#submit-btn {
+    padding: .4rem 1rem;
+    border-radius: .4rem;
+    background-color: white;
+    border: solid 2px #333333;
+    cursor: pointer;
+    transition: .5s;
+    &:hover {
+        background-color: #dddddd;
+    }
+}
