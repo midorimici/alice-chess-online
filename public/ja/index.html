@@ -3,8 +3,8 @@
     <head>
         <meta charset='UTF-8'>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1, user-scalable=no'>
-        <title>Geister Online</title>
-        <meta name='description' content='ガイスターオンライン対戦'>
+        <title>Alice Chess Online ♟️</title>
+        <meta name='description' content='アリスチェスオンライン対戦'>
         <link rel='icon' href='../static/logo/favicon.ico'>
         <link rel='apple-touch-icon' sizes='180x180' href='../static/logo/apple-touch-icon.png'>
         <link rel='manifest' href='../static/site.webmanifest'>
@@ -61,7 +61,7 @@
         </section>
         <img id='logo' src='../static/logo/logo.png' width='160' alt='logo'>
         <footer>
-            <a href='https://github.com/midorimici/geister-online' target='_blank' rel='noopener noreferrer'>
+            <a href='https://github.com/midorimici/alice-chess-online' target='_blank' rel='noopener noreferrer'>
                 ソースコード
             </a>
             <br>
@@ -72,20 +72,18 @@
             <div id='info-mask'></div>
             <div id='info-description'>
                 <img id='close-icon' src='../static/svg/times-solid.svg' alt='close' title='閉じる'>
-                <p>このアプリはオンラインでガイスターの対戦ができるものです。</p>
+                <p>このアプリはオンラインでアリスチェスの対戦ができるものです。</p>
                 <strong>【対戦する】</strong>
                 <p>ルーム番号を指定して部屋をつくり、対戦者を待ちます。</p>
                 <p>すでに対戦者がいる場合はすぐに試合が始まります。</p>
-                <p>駒の初期配置を決めたらゲームスタートです。</p>
                 <strong>【観戦する】</strong>
                 <p>対戦中の部屋のルーム番号を指定すると、ゲームを観戦することができます。</p>
-                <p>観戦者には両方の対戦者の駒の種類が見えます。</p>
                 <strong>【注意】</strong>
                 <p>チャット機能もありますが、部屋にいる人は誰でも見ることができるので、</p>
                 <p>プライベートな情報を書き込まないようにしてください。</p>
             </div>
         </div>
-        <script src='https://geister-online.herokuapp.com/socket.io/socket.io.js'></script>
+        <script src='/socket.io/socket.io.js'></script>
         <script src='../bundle.js'></script>
     </body>
 </html>
