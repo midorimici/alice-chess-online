@@ -11,7 +11,7 @@ let draw: Draw;
 /** initCanvas を実行済か */
 let doneInitCanvas: boolean = false;
 /** canvas 要素 */
-const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+const canvass = Array.from(document.getElementsByClassName('canvas')) as HTMLCanvasElement[];
 /** canvas 横のメッセージ */
 const gameMessage = document.getElementById('game-message');
 /** ミュートボタン */
@@ -32,12 +32,14 @@ const initCanvas = () => {
         document.getElementsByTagName('footer')[0].style.display = 'none';
     }
 
-    const min: number = cw < ch ? cw : ch;
-    const cvsize: string = (0.9*min).toString();
-    canvas.setAttribute('width', cvsize);
-    canvas.setAttribute('height', cvsize);
+    const max: number = cw < ch ? ch : cw;
+    const cvsize: string = (0.4*max).toString();
+    for (const canvas of canvass) {
+        canvas.setAttribute('width', cvsize);
+        canvas.setAttribute('height', cvsize);
+    }
 
-    draw = new Draw(canvas, isEN);
+    draw = new Draw(canvass, isEN);
     doneInitCanvas = true;
     document.getElementById('game-container').style.display = 'flex';
 };
@@ -82,19 +84,10 @@ socket.on('no room', /** @param id 部屋番号 */ (id: string)=> {
 // 対戦相手を待っているとき
 socket.on('wait opponent', () => {
     if (!doneInitCanvas) {initCanvas()};
-    draw.waitingPlayer();
+    gameMessage.innerText = isEN
+        ? 'Waiting for the opponent...'
+        : '対戦相手の入室を待っています...'
 });
-
-
-
-// 駒配置
-/** 位置と色の Map */
-let posmap: Map<string, 'R' | 'B'> = new Map();
-for (let i = 1; i <= 4; i++) {
-    for (let j = 2; j <= 3; j++) {
-        posmap.set(`${i},${j}`, 'R');
-    }
-}
 
 let mouse: Mouse;
 
@@ -105,68 +98,6 @@ let mouse: Mouse;
 const snd = (file: string) => {
     new Audio(`../static/sounds/${file}.wav`).play();
 };
-
-// 駒を配置する処理
-socket.on('place pieces', () => {
-    if (!doneInitCanvas) {initCanvas()};
-    const csize = canvas.width;
-    /** 赤と青が同数ずつあるか */
-    let satisfied: boolean = false;
-    //const selectSnd = new Audio('../static/sounds/select.wav');
-
-    /**
-     * 赤と青が同数ずつあるかチェックする
-     * @param colors 色のリスト
-     */
-    const checkColor = (colors: ('R' | 'B')[]): boolean => {
-        return (colors.filter((color: 'R' | 'B') => color === 'R')).length
-            === (colors.filter((color: 'R' | 'B') => color === 'B')).length;
-    }
-
-    /** 画面を描画する */
-    const drawDisp = () => {
-        draw.decidePiecePlace(posmap, !satisfied);
-    }
-
-    drawDisp();
-
-    // マウスイベント
-    mouse = new Mouse(canvas);
-    canvas.onclick = (e: MouseEvent) => {
-        // 駒配置
-        for (let i = 1; i <= 4; i++) {
-            for (let j = 2; j <= 3; j++) {
-                if (String(mouse.getCoord(e)) === String([i, j])) {
-                    posmap.set(`${i},${j}`,
-                        posmap.get(`${i},${j}`) === 'R'
-                            ? 'B' : 'R');
-                    satisfied = checkColor(Array.from(posmap.values()));
-                    if (!muted) snd('select');
-                }
-            }
-        }
-        // ボタン
-        if (mouse.onArea(...mouse.getWindowPos(e),
-                csize*5/6, csize*5/6, csize/8, csize/12)) {
-            if (satisfied) {
-                canvas.onclick = () => {};
-                socket.emit('decided place', [...posmap.entries()]);
-                if (!muted) snd('decide');
-            } else {
-                if (!muted) snd('forbid');
-            }
-        }
-        drawDisp();
-    }
-});
-
-// 駒の配置を待つ処理
-socket.on('wait placing', () => {
-    if (!doneInitCanvas) {initCanvas()};
-    draw.waitingPlacing();
-});
-
-
 
 // ゲーム進行
 
@@ -181,62 +112,67 @@ socket.on('game',
          * @param second 後手のプレイヤー名
          * @param takenPieces それぞれが取った駒の色と数
          */
-        (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
+        (board: [string, string][],
         turn: 0 | 1, myturn: boolean,
         first: string, second: string,
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
-    const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
+    const boardmap: Map<string, string> = new Map(board);
     /** 選択中の駒の位置 */
     let selectingPos: [number, number];
     draw.board(boardmap, turn, first, second);
-    draw.takenPieces(takenPieces, turn);
+    //draw.takenPieces(takenPieces, turn);
     // 手番の表示
-    // マウスイベント
+    /* マウスイベント
     if (myturn) {
         gameMessage.innerText = isEN ? "It's your turn." : 'あなたの番です。';
         if (!muted) snd('move');
 
-        mouse = new Mouse(canvas);
-        canvas.onclick = (e: MouseEvent) => {
-            const sqPos = mouse.getCoord(e);
-            if (boardmap.has(String(sqPos))
-                    && boardmap.get(String(sqPos)).turn === turn) {
-                // 自分の駒を選択したとき
-                selectingPos = sqPos;
-                const pieceData = Object.values(
-                    boardmap.get(String(sqPos))) as ['R' | 'B', 0 | 1];
-                const piece = new Piece(...pieceData);
-                // 行先を描画
-                draw.board(boardmap, turn, first, second);
-                draw.dest(piece, selectingPos, boardmap);
-                draw.takenPieces(takenPieces, turn);
-            } else {
-                if (boardmap.has(String(selectingPos))) {
+        for (const canvas of canvass) {
+            mouse = new Mouse(canvas);
+            canvas.onclick = (e: MouseEvent) => {
+                const sqPos = mouse.getCoord(e);
+                if (boardmap.has(String(sqPos))
+                        && boardmap.get(String(sqPos)).turn === turn) {
+                    // 自分の駒を選択したとき
+                    selectingPos = sqPos;
                     const pieceData = Object.values(
-                        boardmap.get(String(selectingPos))) as ['R' | 'B', 0 | 1];
+                        boardmap.get(String(sqPos))) as ['R' | 'B', 0 | 1];
                     const piece = new Piece(...pieceData);
-                    if (piece.coveringSquares(selectingPos).some(e =>
-                            String(e) === String(sqPos))) {
-                        // 行先を選択したとき
-                        // 駒の移動
-                        boardmap.set(String(sqPos), boardmap.get(String(selectingPos)));
-                        boardmap.delete(String(selectingPos));
-                        if (!muted) snd('move');
-                        // サーバへ移動データを渡す
-                        socket.emit('move piece', turn, selectingPos, sqPos);
+                    // 行先を描画
+                    draw.board(boardmap, turn, first, second);
+                    //draw.dest(piece, selectingPos, boardmap);
+                    //draw.takenPieces(takenPieces, turn);
+                } else {
+                    if (boardmap.has(String(selectingPos))) {
+                        const pieceData = Object.values(
+                            boardmap.get(String(selectingPos))) as ['R' | 'B', 0 | 1];
+                        const piece = new Piece(...pieceData);
+                        if (piece.coveringSquares(selectingPos).some(e =>
+                                String(e) === String(sqPos))) {
+                            // 行先を選択したとき
+                            // 駒の移動
+                            boardmap.set(String(sqPos), boardmap.get(String(selectingPos)));
+                            boardmap.delete(String(selectingPos));
+                            if (!muted) snd('move');
+                            // サーバへ移動データを渡す
+                            socket.emit('move piece', turn, selectingPos, sqPos);
+                        }
                     }
+                    // 盤面描画更新
+                    draw.board(boardmap, turn, first, second);
+                    //draw.takenPieces(takenPieces, turn);
+                    selectingPos = null;
                 }
-                // 盤面描画更新
-                draw.board(boardmap, turn, first, second);
-                draw.takenPieces(takenPieces, turn);
-                selectingPos = null;
             }
         }
     } else {
         gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
 
-        canvas.onclick = () => {};
+        for (const canvas of canvass) {
+            canvas.onclick = () => {};
+        }
     }
+    */
 });
 
 // 観戦者の処理
@@ -249,14 +185,14 @@ socket.on('watch',
          * @param turn 現在のターン
          * @param takenPieces それぞれが取った駒の色と数
          */
-        (board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
+        (board: [string, string][],
         first: string, second: string, turn: 0 | 1,
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
     if (myrole === 'watch') {
         if (!doneInitCanvas) {initCanvas()};
-        const boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}> = new Map(board);
+        const boardmap: Map<string, string> = new Map(board);
         draw.board(boardmap, 0, first, second, true);
-        draw.takenPieces(takenPieces, 0);
+        //draw.takenPieces(takenPieces, 0);
         const curPlayer: string = turn === 0 ? first : second;
         gameMessage.innerText = isEN
         ? `It's ${curPlayer}'s turn.`
@@ -265,48 +201,14 @@ socket.on('watch',
     }
 });
 
-// 勝者が決まったとき（観戦者と先手）
-socket.on('tell winner to audience and first',
+// 勝者が決まったとき
+socket.on('tell winner',
         /** 勝者が決まったときの処理
          * @param winner 勝者のプレイヤー名
-         * @param board 盤面データ
-         * @param first 先手のプレイヤー名
-         * @param second 後手のプレイヤー名
-         * @param takenPieces それぞれが取った駒の色と数
         */
-        (winner: string, board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
-        first: string, second: string,
-        takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
+        (winner: string) => {
     gameMessage.innerText = isEN ? `${winner} won!` : `${winner} の勝ち！`;
     if (!muted) snd('win');
-    if (myrole === 'play') {
-        canvas.onclick = () => {
-            draw.board(new Map(board), 0, first, second, true);
-            draw.takenPieces(takenPieces, 0);
-            canvas.onclick = () => {};
-        };
-    }
-});
-
-// 勝者が決まったとき（後手）
-socket.on('tell winner to second',
-        /** 勝者が決まったときの処理
-         * @param winner 勝者のプレイヤー名
-         * @param board 盤面データ
-         * @param first 先手のプレイヤー名
-         * @param second 後手のプレイヤー名
-         * @param takenPieces それぞれが取った駒の色と数
-        */
-       (winner: string, board: [string, {color: 'R' | 'B', turn: 0 | 1}][],
-       first: string, second: string,
-       takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
-    gameMessage.innerText = isEN ? `${winner} won!` : `${winner} の勝ち！`;
-    if (!muted) snd('win');
-    canvas.onclick = () => {
-        draw.board(new Map(board), 1, first, second, true);
-        draw.takenPieces(takenPieces, 1);
-        canvas.onclick = () => {};
-    };
 });
 
 // 接続が切れたとき

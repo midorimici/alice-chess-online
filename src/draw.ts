@@ -2,87 +2,60 @@ import config, { Vec } from './config';
 import Piece from './piece';
 
 export default class Draw {
-    private canvas: HTMLCanvasElement;
+    private canvass: HTMLCanvasElement[];
     private isEN: boolean;
-    private ctx: CanvasRenderingContext2D;
+    private ctxs: CanvasRenderingContext2D[];
     private squareSize: number;
     private margin: number;
     private pieceSize: number;
     private piecePath: Path2D;
-    private arrowPath: Path2D;
 
     /**
-     * - 画面のサイズによってロゴ、fotter など消去
      * - canvas サイズ設定
      * - context 作成
      * - プロパティ定義
      * - 駒、矢印のパス定義
      * @param canvas canvas 要素
      */
-    constructor(canvas: HTMLCanvasElement, isEN: boolean) {
-        this.canvas = canvas;
+    constructor(canvass: HTMLCanvasElement[], isEN: boolean) {
+        this.canvass = canvass;
         this.isEN = isEN;
-        this.ctx = canvas.getContext('2d');
-        this.squareSize = canvas.width*3/20;
-        this.margin = canvas.width/20;
-        this.pieceSize = canvas.width/10;
+        this.ctxs = canvass.map(e => e.getContext('2d'));
+        this.squareSize = canvass[0].width*9/80;
+        this.margin = canvass[0].width/20;
+        this.pieceSize = canvass[0].width/10;
 
         this.piecePath = new Path2D();
         this.piecePath.moveTo(0, -this.pieceSize/2);
         this.piecePath.lineTo(-this.pieceSize/2, this.pieceSize/2);
         this.piecePath.lineTo(this.pieceSize/2, this.pieceSize/2);
         this.piecePath.closePath();
-
-        this.arrowPath = new Path2D();
-        this.arrowPath.moveTo(this.pieceSize/2, this.pieceSize/2);
-        this.arrowPath.lineTo(0, 0);
-        this.arrowPath.lineTo(-this.pieceSize/2, this.pieceSize/2);
-        this.arrowPath.moveTo(0, 0);
-        this.arrowPath.lineTo(0, this.pieceSize);
-        this.arrowPath.closePath();
     }
 
     /** アイボリーで画面全体を塗りつぶす */
     private clearCanvas() {
-        this.ctx.fillStyle = config.ivory;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        for (let i = 0; i < 2; i++) {
+            this.ctxs[i].fillStyle = config.ivory;
+            this.ctxs[i].fillRect(0, 0, this.canvass[i].width, this.canvass[i].height);
+        }
     }
 
-    /** 待機画面
-     * @param obj 待機している対象。
-     * 対戦者の入室または対戦者の駒配置
-     */
-    private waiting(obj: 'player' | 'placing') {
+    /** 待機画面 */
+    /*
+    private waitingPlayer() {
         this.clearCanvas();
         const canvas = this.canvas;
         const ctx = this.ctx;
         const textSize: number = canvas.width/20;
         ctx.fillStyle = config.dark;
         ctx.font = `${textSize}px Meiryo`;
-        if (obj === 'player') {
-            ctx.fillText(this.isEN
-                ? 'Waiting for the opponent...'
-                : '対戦相手の入室を待っています...',
-                canvas.width/2 - (7.5)*textSize,
-                canvas.height/2);
-        } else {
-            ctx.fillText(this.isEN
-                ? 'Waiting for players placing pieces...'
-                : '対戦者が駒を配置するのを待っています...',
-                canvas.width/2 - (9.5)*textSize,
-                canvas.height/2);
-        }
+        ctx.fillText(this.isEN
+            ? 'Waiting for the opponent...'
+            : '対戦相手の入室を待っています...',
+            canvas.width/2 - (7.5)*textSize,
+            canvas.height/2);
     }
-
-    /** 対戦相手の参加を待つ画面 */
-    waitingPlayer() {
-        this.waiting('player');
-    }
-
-    /** 対戦者の駒配置を待つ画面（観戦者のみ） */
-    waitingPlacing() {
-        this.waiting('placing');
-    }
+    */
 
     /**
      * 一辺 squareSize のグリッドを描く
@@ -90,19 +63,19 @@ export default class Draw {
      * @param col 列数
      * @param row 行数
      */
-    private grid(coord: [number, number], col: number, row: number) {
-        const ctx = this.ctx;
+    private grid(ctx: CanvasRenderingContext2D) {
         const squareSize: number = this.squareSize;
+        const coord: [number, number] = [this.margin, this.margin];
         ctx.strokeStyle = config.dark;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        for (let i: number = 0; i <= row; i++) {
+        for (let i: number = 0; i <= 8; i++) {
             ctx.moveTo(...new Vec(coord).add([0, squareSize*i]).val());
-            ctx.lineTo(...new Vec(coord).add([squareSize*col, squareSize*i]).val());
+            ctx.lineTo(...new Vec(coord).add([squareSize*8, squareSize*i]).val());
         }
-        for (let i: number = 0; i <= col; i++) {
+        for (let i: number = 0; i <= 8; i++) {
             ctx.moveTo(...new Vec(coord).add([squareSize*i, 0]).val());
-            ctx.lineTo(...new Vec(coord).add([squareSize*i, squareSize*row]).val());
+            ctx.lineTo(...new Vec(coord).add([squareSize*i, squareSize*8]).val());
         }
         ctx.closePath();
         ctx.stroke();
@@ -114,6 +87,7 @@ export default class Draw {
      * @param pos 駒の位置。ゲーム内座標
      * @param rev 上下反転して表示する
      */
+    /*
     private piece(color: string, pos: [number, number], rev: boolean) {
         const ctx = this.ctx;
         const coord: [number, number] = new Vec(pos).mul(this.squareSize)
@@ -128,6 +102,7 @@ export default class Draw {
         ctx.fill(this.piecePath);
         ctx.restore();
     }
+    */
 
     /**
      * ボタンを描く
@@ -135,6 +110,7 @@ export default class Draw {
      * @param size 幅と高さ
      * @param disabled 押せなくする
      */
+    /*
     private button(coord: [number, number], size: [number, number],
             disabled: boolean) {
         const ctx = this.ctx;
@@ -152,39 +128,7 @@ export default class Draw {
             ...new Vec(size).div(2).add(coord).val());
         ctx.restore();
     }
-
-    /** 駒の配置を決める画面（対戦者のみ）  
-     * @param pos 位置と色の Map
-     * @param disabled ボタンを押せなくする
     */
-    decidePiecePlace(pos: Map<string, 'R' | 'B'>, disabled: boolean) {
-        this.clearCanvas();
-        const ctx = this.ctx;
-        const csize = this.canvas.width;
-
-        const textSize: number = csize/40;
-        const text1: string = this.isEN
-        ? "Decide the initial positions of your pieces. (↓ your side   ↑ opponent's side)"
-        : '駒の配置を決めてね（↓自分側　↑相手側）';
-        const text2: string = this.isEN
-        ? 'Click (tap) the pieces to swap bad ghosts (red) and good ghosts (blue).'
-        : 'クリック（タップ）で悪いおばけ（赤）と良いおばけ（青）を切り替えるよ';
-        ctx.fillStyle = config.dark;
-        ctx.font = `${textSize}px Meiryo`;
-        ctx.fillText(text1, csize/30, csize/30);
-        ctx.fillText(text2, csize/30, csize/30 + 2*textSize);
-
-        const lefttop: [number, number] = [
-            this.margin + this.squareSize,
-            this.margin + 2*this.squareSize];
-        this.grid(lefttop, 4, 2);
-        this.button([csize*5/6, csize*5/6], [csize/8, csize/12], disabled);
-        for (let [k, v] of pos.entries()) {
-            let [x, y] = k.split(',')
-            this.piece(v === 'R' ? config.red : config.blue,
-                [+x, +y], false);
-        }
-    }
 
     /** ゲームボードと盤面上の駒を描く
      * @param boardmap 盤面データ
@@ -193,41 +137,23 @@ export default class Draw {
      * @param second 後手のプレイヤー名
      * @param showAll すべての駒色を隠さず表示する
      */
-    board(boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}>,
+    board(boardmap: Map<string, string>,
             turn: 0 | 1, first: string, second: string, showAll: boolean = false) {
         this.clearCanvas();
-        const ctx = this.ctx;
+        const ctxs = this.ctxs;
 
         // グリッド
-        this.grid([this.margin, this.margin], 6, 6);
+        for (const ctx of ctxs) {
+            this.grid(ctx);
+        }
 
-        // 角の矢印
-        const padding: number = (this.squareSize - this.pieceSize)/2;
-        const coord: [number, number] = new Vec([this.squareSize/2, padding])
-            .add(this.margin).val();
-        ctx.save();
-        ctx.translate(...coord);
-        ctx.stroke(this.arrowPath);
-        ctx.restore();
-        ctx.save();
-        ctx.translate(...new Vec(coord).add([5*this.squareSize, 0]).val());
-        ctx.stroke(this.arrowPath);
-        ctx.restore();
-        ctx.save();
-        ctx.translate(...new Vec(coord)
-            .add([0, 5*this.squareSize + this.pieceSize]).val());
-        ctx.rotate(Math.PI);
-        ctx.stroke(this.arrowPath);
-        ctx.restore();
-        ctx.save();
-        ctx.translate(...new Vec(coord)
-            .add([5*this.squareSize,
-                5*this.squareSize + this.pieceSize]).val());
-        ctx.rotate(Math.PI);
-        ctx.stroke(this.arrowPath);
-        ctx.restore();
+        let img = new Image();
+        img.src = 'http://www.w3.org/Icons/SVG/svg-logo-v.svg';
+        img.onload = () => {
+            ctxs[0].drawImage(img, 10, 10, 200, 200);
+        }
 
-        // 駒
+        /* 駒
         for (let [pos, piece] of boardmap.entries()) {
             const pieceColor = piece.color === 'R' ? config.red : config.blue;
             const pos_ = pos.split(',').map((e: string) => +e) as [number, number];
@@ -241,14 +167,17 @@ export default class Draw {
                     pos_, piece.turn === 0);
             }
         }
+        */
 
         // プレイヤー名
-        const csize: number = this.canvas.width;
+        const csize: number = this.canvass[0].width;
         const textSize = csize/40;
-        ctx.fillStyle = config.dark;
-        ctx.font = `${textSize}px Meiryo`;
-        ctx.fillText(turn === 1 ? second : first, csize*3/4, csize - textSize);
-        ctx.fillText(turn === 1 ? first : second, csize*3/4, textSize);
+        for (const ctx of ctxs) {
+            ctx.fillStyle = config.dark;
+            ctx.font = `${textSize}px Meiryo`;
+        }
+        ctxs[0].fillText(turn === 1 ? second : first, csize*3/4, csize - textSize);
+        ctxs[1].fillText(turn === 1 ? first : second, csize*3/4, textSize);
     }
 
     /**
@@ -257,6 +186,7 @@ export default class Draw {
      * @param pos 位置。ゲーム内座標
      * @param boardmap 盤面データ
      */
+    /*
     dest(piece: Piece, pos: [number, number],
             boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}>) {
         const ctx = this.ctx;
@@ -274,12 +204,14 @@ export default class Draw {
             }
         }
     }
+    */
 
     /**
      * 取った駒を盤面の端に描画する
      * @param numbers それぞれが取った駒の色と数
      * @param turn 先手後手どちら目線か
      */
+    /*
     takenPieces(numbers: [{'R': number, 'B': number}, {'R': number, 'B': number}],
             turn: 0 | 1) {
         const ctx = this.ctx;
@@ -318,4 +250,5 @@ export default class Draw {
             drawPiece(coord, config.blue);
         }
     }
+    */
 };
