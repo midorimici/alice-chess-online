@@ -168,7 +168,7 @@ export default class Draw {
      * @param showAll すべての駒色を隠さず表示する
      */
     board(boardmap: Map<string, string>,
-            turn: 0 | 1, first: string, second: string, showAll: boolean = false) {
+            turn: 0 | 1, showAll: boolean = false) {
         this.clearCanvas();
         const ctxs = this.ctxs;
 
@@ -197,16 +197,6 @@ export default class Draw {
             }
         }
         */
-
-        // プレイヤー名
-        const csize: number = this.canvass[0].width;
-        const textSize = csize/40;
-        for (const ctx of ctxs) {
-            ctx.fillStyle = config.dark;
-            ctx.font = `${textSize}px Meiryo`;
-        }
-        ctxs[0].fillText(turn === 1 ? second : first, csize*3/4, csize - textSize);
-        ctxs[1].fillText(turn === 1 ? first : second, csize*3/4, textSize);
     }
 
     /**

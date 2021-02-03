@@ -46,6 +46,8 @@ const initCanvas = () => {
 
 /** 対戦者か観戦者か */
 let myrole: 'play' | 'watch';
+/** 自分のユーザ名 */
+let myname: string;
 
 // フォーム取得
 // production: https://geister-online.herokuapp.com
@@ -62,6 +64,7 @@ form.addEventListener('submit', (e: Event) => {
             : data.get('username') as string,
     };
     myrole = info.role;
+    myname = info.name;
     socket.emit('enter room', info);
 }, false);
 
@@ -119,7 +122,14 @@ socket.on('game',
     const boardmap: Map<string, string> = new Map(board);
     /** 選択中の駒の位置 */
     let selectingPos: [number, number];
-    draw.board(boardmap, turn, first, second);
+    // 対戦者名表示
+    if (document.getElementById('user-names').innerText === '') {
+        const opponent = turn === 0 ? second : first;
+        document.getElementById('user-names').innerText
+            = `↑ ${opponent}\n↓ ${myname}`;
+    }
+    // 盤面描画
+    draw.board(boardmap, turn);
     //draw.takenPieces(takenPieces, turn);
     // 手番の表示
     /* マウスイベント
@@ -191,7 +201,7 @@ socket.on('watch',
     if (myrole === 'watch') {
         if (!doneInitCanvas) {initCanvas()};
         const boardmap: Map<string, string> = new Map(board);
-        draw.board(boardmap, 0, first, second, true);
+        draw.board(boardmap, 0, true);
         //draw.takenPieces(takenPieces, 0);
         const curPlayer: string = turn === 0 ? first : second;
         gameMessage.innerText = isEN
