@@ -32,6 +32,23 @@ export default class Draw {
         this.piecePath.closePath();
     }
 
+    /**
+     * 画像読み込み&描画
+     * @param pos 描画する位置。'盤面,x,y'
+     * @param piece 描画する駒の名前。'WB'など
+     */
+    private drawImg(pos: string, piece: string) {
+        const squareSize = this.squareSize;
+        const pos_ = pos.split(',').map(e => +e);
+        let img = new Image();
+        img.src = `./static/img/${piece}.png`;
+        img.onload = () => {
+            this.ctxs[pos_[0]].drawImage(img, 0, 0, img.width, img.height,
+                this.margin + squareSize*pos_[1], this.margin + squareSize*pos_[2],
+                squareSize, squareSize);
+        }
+    }
+
     /** アイボリーで画面全体を塗りつぶす */
     private clearCanvas() {
         for (let i = 0; i < 2; i++) {
@@ -66,6 +83,19 @@ export default class Draw {
     private grid(ctx: CanvasRenderingContext2D) {
         const squareSize: number = this.squareSize;
         const coord: [number, number] = [this.margin, this.margin];
+
+        // マス目を描く
+        ctx.fillStyle = config.buff;
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                if ((i+j)%2) {
+                    ctx.fillRect(...new Vec([i, j]).mul(squareSize).add(coord).val(),
+                        squareSize, squareSize);
+                }
+            }
+        }
+        
+        // 線を描く
         ctx.strokeStyle = config.dark;
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -147,10 +177,9 @@ export default class Draw {
             this.grid(ctx);
         }
 
-        let img = new Image();
-        img.src = 'http://www.w3.org/Icons/SVG/svg-logo-v.svg';
-        img.onload = () => {
-            ctxs[0].drawImage(img, 10, 10, 200, 200);
+        // 駒
+        for (let [pos, piece] of boardmap.entries()) {
+            this.drawImg(pos, piece);
         }
 
         /* 駒

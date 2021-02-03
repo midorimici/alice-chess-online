@@ -1,5 +1,6 @@
 export default {
     ivory: 'rgb(240, 227, 206)',
+    buff: 'rgb(179, 147, 105)',
     dark: 'rgb(30, 30, 30)',
     red: 'rgb(200, 0, 0)',
     blue: 'rgb(0, 0, 200)',

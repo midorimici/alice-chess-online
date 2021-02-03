@@ -44,17 +44,17 @@ const initBoard = (turn: 0 | 1): Map<string, string> => {
     const order: string = 'RNBQKBNR';
     if (turn === 0) {
         for (let i = 0; i < 8; i++) {
-            m.set(`0,${i},0`, 'W' + order[i]);
-            m.set(`0,${i},1`, 'WP');
-            m.set(`0,${i},7`, 'B' + order[i]);
-            m.set(`0,${i},6`, 'BP');
+            m.set(`0,${i},7`, 'W' + order[i]);
+            m.set(`0,${i},6`, 'WP');
+            m.set(`0,${i},0`, 'B' + order[i]);
+            m.set(`0,${i},1`, 'BP');
         }
     } else {
         for (let i = 0; i < 8; i++) {
-            m.set(`0,${i},0`, 'B' + order[7-i]);
-            m.set(`0,${i},1`, 'BP');
-            m.set(`0,${i},7`, 'W' + order[7-i]);
-            m.set(`0,${i},6`, 'WP');
+            m.set(`0,${i},7`, 'B' + order[7-i]);
+            m.set(`0,${i},6`, 'BP');
+            m.set(`0,${i},0`, 'W' + order[7-i]);
+            m.set(`0,${i},1`, 'WP');
         }
     }
     return m;
