@@ -175,6 +175,19 @@ export default class Draw {
         // グリッド
         for (const ctx of ctxs) {
             this.grid(ctx);
+
+            // ファイル・ランク
+            const textSize: number = this.squareSize/3;
+            ctx.fillStyle = config.dark;
+            ctx.font = `${textSize}px Meiryo`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            for (let i = 0; i < 8; i++) {
+                ctx.fillText(String.fromCodePoint(i+97),
+                    (turn === 0 ? i+1 : 8-i)*this.squareSize, this.canvass[0].height - this.margin/2)
+                ctx.fillText(`${8-i}`,
+                    this.margin/2, (turn === 0 ? i+1 : 8-i)*this.squareSize);
+            }
         }
 
         // 駒
