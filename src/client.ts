@@ -129,14 +129,15 @@ socket.on('game',
             = `↑ ${opponent}\n↓ ${myname}`;
     }
     // 盤面描画
+    if (!doneInitCanvas) {initCanvas()};
     draw.board(boardmap, turn);
     //draw.takenPieces(takenPieces, turn);
     // 手番の表示
-    /* マウスイベント
     if (myturn) {
         gameMessage.innerText = isEN ? "It's your turn." : 'あなたの番です。';
         if (!muted) snd('move');
 
+        /*
         for (const canvas of canvass) {
             mouse = new Mouse(canvas);
             canvas.onclick = (e: MouseEvent) => {
@@ -149,7 +150,7 @@ socket.on('game',
                         boardmap.get(String(sqPos))) as ['R' | 'B', 0 | 1];
                     const piece = new Piece(...pieceData);
                     // 行先を描画
-                    draw.board(boardmap, turn, first, second);
+                    draw.board(boardmap, turn);
                     //draw.dest(piece, selectingPos, boardmap);
                     //draw.takenPieces(takenPieces, turn);
                 } else {
@@ -169,12 +170,13 @@ socket.on('game',
                         }
                     }
                     // 盤面描画更新
-                    draw.board(boardmap, turn, first, second);
+                    draw.board(boardmap, turn);
                     //draw.takenPieces(takenPieces, turn);
                     selectingPos = null;
                 }
             }
         }
+        */
     } else {
         gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
 
@@ -182,7 +184,6 @@ socket.on('game',
             canvas.onclick = () => {};
         }
     }
-    */
 });
 
 // 観戦者の処理
