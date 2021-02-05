@@ -20,7 +20,7 @@ const muteButton = document.getElementById('mute-icon') as HTMLImageElement;
 let muted: boolean = true;
 
 /** 入力フォームを非表示にし、canvas などを表示する */
-const initCanvas = () => {
+const initCanvas = async () => {
     document.getElementById('settings').style.display = 'none';
     
     const cw: number = document.documentElement.clientWidth;
@@ -39,7 +39,7 @@ const initCanvas = () => {
         canvas.setAttribute('height', cvsize);
     }
 
-    draw = new Draw(canvass, isEN);
+    draw = await Draw.init(canvass);
     doneInitCanvas = true;
     document.getElementById('game-container').style.display = 'flex';
 };
@@ -115,7 +115,7 @@ socket.on('game',
          * @param second 後手のプレイヤー名
          * @param takenPieces それぞれが取った駒の色と数
          */
-        (board: [string, string][],
+        async (board: [string, string][],
         color: 'W' | 'B', myturn: boolean,
         first: string, second: string,
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
@@ -129,7 +129,7 @@ socket.on('game',
             = `↑ ${opponent}\n↓ ${myname}`;
     }
     // 盤面描画
-    if (!doneInitCanvas) {initCanvas()};
+    if (!doneInitCanvas) { await initCanvas(); }
     draw.board(boardmap, color);
     //draw.takenPieces(takenPieces, turn);
     // 手番の表示

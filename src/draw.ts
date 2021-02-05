@@ -6,38 +6,56 @@ export default class Draw {
     private ctxs: CanvasRenderingContext2D[];
     private squareSize: number;
     private margin: number;
+    private imgs: Map<string, HTMLImageElement> = new Map();
 
     /**
      * - canvas サイズ設定
      * - context 作成
      * - プロパティ定義
-     * - 駒、矢印のパス定義
-     * @param canvas canvas 要素
-     * @param isEN 英語モードか
      */
-    constructor(canvass: HTMLCanvasElement[], isEN: boolean) {
+    constructor(canvass: HTMLCanvasElement[]) {
         this.canvass = canvass;
-        this.isEN = isEN;
         this.ctxs = canvass.map(e => e.getContext('2d'));
         this.squareSize = canvass[0].width*config.squareSize;
         this.margin = canvass[0].width*config.margin;
     }
 
+    static async init(canvass: HTMLCanvasElement[]) {
+        const draw = new Draw(canvass);
+        let pieces: [string, string][] = [];
+        for (const color of 'WB') {
+            for (const name of 'NBRQKP') {
+                pieces.push([color, name]);
+            }
+        }
+        const imgs: any = await Promise.all(pieces.map(
+            ([color, name]) => draw.loadImg(color, name)));
+        for (let i = 0; i < 12; i++) {
+            draw.imgs.set(pieces[i].join(''), imgs[i]);
+        }
+        return draw;
+    }
+
+    private loadImg(color: string, name: string) {
+        return new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.src = `./static/img/${color}${name}.png`;
+        });
+    }
+
     /**
-     * 画像読み込み&描画
+     * 画像を描画
      * @param pos 描画する位置。'盤面,x,y'
      * @param piece 描画する駒の名前。'WB'など
      */
     private drawImg(pos: string, piece: string) {
         const squareSize = this.squareSize;
         const pos_ = pos.split(',').map(e => +e);
-        let img = new Image();
-        img.src = `./static/img/${piece}.png`;
-        img.onload = () => {
-            this.ctxs[pos_[0]].drawImage(img, 0, 0, img.width, img.height,
-                this.margin + squareSize*pos_[1], this.margin + squareSize*pos_[2],
-                squareSize, squareSize);
-        }
+        const img = this.imgs.get(piece);
+        this.ctxs[pos_[0]].drawImage(img, 0, 0, img.width, img.height,
+            this.margin + squareSize*pos_[1], this.margin + squareSize*pos_[2],
+            squareSize, squareSize);
     }
 
     /** アイボリーで画面全体を塗りつぶす */
