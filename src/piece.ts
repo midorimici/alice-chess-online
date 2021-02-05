@@ -1,10 +1,10 @@
 import { Vec } from './config';
 
-class Piece {
-    private color: 'W' | 'B';
-    protected abbr: string;
+export class Piece {
+    readonly color: 'W' | 'B';
+    protected readonly abbr: string;
     private name: string;
-    private side: 0 | 1;
+    readonly side: 0 | 1;
 
     /**
      * @param color 駒色
@@ -60,6 +60,10 @@ class Piece {
             }
         }
         return answers;
+    }
+
+    coveringSquares(pos: [number, number], board: Map<string, string>): [number, number][] {
+        return [[0, 0]];
     }
 }
 

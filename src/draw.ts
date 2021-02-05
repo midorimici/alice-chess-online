@@ -1,9 +1,8 @@
 import config, { Vec } from './config';
-// import Piece from './piece';
+import { Piece } from './piece';
 
 export default class Draw {
     private canvass: HTMLCanvasElement[];
-    private isEN: boolean;
     private ctxs: CanvasRenderingContext2D[];
     private squareSize: number;
     private margin: number;
@@ -194,25 +193,23 @@ export default class Draw {
      * @param pos 位置。ゲーム内座標
      * @param boardmap 盤面データ
      */
-    /*
     dest(piece: Piece, pos: [number, number],
-            boardmap: Map<string, {color: 'R' | 'B', turn: 0 | 1}>) {
-        const ctx = this.ctx;
-        for (let dest of piece.coveringSquares(pos)) {
+            boardmap: Map<string, string>) {
+        const ctx = this.ctxs[piece.side];
+        for (const dest of piece.coveringSquares(pos, boardmap)) {
             // 自分の駒の位置を除外
-            if (!(boardmap.has(String(dest))
-                    && boardmap.get(String(dest)).turn
-                        === boardmap.get(String(pos)).turn)) {
+            if (!(boardmap.has(`${piece.side},` + String(dest))
+                    && boardmap.get(`${piece.side},` + String(dest))[0]
+                        === piece.color)) {
                 const coord = new Vec(dest).mul(this.squareSize)
                     .add(this.margin + this.squareSize/2).val();
                 ctx.beginPath();
-                ctx.arc(...coord, this.pieceSize/2, 0, 2*Math.PI);
+                ctx.arc(...coord, this.squareSize/4, 0, 2*Math.PI);
                 ctx.fillStyle = config.safe;
                 ctx.fill();
             }
         }
     }
-    */
 
     /**
      * 取った駒を盤面の端に描画する

@@ -151,7 +151,7 @@ socket.on('game',
                     const piece = new pieceClass(color, index as 0 | 1);
                     // 行先を描画
                     draw.board(boardmap, color);
-                    //draw.dest(piece, selectingPos, boardmap);
+                    draw.dest(piece, selectingPos, boardmap);
                     //draw.takenPieces(takenPieces, turn);
                 } else {
                     /*
