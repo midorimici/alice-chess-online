@@ -1,6 +1,6 @@
 import Draw from './draw';
 import Mouse from './mouse';
-import Piece from './piece';
+import { abbrPieceDict } from './piece';
 
 /** 言語が英語である */
 const isEN: boolean = location.pathname === '/en/';
@@ -109,14 +109,14 @@ socket.on('game',
         /**
          * 対戦者側のゲーム処理
          * @param board 盤面データ
-         * @param turn 自分が先手か後手か
+         * @param color 自分の駒色
          * @param myturn 現在自分のターンか
          * @param first 先手のプレイヤー名
          * @param second 後手のプレイヤー名
          * @param takenPieces それぞれが取った駒の色と数
          */
         (board: [string, string][],
-        turn: 0 | 1, myturn: boolean,
+        color: 'W' | 'B', myturn: boolean,
         first: string, second: string,
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
     const boardmap: Map<string, string> = new Map(board);
@@ -124,36 +124,37 @@ socket.on('game',
     let selectingPos: [number, number];
     // 対戦者名表示
     if (document.getElementById('user-names').innerText === '') {
-        const opponent = turn === 0 ? second : first;
+        const opponent = color === 'W' ? second : first;
         document.getElementById('user-names').innerText
             = `↑ ${opponent}\n↓ ${myname}`;
     }
     // 盤面描画
     if (!doneInitCanvas) {initCanvas()};
-    draw.board(boardmap, turn);
+    draw.board(boardmap, color);
     //draw.takenPieces(takenPieces, turn);
     // 手番の表示
     if (myturn) {
         gameMessage.innerText = isEN ? "It's your turn." : 'あなたの番です。';
         if (!muted) snd('move');
 
-        /*
-        for (const canvas of canvass) {
+        for (const [index, canvas] of canvass.entries()) {
             mouse = new Mouse(canvas);
             canvas.onclick = (e: MouseEvent) => {
                 const sqPos = mouse.getCoord(e);
-                if (boardmap.has(String(sqPos))
-                        && boardmap.get(String(sqPos)).turn === turn) {
+                if (boardmap.has(`${index},` + String(sqPos))
+                        && boardmap.get(`${index},` + String(sqPos))[0] === color) {
                     // 自分の駒を選択したとき
                     selectingPos = sqPos;
-                    const pieceData = Object.values(
-                        boardmap.get(String(sqPos))) as ['R' | 'B', 0 | 1];
-                    const piece = new Piece(...pieceData);
+                    const pieceClass = abbrPieceDict[
+                        boardmap.get(`${index},` + String(sqPos))[1] as (
+                            'N' | 'B' | 'R' | 'Q' | 'K')];
+                    const piece = new pieceClass(color, index as 0 | 1);
                     // 行先を描画
-                    draw.board(boardmap, turn);
+                    draw.board(boardmap, color);
                     //draw.dest(piece, selectingPos, boardmap);
                     //draw.takenPieces(takenPieces, turn);
                 } else {
+                    /*
                     if (boardmap.has(String(selectingPos))) {
                         const pieceData = Object.values(
                             boardmap.get(String(selectingPos))) as ['R' | 'B', 0 | 1];
@@ -169,14 +170,14 @@ socket.on('game',
                             socket.emit('move piece', turn, selectingPos, sqPos);
                         }
                     }
+                    */
                     // 盤面描画更新
-                    draw.board(boardmap, turn);
+                    draw.board(boardmap, color);
                     //draw.takenPieces(takenPieces, turn);
                     selectingPos = null;
                 }
             }
         }
-        */
     } else {
         gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
 
@@ -202,7 +203,7 @@ socket.on('watch',
     if (myrole === 'watch') {
         if (!doneInitCanvas) {initCanvas()};
         const boardmap: Map<string, string> = new Map(board);
-        draw.board(boardmap, 0, true);
+        draw.board(boardmap, 'W', true);
         //draw.takenPieces(takenPieces, 0);
         const curPlayer: string = turn === 0 ? first : second;
         gameMessage.innerText = isEN

@@ -1,5 +1,5 @@
 import config, { Vec } from './config';
-import Piece from './piece';
+// import Piece from './piece';
 
 export default class Draw {
     private canvass: HTMLCanvasElement[];
@@ -7,8 +7,6 @@ export default class Draw {
     private ctxs: CanvasRenderingContext2D[];
     private squareSize: number;
     private margin: number;
-    private pieceSize: number;
-    private piecePath: Path2D;
 
     /**
      * - canvas サイズ設定
@@ -16,20 +14,14 @@ export default class Draw {
      * - プロパティ定義
      * - 駒、矢印のパス定義
      * @param canvas canvas 要素
+     * @param isEN 英語モードか
      */
     constructor(canvass: HTMLCanvasElement[], isEN: boolean) {
         this.canvass = canvass;
         this.isEN = isEN;
         this.ctxs = canvass.map(e => e.getContext('2d'));
-        this.squareSize = canvass[0].width*9/80;
-        this.margin = canvass[0].width/20;
-        this.pieceSize = canvass[0].width/10;
-
-        this.piecePath = new Path2D();
-        this.piecePath.moveTo(0, -this.pieceSize/2);
-        this.piecePath.lineTo(-this.pieceSize/2, this.pieceSize/2);
-        this.piecePath.lineTo(this.pieceSize/2, this.pieceSize/2);
-        this.piecePath.closePath();
+        this.squareSize = canvass[0].width*config.squareSize;
+        this.margin = canvass[0].width*config.margin;
     }
 
     /**
@@ -168,7 +160,7 @@ export default class Draw {
      * @param showAll すべての駒色を隠さず表示する
      */
     board(boardmap: Map<string, string>,
-            turn: 0 | 1, showAll: boolean = false) {
+            color: 'W' | 'B', showAll: boolean = false) {
         this.clearCanvas();
         const ctxs = this.ctxs;
 
@@ -184,9 +176,9 @@ export default class Draw {
             ctx.textBaseline = 'middle';
             for (let i = 0; i < 8; i++) {
                 ctx.fillText(String.fromCodePoint(i+97),
-                    (turn === 0 ? i+1 : 8-i)*this.squareSize, this.canvass[0].height - this.margin/2)
+                    (color === 'W' ? i+1 : 8-i)*this.squareSize, this.canvass[0].height - this.margin/2)
                 ctx.fillText(`${8-i}`,
-                    this.margin/2, (turn === 0 ? i+1 : 8-i)*this.squareSize);
+                    this.margin/2, (color === 'W' ? i+1 : 8-i)*this.squareSize);
             }
         }
 
@@ -194,22 +186,6 @@ export default class Draw {
         for (let [pos, piece] of boardmap.entries()) {
             this.drawImg(pos, piece);
         }
-
-        /* 駒
-        for (let [pos, piece] of boardmap.entries()) {
-            const pieceColor = piece.color === 'R' ? config.red : config.blue;
-            const pos_ = pos.split(',').map((e: string) => +e) as [number, number];
-            if (turn === 0) {
-                // 先手
-                this.piece((showAll || piece.turn === 0) ? pieceColor : config.grey,
-                    pos_, piece.turn === 1);
-            } else {
-                // 後手
-                this.piece((showAll || piece.turn === 1) ? pieceColor : config.grey,
-                    pos_, piece.turn === 0);
-            }
-        }
-        */
     }
 
     /**

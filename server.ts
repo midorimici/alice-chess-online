@@ -138,9 +138,9 @@ io.on('connection', (socket: customSocket) => {
                     io.to(info.roomId).emit('watch',
                         [...board1], first.name, second.name, curTurn, takenPieces);
                     io.to(room.player1.id).emit('game',
-                        [...board1], 0, true, first.name, second.name, takenPieces);
+                        [...board1], 'W', true, first.name, second.name, takenPieces);
                     io.to(room.player2.id).emit('game',
-                        [...board2], 1, false, first.name, second.name, takenPieces);
+                        [...board2], 'B', false, first.name, second.name, takenPieces);
                 } else {
                     // 対戦者がすでに2人いる
                     socket.emit('room full', info.roomId);
