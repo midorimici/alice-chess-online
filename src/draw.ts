@@ -2,11 +2,11 @@ import config, { Vec } from './config';
 import { Piece } from './piece';
 
 export default class Draw {
-    private canvass: HTMLCanvasElement[];
-    private ctxs: CanvasRenderingContext2D[];
-    private squareSize: number;
-    private margin: number;
-    private imgs: Map<string, HTMLImageElement> = new Map();
+    private readonly canvass: HTMLCanvasElement[];
+    private readonly ctxs: CanvasRenderingContext2D[];
+    private readonly squareSize: number;
+    private readonly margin: number;
+    private readonly imgs: Map<string, HTMLImageElement> = new Map();
 
     /**
      * - canvas サイズ設定
