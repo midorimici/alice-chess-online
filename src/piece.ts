@@ -2,8 +2,7 @@ import { Vec } from './config';
 
 export abstract class Piece {
     readonly color: 'W' | 'B';
-    protected readonly abbr: string;
-    readonly name: string;
+    readonly abbr: string;
     readonly side: 0 | 1;
 
     /**
@@ -13,7 +12,6 @@ export abstract class Piece {
      */
     constructor(color: 'W' | 'B', side: 0 | 1) {
         this.color = color;
-        this.name = color + this.abbr;
         this.side = side;
     }
 
@@ -66,7 +64,7 @@ export abstract class Piece {
 }
 
 export class Knight extends Piece {
-    protected abbr = 'N';
+    abbr = 'N';
 
     /**
      * 駒が動ける位置リストを返す
@@ -85,7 +83,7 @@ export class Knight extends Piece {
 }
 
 export class Bishop extends Piece {
-    protected abbr = 'B';
+    abbr = 'B';
 
     coveringSquares(pos: [number, number], board: Map<string, string>): [number, number][] {
         return this.rider(pos, [[1, 1], [1, -1], [-1, -1], [-1, 1]], board);
@@ -93,7 +91,7 @@ export class Bishop extends Piece {
 }
 
 export class Rook extends Piece {
-    protected abbr = 'R';
+    abbr = 'R';
 
     coveringSquares(pos: [number, number], board: Map<string, string>): [number, number][] {
         return this.rider(pos, [[1, 0], [0, -1], [-1, 0], [0, 1]], board);
@@ -101,7 +99,7 @@ export class Rook extends Piece {
 }
 
 export class Queen extends Piece {
-    protected abbr = 'Q';
+    abbr = 'Q';
 
     coveringSquares(pos: [number, number], board: Map<string, string>): [number, number][] {
         return this.rider(pos,
@@ -110,7 +108,7 @@ export class Queen extends Piece {
 }
 
 export class King extends Piece {
-    protected abbr = 'K';
+    abbr = 'K';
 
     coveringSquares(pos: [number, number], board: Map<string, string>): [number, number][] {
         const dirList: [number, number][]
