@@ -147,7 +147,7 @@ socket.on('game',
                     selectingPos = sqPos;
                     const pieceClass = abbrPieceDict[
                         boardmap.get(`${index},` + String(sqPos))[1] as (
-                            'N' | 'B' | 'R' | 'Q' | 'K')];
+                            'N' | 'B' | 'R' | 'Q' | 'K' | 'P')];
                     const piece = new pieceClass(color, index as 0 | 1);
                     // 行先を描画
                     draw.board(boardmap, color);

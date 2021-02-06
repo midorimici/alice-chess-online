@@ -121,4 +121,36 @@ export class King extends Piece {
     }
 }
 
-export const abbrPieceDict = {'N': Knight, 'B': Bishop, 'R': Rook, 'Q': Queen, 'K': King};
+export class Pawn extends Piece {
+    abbr = 'P';
+
+    coveringSquares(pos: [number, number], board: Map<string, string>): [number, number][] {
+        const dir: -1 | 1 = this.color === 'W' ? -1 : 1;
+        let answers: [number, number][] = [];
+        // 駒を取る動き
+        var target = new Vec(pos).add([1, dir]).val();
+        if (board.has(`${this.side},` + String(target))) {
+            answers.push(target);
+        }
+        var target = new Vec(pos).add([-1, dir]).val();
+        if (board.has(`${this.side},` + String(target))) {
+            answers.push(target);
+        }
+        // 一歩先
+        var target = new Vec(pos).add([0, dir]).val();
+        if (!board.has(`${this.side},` + String(target)) && this.legal(target, board)) {
+            answers.push(target);
+        }
+        // 二歩先（最初だけ）
+        var target2 = new Vec(pos).add([0, 2*dir]).val();
+        if (pos[1] === (this.color === 'W' ? 6 : 1)
+                && !board.has(`${this.side},` + String(target))
+                && !board.has(`${this.side},` + String(target2))
+                && this.legal(target2, board)) {
+            answers.push(target2);
+        }
+        return answers;
+    }
+}
+
+export const abbrPieceDict = {'N': Knight, 'B': Bishop, 'R': Rook, 'Q': Queen, 'K': King, 'P': Pawn};

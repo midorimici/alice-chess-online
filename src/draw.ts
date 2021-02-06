@@ -20,6 +20,10 @@ export default class Draw {
         this.margin = canvass[0].width*config.margin;
     }
 
+    /**
+     * 非同期処理のためのコンストラクタ代用
+     * @param canvass 2つのキャンバスの配列
+     */
     static async init(canvass: HTMLCanvasElement[]) {
         const draw = new Draw(canvass);
         let pieces: [string, string][] = [];
@@ -36,6 +40,11 @@ export default class Draw {
         return draw;
     }
 
+    /**
+     * 駒の画像を読み込む
+     * @param color 駒色
+     * @param name 駒の名前
+     */
     private loadImg(color: string, name: string) {
         return new Promise(resolve => {
             const img = new Image();
@@ -65,23 +74,6 @@ export default class Draw {
             this.ctxs[i].fillRect(0, 0, this.canvass[i].width, this.canvass[i].height);
         }
     }
-
-    /** 待機画面 */
-    /*
-    private waitingPlayer() {
-        this.clearCanvas();
-        const canvas = this.canvas;
-        const ctx = this.ctx;
-        const textSize: number = canvas.width/20;
-        ctx.fillStyle = config.dark;
-        ctx.font = `${textSize}px Meiryo`;
-        ctx.fillText(this.isEN
-            ? 'Waiting for the opponent...'
-            : '対戦相手の入室を待っています...',
-            canvas.width/2 - (7.5)*textSize,
-            canvas.height/2);
-    }
-    */
 
     /**
      * 一辺 squareSize のグリッドを描く
@@ -119,29 +111,6 @@ export default class Draw {
         ctx.closePath();
         ctx.stroke();
     }
-
-    /**
-     * 駒を描く
-     * @param color 駒色。rgb(R, G, B) の書式
-     * @param pos 駒の位置。ゲーム内座標
-     * @param rev 上下反転して表示する
-     */
-    /*
-    private piece(color: string, pos: [number, number], rev: boolean) {
-        const ctx = this.ctx;
-        const coord: [number, number] = new Vec(pos).mul(this.squareSize)
-            .add(this.margin + this.squareSize/2).val();
-        ctx.save();
-        ctx.fillStyle = color;
-        ctx.translate(...coord);
-        if (rev) {
-            // 相手の駒は逆転して描く
-            ctx.rotate(Math.PI);
-        }
-        ctx.fill(this.piecePath);
-        ctx.restore();
-    }
-    */
 
     /**
      * ボタンを描く
