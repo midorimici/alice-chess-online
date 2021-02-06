@@ -48,9 +48,10 @@ export abstract class Piece {
             while (this.inBoard([xtmp, ytmp])) {
                 let destThis = board.get(`${this.side},${xtmp},${ytmp}`);
                 let destThat = board.get(`${1-this.side},${xtmp},${ytmp}`);
-                if (!destThis && !destThat) {
+                if (!destThat) {
                     answers.push([xtmp, ytmp]);
-                } else if (destThis) {
+                }
+                if (destThis) {
                     break;
                 }
                 xtmp += dx;
