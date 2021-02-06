@@ -1,9 +1,9 @@
 import { Vec } from './config';
 
-export class Piece {
+export abstract class Piece {
     readonly color: 'W' | 'B';
     protected readonly abbr: string;
-    private name: string;
+    readonly name: string;
     readonly side: 0 | 1;
 
     /**
@@ -62,9 +62,7 @@ export class Piece {
         return answers;
     }
 
-    coveringSquares(pos: [number, number], board: Map<string, string>): [number, number][] {
-        return [[0, 0]];
-    }
+    abstract coveringSquares(pos: [number, number], board: Map<string, string>): [number, number][];
 }
 
 export class Knight extends Piece {
