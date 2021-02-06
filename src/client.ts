@@ -1,6 +1,7 @@
 import Draw from './draw';
 import Mouse from './mouse';
 import { abbrPieceDict } from './piece';
+import chat from './chat';
 
 /** 言語が英語である */
 const isEN: boolean = location.pathname === '/en/';
@@ -92,6 +93,10 @@ socket.on('wait opponent', () => {
         : '対戦相手の入室を待っています...'
 });
 
+
+
+// ゲーム進行
+
 let mouse: Mouse;
 
 /**
@@ -101,8 +106,6 @@ let mouse: Mouse;
 const snd = (file: string) => {
     new Audio(`../static/sounds/${file}.wav`).play();
 };
-
-// ゲーム進行
 
 // 対戦者の処理
 socket.on('game', 
@@ -154,23 +157,25 @@ socket.on('game',
                     draw.dest(piece, selectingPos, boardmap);
                     //draw.takenPieces(takenPieces, turn);
                 } else {
-                    /*
-                    if (boardmap.has(String(selectingPos))) {
-                        const pieceData = Object.values(
-                            boardmap.get(String(selectingPos))) as ['R' | 'B', 0 | 1];
-                        const piece = new Piece(...pieceData);
-                        if (piece.coveringSquares(selectingPos).some(e =>
+                    if (boardmap.has(`${index},` + String(selectingPos))) {
+                        const pieceClass = abbrPieceDict[
+                            boardmap.get(`${index},` + String(selectingPos))[1] as (
+                                'N' | 'B' | 'R' | 'Q' | 'K' | 'P')];
+                        const piece = new pieceClass(color, index as 0 | 1);
+                        if (piece.coveringSquares(selectingPos, boardmap).some(e =>
                                 String(e) === String(sqPos))) {
                             // 行先を選択したとき
                             // 駒の移動
-                            boardmap.set(String(sqPos), boardmap.get(String(selectingPos)));
-                            boardmap.delete(String(selectingPos));
+                            boardmap.set(`${1-index},` + String(sqPos),
+                                boardmap.get(`${index},` + String(selectingPos)));
+                            boardmap.delete(`${index},` + String(selectingPos));
+                            // 敵駒があったら削除
+                            boardmap.delete(`${index},` + String(sqPos));
                             if (!muted) snd('move');
                             // サーバへ移動データを渡す
-                            socket.emit('move piece', turn, selectingPos, sqPos);
+                            //socket.emit('move piece', turn, selectingPos, sqPos);
                         }
                     }
-                    */
                     // 盤面描画更新
                     draw.board(boardmap, color);
                     //draw.takenPieces(takenPieces, turn);
@@ -245,63 +250,6 @@ muteButton.onclick = () => {
     muted = !muted;
 };
 
-
-
-// チャット
-const chatForm = document.getElementById('chat-form') as HTMLFormElement;
-const chatInput = document.getElementById('chat-input') as HTMLInputElement;
-const chatSendButton = document.getElementById('chat-send-icon');
-chatForm.addEventListener('submit', (e: Event) => {
-    e.preventDefault();
-    if (chatInput.value) {
-        socket.emit('chat message', chatInput.value);
-        chatInput.value = '';
-    }
-});
-
-chatSendButton.onclick = () => {
-    if (chatInput.value) {
-        socket.emit('chat message', chatInput.value);
-        chatInput.value = '';
-    }
-};
-
-const ul = document.getElementById('chat-messages');
-socket.on('chat message', 
-        /**
-         * チャット受信の処理
-         * @param msg 入力されたメッセージ
-         * @param isPlayer 入力した人が対戦者か
-         * @param name 入力した人の名前
-         */
-        (msg: string, isPlayer: boolean, name: string) => {
-    const item = document.createElement('li');
-
-    const nameSpan = document.createElement('span');
-    nameSpan.className = 'chat-name';
-    nameSpan.innerText = name;
-
-    if (isPlayer) {
-        const icon = document.createElement('img');
-        icon.className = 'chat-player-icon';
-        icon.src = '../static/svg/ghost-solid.svg';
-        icon.alt = 'player-icon';
-        icon.title = isEN ? 'Player' : '対戦者';
-        nameSpan.appendChild(icon);
-    }
-
-    item.appendChild(nameSpan);
-
-    const msgSpan = document.createElement('span');
-    msgSpan.innerText = msg;
-    item.appendChild(msgSpan);
-
-    ul.appendChild(item);
-    ul.scrollTop = ul.scrollHeight;
-});
-
-
-
 // info ボタン
 const infoBtn = document.getElementById('info-icon');
 infoBtn.onclick = () => {
@@ -312,3 +260,6 @@ const infoCloseBtn = document.getElementById('close-icon');
 infoCloseBtn.onclick = () => {
     document.getElementById('info-overlay').style.display = 'none';
 };
+
+// チャット
+chat(socket, isEN);
