@@ -107,6 +107,17 @@ const snd = (file: string) => {
     new Audio(`../static/sounds/${file}.wav`).play();
 };
 
+/**
+ * 相手のターンだったときの処理
+ */
+const opponentTurn = () => {
+    gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
+
+    for (const canvas of canvass) {
+        canvas.onclick = () => {};
+    }
+}
+
 // 対戦者の処理
 socket.on('game', 
         /**
@@ -173,7 +184,9 @@ socket.on('game',
                             boardmap.delete(`${index},` + String(sqPos));
                             if (!muted) snd('move');
                             // サーバへ移動データを渡す
-                            //socket.emit('move piece', turn, selectingPos, sqPos);
+                            socket.emit('move piece', [...boardmap]);
+                            // ターン交代
+                            opponentTurn();
                         }
                     }
                     // 盤面描画更新
@@ -184,11 +197,7 @@ socket.on('game',
             }
         }
     } else {
-        gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
-
-        for (const canvas of canvass) {
-            canvas.onclick = () => {};
-        }
+        opponentTurn();
     }
 });
 

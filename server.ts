@@ -35,29 +35,33 @@ let rooms: Map<string, {
 }> = new Map();
 
 /**
- * 初期盤面を生成する
- * @param turn どちら目線か
+ * 先手の初期盤面を生成する
  * @returns Map
  */
-const initBoard = (turn: 0 | 1): Map<string, string> => {
+const initBoard = (): Map<string, string> => {
     let m: Map<string, string> = new Map();
     const order: string = 'RNBQKBNR';
-    if (turn === 0) {
-        for (let i = 0; i < 8; i++) {
-            m.set(`0,${i},7`, 'W' + order[i]);
-            m.set(`0,${i},6`, 'WP');
-            m.set(`0,${i},0`, 'B' + order[i]);
-            m.set(`0,${i},1`, 'BP');
-        }
-    } else {
-        for (let i = 0; i < 8; i++) {
-            m.set(`0,${i},7`, 'B' + order[7-i]);
-            m.set(`0,${i},6`, 'BP');
-            m.set(`0,${i},0`, 'W' + order[7-i]);
-            m.set(`0,${i},1`, 'WP');
-        }
+    for (let i = 0; i < 8; i++) {
+        m.set(`0,${i},7`, 'W' + order[i]);
+        m.set(`0,${i},6`, 'WP');
+        m.set(`0,${i},0`, 'B' + order[i]);
+        m.set(`0,${i},1`, 'BP');
     }
     return m;
+}
+
+/**
+ * 盤面を変換する
+ * @param to 変換先。 0 -> 先手, 1 -> 後手
+ */
+const rotateBoard = (to: 0 | 1): Map<string, string> => {
+    let orig = board[1-to];
+    let res = new Map();
+    for (const [pos, piece] of orig.entries()) {
+        let [b, x, y] = pos.split(',').map(e => +e);
+        res.set(`${b},${7-x},${7-y}`, piece);
+    }
+    return res;
 }
 
 /**
@@ -83,14 +87,11 @@ const winReq = (taken: [{'R': number, 'B': number},
 }
 
 // 盤面。{'0,0,0': 'WN'} のフォーマット
-/** 先手から見た盤面 */
-let board1: Map<string, string> = initBoard(0);
-/** 後手から見た盤面 */
-let board2: Map<string, string> = initBoard(1);
-/** 先手の名前と socket id */
-let first: {name: string, id: string};
-/** 後手の名前と socket id */
-let second: {name: string, id: string};
+/** 先手から見た盤面, 後手から見た盤面 */
+let board: [Map<string, string>, Map<string, string>] = [initBoard(), new Map()];
+board[1] = rotateBoard(1);
+/** 先手, 後手の名前と socket id */
+let players: [{name: string, id: string}, {name: string, id: string}];
 /** 現在のターン */
 let curTurn: 0 | 1 = 0;
 /** それぞれが取った駒の色と数 */
@@ -121,26 +122,22 @@ io.on('connection', (socket: customSocket) => {
                     };
                     room.state = 'playing';
                     socket.join(info.roomId);
-                    first = room.player1.turn === 0 ? {
-                        name: room.player1.name,
-                        id: room.player1.id
-                    } : {
-                        name: room.player2.name,
-                        id: room.player2.id
-                    };
-                    second = room.player1.turn === 1 ? {
-                        name: room.player1.name,
-                        id: room.player1.id
-                    } : {
-                        name: room.player2.name,
-                        id: room.player2.id
-                    };
+                    players = [
+                        {
+                            name: room.player1.name,
+                            id: room.player1.id
+                        },
+                        {
+                            name: room.player2.name,
+                            id: room.player2.id
+                        }
+                    ];
                     io.to(info.roomId).emit('watch',
-                        [...board1], first.name, second.name, curTurn, takenPieces);
+                        [...board[0]], ...players.map(e => e.name), curTurn, takenPieces);
                     io.to(room.player1.id).emit('game',
-                        [...board1], 'W', true, first.name, second.name, takenPieces);
+                        [...board[0]], 'W', true, ...players.map(e => e.name), takenPieces);
                     io.to(room.player2.id).emit('game',
-                        [...board2], 'B', false, first.name, second.name, takenPieces);
+                        [...board[1]], 'B', false, ...players.map(e => e.name), takenPieces);
                 } else {
                     // 対戦者がすでに2人いる
                     socket.emit('room full', info.roomId);
@@ -175,11 +172,11 @@ io.on('connection', (socket: customSocket) => {
                 } else {
                     // 対戦者がすでに2人いて対戦中
                     socket.emit('watch',
-                        [...board1], first.name, second.name, curTurn, takenPieces);
+                        [...board[0]], ...players.map(e => e.name), curTurn, takenPieces);
                     if (winner === 0 || winner === 1) {
                         socket.emit('tell winner',
-                            [first.name, second.name][winner], [...board1],
-                            first.name, second.name, takenPieces);
+                            players.map(e => e.name)[winner], [...board[0]],
+                            ...players.map(e => e.name), takenPieces);
                     }
                 }
             } else {
@@ -189,115 +186,51 @@ io.on('connection', (socket: customSocket) => {
         }
     });
 
-    /*
-    socket.on('decided place',
-            /**
-             * 駒の配置を決定したときのサーバ側の処理
-             * @param poslist どこにどの色の駒を配置したかを表すリスト
-             *
-            (poslist: [string, 'R' | 'B'][]) => {
-        const roomId = socket.info.roomId;
-        const posmap = new Map(poslist);
-        const room = rooms.get(roomId);
-        room.ready = room.ready + 1;
-        if (room.ready === 1) {
-            // 先手
-            order1 = posmap;
-            if (room.player1.id === socket.id) {
-                io.to(room.player1.id).emit('wait placing');
-            } else {
-                io.to(room.player2.id).emit('wait placing');
-            }
-        } else if (room.ready === 2) {
-            // 後手
-            order2 = posmap;
-            if (room.player1.id === socket.id) {
-                room.player1.turn = 1;
-            } else {
-                room.player2.turn = 1;
-            }
-            room.state = 'playing';
-            board1 = new Map(initBoard(order1, order2, 0));
-            board2 = new Map(initBoard(order1, order2, 1));
-            first = room.player1.turn === 0 ? {
-                name: room.player1.name,
-                id: room.player1.id
-            } : {
-                name: room.player2.name,
-                id: room.player2.id
-            };
-            second = room.player1.turn === 1 ? {
-                name: room.player1.name,
-                id: room.player1.id
-            } : {
-                name: room.player2.name,
-                id: room.player2.id
-            };
-            curTurn = 0;
-            takenPieces = [{'R': 0, 'B': 0}, {'R': 0, 'B': 0}];
-            winner = undefined;
-            io.to(roomId).emit('watch',
-                [...board1], first.name, second.name, curTurn, takenPieces);
-            io.to(first.id).emit('game',
-                [...board1], 0, true, first.name, second.name, takenPieces);
-            io.to(second.id).emit('game',
-                [...board2], 1, false, first.name, second.name, takenPieces);
-        }
-    });
-    */
-
-    /*
     socket.on('move piece',
             /**
              * 駒を動かしたときのサーバ側の処理
-             * @param turn 動かした人が先手か後手か
-             * @param origin 駒の移動元の位置。ゲーム内座標
-             * @param dest 駒の移動先の位置。ゲーム内座標
-             *
-            (turn: 0 | 1, origin: [number, number], dest: [number, number]) => {
+             * @param boardmap 盤面データ
+             */
+            (boardmap: [string, string][]) => {
         const roomId = socket.info.roomId;
-        let board = [board1, board2][turn];
-        let another = [board1, board2][(turn+1)%2];
+        const newBoard = new Map(boardmap);
         // 相手の駒を取ったとき
+        /*
         if (board.has(String(dest)) && board.get(String(dest)).turn !== turn) {
             // 取った駒の色を記録する
             takenPieces[turn][board.get(String(dest)).color] += 1;
-        }
+        }*/
         // turn 目線のボードを更新する
-        board.set(String(dest), board.get(String(origin)));
-        board.delete(String(origin));
-        // 座標変換
-        origin = origin.map((x: number) => 5-x) as [number, number];
-        dest = dest.map((x: number) => 5-x) as [number, number];
+        board[curTurn] = newBoard;
         // 相手目線のボードを更新する
-        another.set(String(dest), another.get(String(origin)));
-        another.delete(String(origin));
+        board[1-curTurn] = rotateBoard(1-curTurn as 0 | 1);
         // ターン交代
-        curTurn = (curTurn+1)%2 as 0 | 1;
+        curTurn = 1-curTurn as 0 | 1;
         // 勝敗判定
+        /*
         if (winReq(takenPieces, Array.from(board.keys()), turn, true)) {
             winner = turn;
         } else if (winReq(takenPieces, Array.from(board.keys()), (turn+1)%2 as 0 | 1, false)) {
             winner = (turn+1)%2 as 0 | 1;
-        }
+        }*/
         // 盤面データをクライアントへ
         io.to(roomId).emit('watch',
-            [...board1], first.name, second.name, curTurn, takenPieces);
-        io.to(first.id).emit('game',
-            [...board1], 0, curTurn === 0, first.name, second.name, takenPieces);
-        io.to(second.id).emit('game',
-            [...board2], 1, curTurn === 1, first.name, second.name, takenPieces);
+            [...board[0]], ...players.map(e => e.name), curTurn, takenPieces);
+        io.to(players[curTurn].id).emit('game',
+            [...board[curTurn]],
+                curTurn === 0 ? 'W' : 'B',
+                true, ...players.map(e => e.name), takenPieces);
         // 勝者を通知する
+        /*
         if (winner === 0 || winner === 1) {
             io.to(roomId).emit('tell winner to audience and first',
-                [first.name, second.name][winner], [...board1]
-                , first.name, second.name, takenPieces);
+                players.map(e => e.name)[winner], [...board[0]]
+                , ...players.map(e => e.name), takenPieces);
             io.to(second.id).emit('tell winner to second',
-                [first.name, second.name][winner], [...board2]
-                , first.name, second.name, takenPieces);
-        }
+                players.map(e => e.name)[winner], [...board[1]]
+                , ...players.map(e => e.name), takenPieces);
+        }*/
     });
-    */
 
     socket.on('chat message', (msg: string) => {
         io.to(socket.info.roomId).emit('chat message',
