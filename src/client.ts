@@ -51,7 +51,7 @@ let myrole: 'play' | 'watch';
 let myname: string;
 
 // フォーム取得
-// production: https://geister-online.herokuapp.com
+// production: io('https://geister-online.herokuapp.com')
 const socket: SocketIOClient.Socket = io();
 const form = document.getElementById('form') as HTMLFormElement;
 form.addEventListener('submit', (e: Event) => {
@@ -211,13 +211,19 @@ socket.on('watch',
          * @param turn 現在のターン
          * @param takenPieces それぞれが取った駒の色と数
          */
-        (board: [string, string][],
+        async (board: [string, string][],
         first: string, second: string, turn: 0 | 1,
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
     if (myrole === 'watch') {
-        if (!doneInitCanvas) {initCanvas()};
         const boardmap: Map<string, string> = new Map(board);
-        draw.board(boardmap, 'W', true);
+        // 対戦者名表示
+        if (document.getElementById('user-names').innerText === '') {
+            document.getElementById('user-names').innerText
+                = `↑ ${second}\n↓ ${first}`;
+        }
+        // 盤面描画
+        if (!doneInitCanvas) { await initCanvas() };
+        draw.board(boardmap, 'W');
         //draw.takenPieces(takenPieces, 0);
         const curPlayer: string = turn === 0 ? first : second;
         gameMessage.innerText = isEN

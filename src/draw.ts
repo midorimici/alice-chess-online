@@ -140,13 +140,9 @@ export default class Draw {
 
     /** ゲームボードと盤面上の駒を描く
      * @param boardmap 盤面データ
-     * @param turn 先手後手どちら目線か
-     * @param first 先手のプレイヤー名
-     * @param second 後手のプレイヤー名
-     * @param showAll すべての駒色を隠さず表示する
+     * @param color 駒色。先手後手どちら目線か
      */
-    board(boardmap: Map<string, string>,
-            color: 'W' | 'B', showAll: boolean = false) {
+    board(boardmap: Map<string, string>, color: 'W' | 'B') {
         this.clearCanvas();
         const ctxs = this.ctxs;
 
