@@ -1,4 +1,4 @@
-import config, { Vec } from './config';
+import config, { Vec } from '../config';
 
 export default class Mouse {
     private squareSize: number;

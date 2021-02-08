@@ -1,6 +1,6 @@
 import Draw from './draw';
 import Mouse from './mouse';
-import { abbrPieceDict } from './piece';
+import { abbrPieceDict, pieceNames } from '../svr/piece';
 import chat from './chat';
 
 /** 言語が英語である */
@@ -87,7 +87,7 @@ socket.on('no room', /** @param id 部屋番号 */ (id: string)=> {
 
 // 対戦相手を待っているとき
 socket.on('wait opponent', () => {
-    if (!doneInitCanvas) {initCanvas()};
+    if (!doneInitCanvas) initCanvas();
     gameMessage.innerText = isEN
         ? 'Waiting for the opponent...'
         : '対戦相手の入室を待っています...'
@@ -106,17 +106,6 @@ let mouse: Mouse;
 const snd = (file: string) => {
     new Audio(`../static/sounds/${file}.wav`).play();
 };
-
-/**
- * 相手のターンだったときの処理
- */
-const opponentTurn = () => {
-    gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
-
-    for (const canvas of canvass) {
-        canvas.onclick = () => {};
-    }
-}
 
 // 対戦者の処理
 socket.on('game', 
@@ -143,10 +132,11 @@ socket.on('game',
             = `↑ ${opponent}\n↓ ${myname}`;
     }
     // 盤面描画
-    if (!doneInitCanvas) { await initCanvas(); }
+    if (!doneInitCanvas) await initCanvas();
     draw.board(boardmap, color);
     //draw.takenPieces(takenPieces, turn);
     // 手番の表示
+    // マウスコールバック
     if (myturn) {
         gameMessage.innerText = isEN ? "It's your turn." : 'あなたの番です。';
         if (!muted) snd('move');
@@ -155,13 +145,11 @@ socket.on('game',
             mouse = new Mouse(canvas);
             canvas.onclick = (e: MouseEvent) => {
                 const sqPos = mouse.getCoord(e);
-                if (boardmap.has(`${index},` + String(sqPos))
-                        && boardmap.get(`${index},` + String(sqPos))[0] === color) {
+                if (boardmap.get(`${index},` + String(sqPos))?.[0] === color) {
                     // 自分の駒を選択したとき
                     selectingPos = sqPos;
                     const pieceClass = abbrPieceDict[
-                        boardmap.get(`${index},` + String(sqPos))[1] as (
-                            'N' | 'B' | 'R' | 'Q' | 'K' | 'P')];
+                        boardmap.get(`${index},` + String(sqPos))[1] as pieceNames];
                     const piece = new pieceClass(color, index as 0 | 1);
                     // 行先を描画
                     draw.board(boardmap, color);
@@ -170,23 +158,16 @@ socket.on('game',
                 } else {
                     if (boardmap.has(`${index},` + String(selectingPos))) {
                         const pieceClass = abbrPieceDict[
-                            boardmap.get(`${index},` + String(selectingPos))[1] as (
-                                'N' | 'B' | 'R' | 'Q' | 'K' | 'P')];
+                            boardmap.get(`${index},` + String(selectingPos))[1] as pieceNames];
                         const piece = new pieceClass(color, index as 0 | 1);
-                        if (piece.coveringSquares(selectingPos, boardmap).some(e =>
-                                String(e) === String(sqPos))) {
+                        if (piece.coveringSquares(selectingPos, boardmap)
+                                .some(e => String(e) === String(sqPos))) {
                             // 行先を選択したとき
-                            // 駒の移動
-                            boardmap.set(`${1-index},` + String(sqPos),
-                                boardmap.get(`${index},` + String(selectingPos)));
-                            boardmap.delete(`${index},` + String(selectingPos));
-                            // 敵駒があったら削除
-                            boardmap.delete(`${index},` + String(sqPos));
                             if (!muted) snd('move');
                             // サーバへ移動データを渡す
-                            socket.emit('move piece', [...boardmap]);
-                            // ターン交代
-                            opponentTurn();
+                            socket.emit('move piece', index,
+                                String(selectingPos),
+                                String(sqPos));
                         }
                     }
                     // 盤面描画更新
@@ -197,8 +178,19 @@ socket.on('game',
             }
         }
     } else {
-        opponentTurn();
+        gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
+
+        for (const canvas of canvass) {
+            canvas.onclick = () => {};
+        }
     }
+    // チェック判定
+    /*
+    if (game.isChecked('W', boardmap) || game.isChecked('B', boardmap)) {
+        gameMessage.innerHTML = (isEN ? "Check!" : 'チェック！') + '<br>'
+            + gameMessage.innerText;
+    }
+    */
 });
 
 // 観戦者の処理
@@ -222,7 +214,7 @@ socket.on('watch',
                 = `↑ ${second}\n↓ ${first}`;
         }
         // 盤面描画
-        if (!doneInitCanvas) { await initCanvas() };
+        if (!doneInitCanvas) await initCanvas();
         draw.board(boardmap, 'W');
         //draw.takenPieces(takenPieces, 0);
         const curPlayer: string = turn === 0 ? first : second;

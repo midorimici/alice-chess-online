@@ -194,9 +194,15 @@ io.on('connection', (socket: customSocket) => {
              * 駒を動かしたときのサーバ側の処理
              * @param boardmap 盤面データ
              */
-            (boardmap: [string, string][]) => {
+            (boardnum: 0 | 1, from: string, to: string) => {
         const roomId = socket.info.roomId;
-        const newBoard = new Map(boardmap);
+        const newBoard = board[curTurn];
+        // 駒の移動
+        newBoard.set(`${1-boardnum},${to}`,
+            newBoard.get(`${boardnum},${from}`));
+        newBoard.delete(`${boardnum},${from}`);
+        // 敵駒があったら削除
+        newBoard.delete(`${boardnum},${to}`);
         // 相手の駒を取ったとき
         /*
         if (board.has(String(dest)) && board.get(String(dest)).turn !== turn) {
@@ -219,10 +225,10 @@ io.on('connection', (socket: customSocket) => {
         // 盤面データをクライアントへ
         io.to(roomId).emit('watch',
             [...board[0]], ...players.map(e => e.name), curTurn, takenPieces);
-        io.to(players[curTurn].id).emit('game',
-            [...board[curTurn]],
-                curTurn === 0 ? 'W' : 'B',
-                true, ...players.map(e => e.name), takenPieces);
+        io.to(players[0].id).emit('game',
+            [...board[0]], 'W', true, ...players.map(e => e.name), takenPieces);
+        io.to(players[1].id).emit('game',
+            [...board[1]], 'B', true, ...players.map(e => e.name), takenPieces);
         // 勝者を通知する
         /*
         if (winner === 0 || winner === 1) {

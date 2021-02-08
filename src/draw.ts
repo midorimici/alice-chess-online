@@ -1,5 +1,5 @@
-import config, { Vec } from './config';
-import { Piece } from './piece';
+import config, { Vec } from '../config';
+import { Piece } from '../svr/piece';
 
 export default class Draw {
     private readonly canvass: HTMLCanvasElement[];
@@ -180,17 +180,12 @@ export default class Draw {
             boardmap: Map<string, string>) {
         const ctx = this.ctxs[piece.side];
         for (const dest of piece.coveringSquares(pos, boardmap)) {
-            // 自分の駒の位置を除外
-            if (!(boardmap.has(`${piece.side},` + String(dest))
-                    && boardmap.get(`${piece.side},` + String(dest))[0]
-                        === piece.color)) {
-                const coord = new Vec(dest).mul(this.squareSize)
-                    .add(this.margin + this.squareSize/2).val();
-                ctx.beginPath();
-                ctx.arc(...coord, this.squareSize/4, 0, 2*Math.PI);
-                ctx.fillStyle = config.safe;
-                ctx.fill();
-            }
+            const coord = new Vec(dest).mul(this.squareSize)
+                .add(this.margin + this.squareSize/2).val();
+            ctx.beginPath();
+            ctx.arc(...coord, this.squareSize/4, 0, 2*Math.PI);
+            ctx.fillStyle = config.safe;
+            ctx.fill();
         }
     }
 
