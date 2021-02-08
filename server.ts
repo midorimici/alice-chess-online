@@ -88,8 +88,7 @@ const winReq = (taken: [{'R': number, 'B': number},
 
 // 盤面。{'0,0,0': 'WN'} のフォーマット
 /** 先手から見た盤面, 後手から見た盤面 */
-let board: [Map<string, string>, Map<string, string>] = [initBoard(), new Map()];
-board[1] = rotateBoard(1);
+let board: [Map<string, string>, Map<string, string>];
 /** 先手, 後手の名前と socket id */
 let players: [{name: string, id: string}, {name: string, id: string}];
 /** 現在のターン */
@@ -132,6 +131,10 @@ io.on('connection', (socket: customSocket) => {
                             id: room.player2.id
                         }
                     ];
+                    // 盤面生成
+                    board = [initBoard(), new Map()];
+                    board[1] = rotateBoard(1);
+                    // クライアントへ送信
                     io.to(info.roomId).emit('watch',
                         [...board[0]], ...players.map(e => e.name), curTurn, takenPieces);
                     io.to(room.player1.id).emit('game',
