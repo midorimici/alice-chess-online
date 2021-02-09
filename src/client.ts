@@ -228,6 +228,12 @@ socket.on('watch',
         ? `It's ${curPlayer}'s turn.`
         : `${curPlayer} さんの番です。`;
         if (!muted) snd('move');
+        // チェック表示
+        if (checked) {
+            gameMessage.innerHTML = (isEN ? "Check!" : 'チェック！') + '<br>'
+                + gameMessage.innerText;
+            if (!muted) snd('check');
+        }
     }
 });
 
