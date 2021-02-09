@@ -1,16 +1,16 @@
-import { Vec } from './config';
+import config, { Vec } from '../config';
 
 export default class Mouse {
     private squareSize: number;
     private margin: number;
 
     constructor(canvas: HTMLCanvasElement) {
-        this.squareSize = canvas.width*3/20;
-        this.margin = canvas.width/20;
+        this.squareSize = canvas.width*config.squareSize;
+        this.margin = canvas.width*config.margin;
     }
 
     /**
-     * ウィンドウ座標を取得する
+     * キャンバス座標を取得する
      * @param e マウスイベント
      */
     getWindowPos(e: MouseEvent): [number, number] {

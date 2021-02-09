@@ -22,7 +22,7 @@ const clientConfig = {
 
 const serverConfig = {
     mode: 'development',
-    entry: './server.ts',
+    entry: './svr/server.ts',
     target: 'node',
     node: {
         __dirname: false,

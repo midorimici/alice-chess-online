@@ -1,6 +1,5 @@
 #game-container {
     display: none;
-    width: 90%;
     height: 90%;
 }
 
@@ -17,19 +16,24 @@
     }
 }
 
+#user-names {
+    font-size: 150%;
+}
+
 #game-message {
     font-size: larger;
     width: 12rem;
     flex-shrink: 0;
 }
 
-#canvas {
-    margin: 0 2rem;
-    flex-shrink: 0;
+.canvas {
+    margin: 0 1rem;
+    height: max-content;
 }
 
 #chat {
     flex-grow: 3;
+    display: none;
 }
 
 #chat-icon {
