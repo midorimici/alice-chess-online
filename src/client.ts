@@ -161,7 +161,7 @@ socket.on('game',
                         const pieceClass = abbrPieceDict[
                             boardmap.get(`${index},` + String(selectingPos))[1] as pieceNames];
                         const piece = new pieceClass(color, index as 0 | 1);
-                        if (piece.coveringSquares(selectingPos, boardmap)
+                        if (piece.validMoves(selectingPos, boardmap)
                                 .some(e => String(e) === String(sqPos))) {
                             // 行先を選択したとき
                             if (!muted) snd('move');

@@ -1,4 +1,5 @@
 import { Vec } from '../config';
+import { isChecked } from './game';
 
 export abstract class Piece {
     readonly color: 'W' | 'B';
@@ -72,7 +73,31 @@ export abstract class Piece {
      * @param pos 駒の現在位置
      * @param board 盤面
      */
-    abstract coveringSquares(pos: [number, number], board: Map<string, string>): [number, number][];
+    abstract coveringSquares(
+        pos: [number, number], board: Map<string, string>): [number, number][];
+
+    /**
+     * チェック回避のための制限も含めた駒が動ける位置リストを返す
+     * @param pos 駒の現在位置
+     * @param board 盤面
+     */
+    validMoves(pos: [number, number], board: Map<string, string>): [number, number][] {
+        let result: [number, number][] = [];
+        for (const dest of this.coveringSquares(pos, board)) {
+            // 盤面の複製
+            const tmpBoard = new Map(board);
+            // 盤面の更新
+            tmpBoard.set(`${1-this.side},` + String(dest),
+                tmpBoard.get(`${this.side},` + String(pos)));
+            tmpBoard.delete(`${this.side},` + String(pos));
+            tmpBoard.delete(`${this.side},` + String(dest));
+            // チェックにならないなら結果に追加
+            if (!isChecked(this.color, tmpBoard)) {
+                result.push(dest);
+            }
+        }
+        return result;
+    }
 }
 
 export class Knight extends Piece {

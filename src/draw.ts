@@ -179,7 +179,7 @@ export default class Draw {
     dest(piece: Piece, pos: [number, number],
             boardmap: Map<string, string>) {
         const ctx = this.ctxs[piece.side];
-        for (const dest of piece.coveringSquares(pos, boardmap)) {
+        for (const dest of piece.validMoves(pos, boardmap)) {
             const coord = new Vec(dest).mul(this.squareSize)
                 .add(this.margin + this.squareSize/2).val();
             ctx.beginPath();
