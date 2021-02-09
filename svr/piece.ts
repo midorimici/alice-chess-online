@@ -1,4 +1,4 @@
-import { Vec } from '../config';
+import config, { Vec } from '../config';
 import { isChecked } from './game';
 
 export abstract class Piece {
@@ -32,8 +32,8 @@ export abstract class Piece {
     protected legal(pos: [number, number], board: Map<string, string>): boolean {
         // 盤面内に収まる && 向こう側の盤面の対応する位置に駒がない && 行先に自分の駒がない
         return this.inBoard(pos)
-            && board.get(`${1-this.side},${pos[0]},${pos[1]}`) === undefined
-            && !(board.get(`${this.side},${pos[0]},${pos[1]}`)?.[0] === this.color);
+            && board.get(`${1-this.side},` + String(pos)) === undefined
+            && !(board.get(`${this.side},` + String(pos))?.[0] === this.color);
     }
 
     /**
@@ -160,11 +160,11 @@ export class Pawn extends Piece {
         let answers: [number, number][] = [];
         // 駒を取る動き
         var target = new Vec(pos).add([1, -1]).val();
-        if (board.has(`${this.side},` + String(target))) {
+        if (board.get(`${this.side},` + String(target))?.[0] === config.opponent[this.color]) {
             answers.push(target);
         }
         var target = new Vec(pos).add([-1, -1]).val();
-        if (board.has(`${this.side},` + String(target))) {
+        if (board.get(`${this.side},` + String(target))?.[0] === config.opponent[this.color]) {
             answers.push(target);
         }
         // 一歩先

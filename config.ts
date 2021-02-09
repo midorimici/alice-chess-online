@@ -8,6 +8,7 @@ export default {
     safe: 'rgb(121, 202, 68)',
     squareSize: 9/80,
     margin: 1/20,
+    opponent: {'W': 'B', 'B': 'W'} as {'W': 'B', 'B': 'W'}
 };
 
 /**

@@ -1,5 +1,6 @@
 // ゲーム進行に関わる処理
 
+import config from '../config';
 import { Piece, abbrPieceDict, pieceNames } from './piece';
 
 /**
@@ -23,7 +24,7 @@ const isChecked = (color: 'W' | 'B', board: Map<string, string>): boolean => {
             const enemyPos = pos.split(',').map(e => +e);
             enemies.set([enemyPos[1], enemyPos[2]],
                 new abbrPieceDict[piece[1] as pieceNames](
-                    color === 'W' ? 'B' : 'W', +pos[0] as 0 | 1))
+                    config.opponent[color], +pos[0] as 0 | 1))
         }
     }
     // 同盤面上の敵駒でキングを攻撃しているものがあるか
