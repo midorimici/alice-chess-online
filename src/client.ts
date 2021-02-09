@@ -189,6 +189,7 @@ socket.on('game',
     if (checked) {
         gameMessage.innerHTML = (isEN ? "Check!" : 'チェック！') + '<br>'
             + gameMessage.innerText;
+        if (!muted) snd('check');
     }
 });
 
