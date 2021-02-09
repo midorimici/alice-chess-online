@@ -1,0 +1,14 @@
+{
+  "name": "alice-chess-online",
+  "version": "1.0.0",
+  "description": "Socket.IO による Alice Chess",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^3.0.4"
+  },
+  "scripts": {
+    "start": "node main.js"
+  },
+  "author": "mici",
+  "license": "ISC"
+}
