@@ -2,6 +2,8 @@ import * as express from 'express';
 import * as http from 'http';
 import * as socketio from 'socket.io';
 
+import * as game from './game';
+
 const app: express.Express = express();
 app.use(express.static(process.cwd() + '/public'));
 const server: http.Server = http.createServer(app);
@@ -136,11 +138,11 @@ io.on('connection', (socket: customSocket) => {
                     board[1] = rotateBoard(1);
                     // クライアントへ送信
                     io.to(info.roomId).emit('watch',
-                        [...board[0]], ...players.map(e => e.name), curTurn, takenPieces);
+                        [...board[0]], ...players.map(e => e.name), curTurn, false, takenPieces);
                     io.to(room.player1.id).emit('game',
-                        [...board[0]], 'W', true, ...players.map(e => e.name), takenPieces);
+                        [...board[0]], 'W', true, ...players.map(e => e.name), false, takenPieces);
                     io.to(room.player2.id).emit('game',
-                        [...board[1]], 'B', false, ...players.map(e => e.name), takenPieces);
+                        [...board[1]], 'B', false, ...players.map(e => e.name), false, takenPieces);
                 } else {
                     // 対戦者がすでに2人いる
                     socket.emit('room full', info.roomId);
@@ -175,7 +177,7 @@ io.on('connection', (socket: customSocket) => {
                 } else {
                     // 対戦者がすでに2人いて対戦中
                     socket.emit('watch',
-                        [...board[0]], ...players.map(e => e.name), curTurn, takenPieces);
+                        [...board[0]], ...players.map(e => e.name), curTurn, false, takenPieces);
                     if (winner === 0 || winner === 1) {
                         socket.emit('tell winner',
                             players.map(e => e.name)[winner], [...board[0]],
@@ -222,13 +224,15 @@ io.on('connection', (socket: customSocket) => {
         } else if (winReq(takenPieces, Array.from(board.keys()), (turn+1)%2 as 0 | 1, false)) {
             winner = (turn+1)%2 as 0 | 1;
         }*/
+        // チェック判定
+        const checked = game.isChecked('W', board[1]) || game.isChecked('B', board[0]);
         // 盤面データをクライアントへ
         io.to(roomId).emit('watch',
-            [...board[0]], ...players.map(e => e.name), curTurn, takenPieces);
+            [...board[0]], ...players.map(e => e.name), curTurn, checked, takenPieces);
         io.to(players[0].id).emit('game',
-            [...board[0]], 'W', true, ...players.map(e => e.name), takenPieces);
+            [...board[0]], 'W', curTurn === 0, ...players.map(e => e.name), checked, takenPieces);
         io.to(players[1].id).emit('game',
-            [...board[1]], 'B', true, ...players.map(e => e.name), takenPieces);
+            [...board[1]], 'B', curTurn === 1, ...players.map(e => e.name), checked, takenPieces);
         // 勝者を通知する
         /*
         if (winner === 0 || winner === 1) {

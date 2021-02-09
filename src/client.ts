@@ -116,11 +116,12 @@ socket.on('game',
          * @param myturn 現在自分のターンか
          * @param first 先手のプレイヤー名
          * @param second 後手のプレイヤー名
+         * @param checked どちらかがチェックされているか
          * @param takenPieces それぞれが取った駒の色と数
          */
         async (board: [string, string][],
         color: 'W' | 'B', myturn: boolean,
-        first: string, second: string,
+        first: string, second: string, checked: boolean,
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
     const boardmap: Map<string, string> = new Map(board);
     /** 選択中の駒の位置 */
@@ -184,13 +185,11 @@ socket.on('game',
             canvas.onclick = () => {};
         }
     }
-    // チェック判定
-    /*
-    if (game.isChecked('W', boardmap) || game.isChecked('B', boardmap)) {
+    // チェック表示
+    if (checked) {
         gameMessage.innerHTML = (isEN ? "Check!" : 'チェック！') + '<br>'
             + gameMessage.innerText;
     }
-    */
 });
 
 // 観戦者の処理
@@ -201,10 +200,11 @@ socket.on('watch',
          * @param first 先手のプレイヤー名
          * @param second 後手のプレイヤー名
          * @param turn 現在のターン
+         * @param checked どちらかがチェックされているか
          * @param takenPieces それぞれが取った駒の色と数
          */
         async (board: [string, string][],
-        first: string, second: string, turn: 0 | 1,
+        first: string, second: string, turn: 0 | 1, checked: boolean,
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
     if (myrole === 'watch') {
         const boardmap: Map<string, string> = new Map(board);
@@ -212,6 +212,11 @@ socket.on('watch',
         if (document.getElementById('user-names').innerText === '') {
             document.getElementById('user-names').innerText
                 = `↑ ${second}\n↓ ${first}`;
+        }
+        // チェック表示
+        if (checked) {
+            gameMessage.innerHTML = (isEN ? "Check!" : 'チェック！') + '<br>'
+                + gameMessage.innerText;
         }
         // 盤面描画
         if (!doneInitCanvas) await initCanvas();
