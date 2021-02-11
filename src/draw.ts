@@ -58,13 +58,20 @@ export default class Draw {
      * @param pos 描画する位置。'盤面,x,y'
      * @param piece 描画する駒の名前。'WB'など
      */
-    private drawImg(pos: string, piece: string) {
+    private drawImg(posStr: string, piece: string) {
         const squareSize = this.squareSize;
-        const pos_ = pos.split(',').map(e => +e);
+        const pos = posStr.split(',').map(e => +e);
+        const anotherCtx = this.ctxs[1-pos[0]];
         const img = this.imgs.get(piece);
-        this.ctxs[pos_[0]].drawImage(img, 0, 0, img.width, img.height,
-            this.margin + squareSize*pos_[1], this.margin + squareSize*pos_[2],
+        this.ctxs[pos[0]].drawImage(img, 0, 0, img.width, img.height,
+            this.margin + squareSize*pos[1], this.margin + squareSize*pos[2],
             squareSize, squareSize);
+        anotherCtx.save();
+        anotherCtx.globalAlpha = 0.2;
+        anotherCtx.drawImage(img, 0, 0, img.width, img.height,
+            this.margin + squareSize*pos[1], this.margin + squareSize*pos[2],
+            squareSize, squareSize);
+        anotherCtx.restore();
     }
 
     /** アイボリーで画面全体を塗りつぶす */
