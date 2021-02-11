@@ -119,11 +119,11 @@ socket.on('game',
          * @param checked どちらかがチェックされているか
          * @param takenPieces それぞれが取った駒の色と数
          */
-        async (board: [string, string][],
+        async (boards: [string, string][],
         color: 'W' | 'B', myturn: boolean,
         first: string, second: string, checked: boolean,
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
-    const boardmap: Map<string, string> = new Map(board);
+    const boardsMap: Map<string, string> = new Map(boards);
     /** 選択中の駒の位置 */
     let selectingPos: [number, number];
     // 対戦者名表示
@@ -134,7 +134,7 @@ socket.on('game',
     }
     // 盤面描画
     if (!doneInitCanvas) await initCanvas();
-    draw.board(boardmap, color);
+    draw.board(boardsMap, color);
     //draw.takenPieces(takenPieces, turn);
     // 手番の表示
     // マウスコールバック
@@ -146,22 +146,22 @@ socket.on('game',
             mouse = new Mouse(canvas);
             canvas.onclick = (e: MouseEvent) => {
                 const sqPos = mouse.getCoord(e);
-                if (boardmap.get(`${index},` + String(sqPos))?.[0] === color) {
+                if (boardsMap.get(`${index},` + String(sqPos))?.[0] === color) {
                     // 自分の駒を選択したとき
                     selectingPos = sqPos;
                     const pieceClass = abbrPieceDict[
-                        boardmap.get(`${index},` + String(sqPos))[1] as pieceNames];
+                        boardsMap.get(`${index},` + String(sqPos))[1] as pieceNames];
                     const piece = new pieceClass(color, index as 0 | 1);
                     // 行先を描画
-                    draw.board(boardmap, color);
-                    draw.dest(piece, selectingPos, boardmap);
+                    draw.board(boardsMap, color);
+                    draw.dest(piece, selectingPos, boardsMap);
                     //draw.takenPieces(takenPieces, turn);
                 } else {
-                    if (boardmap.has(`${index},` + String(selectingPos))) {
+                    if (boardsMap.has(`${index},` + String(selectingPos))) {
                         const pieceClass = abbrPieceDict[
-                            boardmap.get(`${index},` + String(selectingPos))[1] as pieceNames];
+                            boardsMap.get(`${index},` + String(selectingPos))[1] as pieceNames];
                         const piece = new pieceClass(color, index as 0 | 1);
-                        if (piece.validMoves(selectingPos, boardmap)
+                        if (piece.validMoves(selectingPos, boardsMap)
                                 .some(e => String(e) === String(sqPos))) {
                             // 行先を選択したとき
                             if (!muted) snd('move');
@@ -171,7 +171,7 @@ socket.on('game',
                         }
                     }
                     // 盤面描画更新
-                    draw.board(boardmap, color);
+                    draw.board(boardsMap, color);
                     //draw.takenPieces(takenPieces, turn);
                     selectingPos = null;
                 }
@@ -203,11 +203,11 @@ socket.on('watch',
          * @param checked どちらかがチェックされているか
          * @param takenPieces それぞれが取った駒の色と数
          */
-        async (board: [string, string][],
+        async (boards: [string, string][],
         first: string, second: string, turn: 0 | 1, checked: boolean,
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
     if (myrole === 'watch') {
-        const boardmap: Map<string, string> = new Map(board);
+        const boardsMap: Map<string, string> = new Map(boards);
         // 対戦者名表示
         if (document.getElementById('user-names').innerText === '') {
             document.getElementById('user-names').innerText
@@ -220,7 +220,7 @@ socket.on('watch',
         }
         // 盤面描画
         if (!doneInitCanvas) await initCanvas();
-        draw.board(boardmap, 'W');
+        draw.board(boardsMap, 'W');
         //draw.takenPieces(takenPieces, 0);
         const curPlayer: string = turn === 0 ? first : second;
         gameMessage.innerText = isEN

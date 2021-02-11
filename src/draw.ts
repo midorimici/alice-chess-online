@@ -142,7 +142,7 @@ export default class Draw {
      * @param boardmap 盤面データ
      * @param color 駒色。先手後手どちら目線か
      */
-    board(boardmap: Map<string, string>, color: 'W' | 'B') {
+    board(boardsMap: Map<string, string>, color: 'W' | 'B') {
         this.clearCanvas();
         const ctxs = this.ctxs;
 
@@ -165,7 +165,7 @@ export default class Draw {
         }
 
         // 駒
-        for (let [pos, piece] of boardmap.entries()) {
+        for (let [pos, piece] of boardsMap.entries()) {
             this.drawImg(pos, piece);
         }
     }
@@ -177,9 +177,9 @@ export default class Draw {
      * @param boardmap 盤面データ
      */
     dest(piece: Piece, pos: [number, number],
-            boardmap: Map<string, string>) {
+            boardsMap: Map<string, string>) {
         const ctx = this.ctxs[piece.side];
-        for (const dest of piece.validMoves(pos, boardmap)) {
+        for (const dest of piece.validMoves(pos, boardsMap)) {
             const coord = new Vec(dest).mul(this.squareSize)
                 .add(this.margin + this.squareSize/2).val();
             ctx.beginPath();
