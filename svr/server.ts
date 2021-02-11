@@ -194,17 +194,15 @@ io.on('connection', (socket: customSocket) => {
     socket.on('move piece',
             /**
              * 駒を動かしたときのサーバ側の処理
-             * @param boardmap 盤面データ
+             * @param boardId 駒の移動前の盤面がどちらか
+             * @param from 駒の移動前の位置
+             * @param to 駒の移動後の位置
              */
-            (boardnum: 0 | 1, from: string, to: string) => {
+            (boardId: 0 | 1, from: [number, number], to: [number, number]) => {
         const roomId = socket.info.roomId;
         const newBoard = board[curTurn];
         // 駒の移動
-        newBoard.set(`${1-boardnum},${to}`,
-            newBoard.get(`${boardnum},${from}`));
-        newBoard.delete(`${boardnum},${from}`);
-        // 敵駒があったら削除
-        newBoard.delete(`${boardnum},${to}`);
+        game.renewBoard(boardId, from, to, newBoard);
         // 相手の駒を取ったとき
         /*
         if (board.has(String(dest)) && board.get(String(dest)).turn !== turn) {
@@ -226,6 +224,7 @@ io.on('connection', (socket: customSocket) => {
         }*/
         // チェック判定
         const checked = game.isChecked('W', board[1]) || game.isChecked('B', board[0]);
+        console.log(game.cannotMove('W', board[1]) || game.cannotMove('B', board[0]))
         // 盤面データをクライアントへ
         io.to(roomId).emit('watch',
             [...board[0]], ...players.map(e => e.name), curTurn, checked, takenPieces);

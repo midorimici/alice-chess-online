@@ -167,8 +167,7 @@ socket.on('game',
                             if (!muted) snd('move');
                             // サーバへ移動データを渡す
                             socket.emit('move piece', index,
-                                String(selectingPos),
-                                String(sqPos));
+                                selectingPos, sqPos);
                         }
                     }
                     // 盤面描画更新
