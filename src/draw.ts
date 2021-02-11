@@ -49,7 +49,7 @@ export default class Draw {
         return new Promise(resolve => {
             const img = new Image();
             img.onload = () => resolve(img);
-            img.src = `./static/img/${color}${name}.png`;
+            img.src = `../static/img/${color}${name}.png`;
         });
     }
 
@@ -57,8 +57,9 @@ export default class Draw {
      * 画像を描画
      * @param pos 描画する位置。'盤面,x,y'
      * @param piece 描画する駒の名前。'WB'など
+     * @param showOppositePieces 反対側の盤面の駒を表示するか
      */
-    private drawImg(posStr: string, piece: string) {
+    private drawImg(posStr: string, piece: string, showOppositePieces: boolean) {
         const squareSize = this.squareSize;
         const pos = posStr.split(',').map(e => +e);
         const anotherCtx = this.ctxs[1-pos[0]];
@@ -66,12 +67,14 @@ export default class Draw {
         this.ctxs[pos[0]].drawImage(img, 0, 0, img.width, img.height,
             this.margin + squareSize*pos[1], this.margin + squareSize*pos[2],
             squareSize, squareSize);
-        anotherCtx.save();
-        anotherCtx.globalAlpha = 0.2;
-        anotherCtx.drawImage(img, 0, 0, img.width, img.height,
-            this.margin + squareSize*pos[1], this.margin + squareSize*pos[2],
-            squareSize, squareSize);
-        anotherCtx.restore();
+        if (showOppositePieces) {
+            anotherCtx.save();
+            anotherCtx.globalAlpha = 0.2;
+            anotherCtx.drawImage(img, 0, 0, img.width, img.height,
+                this.margin + squareSize*pos[1], this.margin + squareSize*pos[2],
+                squareSize, squareSize);
+            anotherCtx.restore();
+        }
     }
 
     /** アイボリーで画面全体を塗りつぶす */
@@ -148,8 +151,9 @@ export default class Draw {
     /** ゲームボードと盤面上の駒を描く
      * @param boardmap 盤面データ
      * @param color 駒色。先手後手どちら目線か
+     * @param showOppositePieces 反対側の盤面の駒を表示するか
      */
-    board(boardsMap: Map<string, string>, color: 'W' | 'B') {
+    board(boardsMap: Map<string, string>, color: 'W' | 'B', showOppositePieces: boolean) {
         this.clearCanvas();
         const ctxs = this.ctxs;
 
@@ -173,7 +177,7 @@ export default class Draw {
 
         // 駒
         for (let [pos, piece] of boardsMap.entries()) {
-            this.drawImg(pos, piece);
+            this.drawImg(pos, piece, showOppositePieces);
         }
     }
 
