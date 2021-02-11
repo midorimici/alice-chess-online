@@ -94,7 +94,7 @@ let board: [Map<string, string>, Map<string, string>];
 /** 先手, 後手の名前と socket id */
 let players: [{name: string, id: string}, {name: string, id: string}];
 /** 現在のターン */
-let curTurn: 0 | 1 = 0;
+let curTurn: 0 | 1;
 /** それぞれが取った駒の色と数 */
 let takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]
     = [{'R': 0, 'B': 0}, {'R': 0, 'B': 0}];
@@ -136,6 +136,7 @@ io.on('connection', (socket: customSocket) => {
                     // 盤面生成
                     board = [initBoard(), new Map()];
                     board[1] = rotateBoard(1);
+                    curTurn = 0;
                     // クライアントへ送信
                     io.to(info.roomId).emit('watch',
                         [...board[0]], ...players.map(e => e.name), curTurn, false, takenPieces);

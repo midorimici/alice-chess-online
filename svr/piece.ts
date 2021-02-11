@@ -87,7 +87,12 @@ export abstract class Piece {
             // 盤面の複製
             const tmpBoards = new Map(boards);
             // 盤面の更新
-            game.renewBoard(this.side, pos, dest, tmpBoards);
+            if (tmpBoards.get(`${this.side},` + String(pos))[1] === 'K') {
+                // 動かす駒がキングのとき
+                tmpBoards.set(`${this.side},` + String(dest),
+                    tmpBoards.get(`${this.side},` + String(pos)));
+                tmpBoards.delete(`${this.side},` + String(pos));
+            } else game.renewBoard(this.side, pos, dest, tmpBoards);
             // チェックにならないなら結果に追加
             if (!game.isChecked(this.color, tmpBoards)) {
                 result.push(dest);

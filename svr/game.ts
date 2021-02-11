@@ -48,7 +48,7 @@ const cannotMove = (color: 'W' | 'B', boards: Map<string, string>): boolean => {
             const pos = posStr.split(',').map(e => +e);
             const piece = new abbrPieceDict[pieceName[1] as pieceNames](
                 color, pos[0] as 0 | 1);
-            for (const dest of piece.coveringSquares([pos[1], pos[2]], boards)) {
+            for (const dest of piece.validMoves([pos[1], pos[2]], boards)) {
                 // 駒の各移動先について、移動後にチェック回避できるなら false
                 const tmpBoards = new Map(boards);
                 renewBoard(pos[0] as 0 | 1, [pos[1], pos[2]], dest, tmpBoards);
