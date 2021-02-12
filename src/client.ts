@@ -115,7 +115,7 @@ const snd = (file: string) => {
 socket.on('game', 
         /**
          * 対戦者側のゲーム処理
-         * @param board 盤面データ
+         * @param boards 盤面データ
          * @param color 自分の駒色
          * @param myturn 現在自分のターンか
          * @param first 先手のプレイヤー名
@@ -201,7 +201,7 @@ socket.on('game',
 socket.on('watch',
         /**
          * 観戦者側のゲーム処理
-         * @param board 盤面データ
+         * @param boards 盤面データ
          * @param first 先手のプレイヤー名
          * @param second 後手のプレイヤー名
          * @param turn 現在のターン
@@ -226,6 +226,7 @@ socket.on('watch',
         // 盤面描画
         if (!doneInitCanvas) await initCanvas();
         draw.board(boardsMap, 'W', showOppositePieces);
+        showHideButton.onclick = () => toggleShowHide(boardsMap, 'W');
         //draw.takenPieces(takenPieces, 0);
         const curPlayer: string = turn === 0 ? first : second;
         gameMessage.innerText = isEN
