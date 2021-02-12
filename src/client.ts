@@ -244,10 +244,16 @@ socket.on('watch',
 // 勝者が決まったとき
 socket.on('tell winner',
         /** 勝者が決まったときの処理
-         * @param winner 勝者のプレイヤー名
+         * @param winner 勝者のプレイヤー名。undefined なら引き分け
         */
-        (winner: string) => {
-    gameMessage.innerText = isEN ? `${winner} won!` : `${winner} の勝ち！`;
+        (winner: string | undefined) => {
+    if (winner === undefined) {
+        gameMessage.innerText = (isEN ? "Draw!" : '引き分け！');
+    } else {
+        console.log(isEN);
+        gameMessage.innerHTML = (isEN ? "Checkmate!" : 'チェックメイト！') + '<br>'
+            + (isEN ? `${winner} won!` : `${winner} の勝ち！`);
+    }
     if (!muted) snd('win');
 });
 

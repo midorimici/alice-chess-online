@@ -66,28 +66,6 @@ const rotateBoard = (to: 0 | 1): Map<string, string> => {
     return res;
 }
 
-/**
- * side が勝利条件を満たすか
- * @param taken それぞれが取った駒の色と数
- * @param posOnBoard 盤面上にある駒の位置リスト
- * @param side 先手か後手か
- * @param moved side が今駒を動かしたか
- */
-const winReq = (taken: [{'R': number, 'B': number},
-        {'R': number, 'B': number}],
-        posOnBoard: string[], side: 0 | 1, moved: boolean): boolean => {
-    if (moved) {
-        // 青を4つ取った
-        // or 青が盤面に出た
-        return (taken[side]['B'] === 4
-            || (posOnBoard.indexOf('0,-1') !== -1
-                || posOnBoard.indexOf('5,-1') !== -1));
-    } else {
-        // 赤を4つ取らせた
-        return taken[(side+1)%2]['R'] === 4;
-    }
-}
-
 // 盤面。{'0,0,0': 'WN'} のフォーマット
 /** 先手から見た盤面, 後手から見た盤面 */
 let boards: [Map<string, string>, Map<string, string>];
@@ -98,8 +76,8 @@ let curTurn: 0 | 1;
 /** それぞれが取った駒の色と数 */
 let takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]
     = [{'R': 0, 'B': 0}, {'R': 0, 'B': 0}];
-/** 勝者 0 - 先手, 1 - 後手 */
-let winner: 0 | 1;
+/** 勝者 0 - 先手, 1 - 後手, 2 - 引き分け */
+let winner: 0 | 1 | 2;
 
 io.on('connection', (socket: customSocket) => {
     socket.on('enter room', 
@@ -224,25 +202,32 @@ io.on('connection', (socket: customSocket) => {
             winner = (turn+1)%2 as 0 | 1;
         }*/
         // チェック判定
-        const checked = game.isChecked('W', boards[1]) || game.isChecked('B', boards[0]);
-        console.log(game.cannotMove('W', boards[1]) || game.cannotMove('B', boards[0]))
+        const colors: ['W', 'B'] = ['W', 'B'];
+        const checked = game.isChecked(colors[curTurn], boards[1-curTurn]);
+        const freezed = game.cannotMove(colors[curTurn], boards[1-curTurn]);
+        // 勝敗判定
+        if (freezed) {
+            if (checked) {
+                winner = 1-curTurn as 0 | 1;
+            } else {
+                winner = 2;
+            }
+        }
         // 盤面データをクライアントへ
         io.to(roomId).emit('watch',
-            [...boards[0]], ...players.map(e => e.name), curTurn, checked, takenPieces);
+            [...boards[0]], ...players.map(e => e.name), curTurn,
+            checked, takenPieces);
         io.to(players[0].id).emit('game',
-            [...boards[0]], 'W', curTurn === 0, ...players.map(e => e.name), checked, takenPieces);
+            [...boards[0]], 'W', curTurn === 0, ...players.map(e => e.name),
+            checked, takenPieces);
         io.to(players[1].id).emit('game',
-            [...boards[1]], 'B', curTurn === 1, ...players.map(e => e.name), checked, takenPieces);
+            [...boards[1]], 'B', curTurn === 1, ...players.map(e => e.name),
+            checked, takenPieces);
         // 勝者を通知する
-        /*
-        if (winner === 0 || winner === 1) {
-            io.to(roomId).emit('tell winner to audience and first',
-                players.map(e => e.name)[winner], [...board[0]]
-                , ...players.map(e => e.name), takenPieces);
-            io.to(second.id).emit('tell winner to second',
-                players.map(e => e.name)[winner], [...board[1]]
-                , ...players.map(e => e.name), takenPieces);
-        }*/
+        if (winner !== undefined) {
+            io.to(roomId).emit('tell winner',
+                players.map(e => e.name)[winner]);
+        }
     });
 
     socket.on('chat message', (msg: string) => {
