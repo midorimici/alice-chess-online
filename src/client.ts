@@ -251,7 +251,6 @@ socket.on('tell winner',
     if (winner === undefined) {
         gameMessage.innerText = (isEN ? "Draw!" : '引き分け！');
     } else {
-        console.log(isEN);
         gameMessage.innerHTML = (isEN ? "Checkmate!" : 'チェックメイト！') + '<br>'
             + (isEN ? `${winner} won!` : `${winner} の勝ち！`);
     }

@@ -8,7 +8,21 @@ export default {
     safe: 'rgb(121, 202, 68)',
     squareSize: 9/80,
     margin: 1/20,
-    opponent: {'W': 'B', 'B': 'W'} as {'W': 'B', 'B': 'W'}
+    opponent: {'W': 'B', 'B': 'W'} as {'W': 'B', 'B': 'W'},
+    rotateBoard:
+    /**
+    * 盤面を変換する
+    * @param boards 変換元の盤面
+    */
+   (boards: Map<string, string>): Map<string, string> => {
+        let orig = boards;
+        let res = new Map();
+        for (const [pos, piece] of orig.entries()) {
+            let [b, x, y] = pos.split(',').map(e => +e);
+            res.set(`${b},${7-x},${7-y}`, piece);
+        }
+        return res;
+    }
 };
 
 /**

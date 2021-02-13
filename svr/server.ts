@@ -2,6 +2,7 @@ import * as express from 'express';
 import * as http from 'http';
 import * as socketio from 'socket.io';
 
+import config from '../config';
 import * as game from './game';
 
 const app: express.Express = express();
@@ -52,20 +53,6 @@ const initBoard = (): Map<string, string> => {
     return m;
 }
 
-/**
- * 盤面を変換する
- * @param to 変換先。 0 -> 先手, 1 -> 後手
- */
-const rotateBoard = (to: 0 | 1): Map<string, string> => {
-    let orig = boards[1-to];
-    let res = new Map();
-    for (const [pos, piece] of orig.entries()) {
-        let [b, x, y] = pos.split(',').map(e => +e);
-        res.set(`${b},${7-x},${7-y}`, piece);
-    }
-    return res;
-}
-
 // 盤面。{'0,0,0': 'WN'} のフォーマット
 /** 先手から見た盤面, 後手から見た盤面 */
 let boards: [Map<string, string>, Map<string, string>];
@@ -113,7 +100,7 @@ io.on('connection', (socket: customSocket) => {
                     ];
                     // 盤面生成
                     boards = [initBoard(), new Map()];
-                    boards[1] = rotateBoard(1);
+                    boards[1] = config.rotateBoard(boards[0]);
                     curTurn = 0;
                     // クライアントへ送信
                     io.to(info.roomId).emit('watch',
@@ -191,7 +178,7 @@ io.on('connection', (socket: customSocket) => {
         // turn 目線のボードを更新する
         boards[curTurn] = newBoard;
         // 相手目線のボードを更新する
-        boards[1-curTurn] = rotateBoard(1-curTurn as 0 | 1);
+        boards[1-curTurn] = config.rotateBoard(newBoard);
         // ターン交代
         curTurn = 1-curTurn as 0 | 1;
         // 勝敗判定
@@ -204,7 +191,7 @@ io.on('connection', (socket: customSocket) => {
         // チェック判定
         const colors: ['W', 'B'] = ['W', 'B'];
         const checked = game.isChecked(colors[curTurn], boards[1-curTurn]);
-        const freezed = game.cannotMove(colors[curTurn], boards[1-curTurn]);
+        const freezed = game.cannotMove(colors[curTurn], boards[curTurn]);
         // 勝敗判定
         if (freezed) {
             if (checked) {

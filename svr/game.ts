@@ -40,7 +40,7 @@ const isChecked = (color: 'W' | 'B', boards: Map<string, string>): boolean => {
 /**
  * color 側が駒を動かせないとき true を返す
  * @param color 駒色
- * @param boards color の相手側から見た盤面
+ * @param boards color 側から見た盤面
  */
 const cannotMove = (color: 'W' | 'B', boards: Map<string, string>): boolean => {
     for (const [posStr, pieceName] of boards.entries()) {
@@ -52,7 +52,7 @@ const cannotMove = (color: 'W' | 'B', boards: Map<string, string>): boolean => {
                 // 駒の各移動先について、移動後にチェック回避できるなら false
                 const tmpBoards = new Map(boards);
                 renewBoard(pos[0] as 0 | 1, [pos[1], pos[2]], dest, tmpBoards);
-                if (!isChecked(color, tmpBoards)) return false;
+                if (!isChecked(color, config.rotateBoard(tmpBoards))) return false;
             }
         }
     }
