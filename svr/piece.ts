@@ -89,10 +89,15 @@ export abstract class Piece {
             // 盤面の更新
             if (tmpBoards.get(`${this.side},` + String(pos))[1] === 'K') {
                 // 動かす駒がキングのとき
-                tmpBoards.set(`${this.side},` + String(dest),
-                    tmpBoards.get(`${this.side},` + String(pos)));
-                tmpBoards.delete(`${this.side},` + String(pos));
-            } else game.renewBoard(this.side, pos, dest, tmpBoards);
+                // その盤面上で合法である（敵の効きに移動していない）
+                const tmpBoards2 = new Map(boards);
+                tmpBoards2.set(`${this.side},` + String(dest),
+                    tmpBoards2.get(`${this.side},` + String(pos)));
+                tmpBoards2.delete(`${this.side},` + String(pos));
+                if (game.isChecked(this.color, tmpBoards2)) continue;
+                // 向こうの盤面のその位置も敵の効きでない
+            }
+            game.renewBoard(this.side, pos, dest, tmpBoards);
             // チェックにならないなら結果に追加
             if (!game.isChecked(this.color, tmpBoards)) {
                 result.push(dest);
