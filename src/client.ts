@@ -121,12 +121,10 @@ socket.on('game',
          * @param first 先手のプレイヤー名
          * @param second 後手のプレイヤー名
          * @param checked どちらかがチェックされているか
-         * @param takenPieces それぞれが取った駒の色と数
          */
         async (boards: [string, string][],
         color: 'W' | 'B', myturn: boolean,
-        first: string, second: string, checked: boolean,
-        takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
+        first: string, second: string, checked: boolean) => {
     const boardsMap: Map<string, string> = new Map(boards);
     /** 選択中の駒の位置 */
     let originPos: [number, number];
@@ -142,7 +140,6 @@ socket.on('game',
     if (!doneInitCanvas) await initCanvas();
     draw.board(boardsMap, color, showOppositePieces);
     showHideButton.onclick = () => toggleShowHide(boardsMap, color);
-    //draw.takenPieces(takenPieces, turn);
     // 手番の表示
     // マウスコールバック
     if (myturn) {
@@ -163,7 +160,6 @@ socket.on('game',
                     // 行先を描画
                     draw.board(boardsMap, color, showOppositePieces);
                     draw.dest(piece, originPos, boardsMap);
-                    //draw.takenPieces(takenPieces, turn);
                     prom = false;
                 } else {
                     if (!prom && boardsMap.has(`${index},` + String(originPos))) {
@@ -206,7 +202,6 @@ socket.on('game',
                     } else {
                         originPos = null;
                     }
-                    //draw.takenPieces(takenPieces, turn);
                 }
             }
         }
@@ -234,11 +229,9 @@ socket.on('watch',
          * @param second 後手のプレイヤー名
          * @param turn 現在のターン
          * @param checked どちらかがチェックされているか
-         * @param takenPieces それぞれが取った駒の色と数
          */
         async (boards: [string, string][],
-        first: string, second: string, turn: 0 | 1, checked: boolean,
-        takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
+        first: string, second: string, turn: 0 | 1, checked: boolean) => {
     if (myrole === 'watch') {
         const boardsMap: Map<string, string> = new Map(boards);
         // 対戦者名表示
@@ -255,7 +248,6 @@ socket.on('watch',
         if (!doneInitCanvas) await initCanvas();
         draw.board(boardsMap, 'W', showOppositePieces);
         showHideButton.onclick = () => toggleShowHide(boardsMap, 'W');
-        //draw.takenPieces(takenPieces, 0);
         const curPlayer: string = turn === 0 ? first : second;
         gameMessage.innerText = isEN
         ? `It's ${curPlayer}'s turn.`

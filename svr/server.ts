@@ -61,9 +61,6 @@ let boards: [Map<string, string>, Map<string, string>];
 let players: [{name: string, id: string}, {name: string, id: string}];
 /** 現在のターン */
 let curTurn: 0 | 1;
-/** それぞれが取った駒の色と数 */
-let takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]
-    = [{'R': 0, 'B': 0}, {'R': 0, 'B': 0}];
 /** 勝者 0 - 先手, 1 - 後手, 2 - 引き分け */
 let winner: 0 | 1 | 2;
 
@@ -105,11 +102,11 @@ io.on('connection', (socket: customSocket) => {
                     curTurn = 0;
                     // クライアントへ送信
                     io.to(info.roomId).emit('watch',
-                        [...boards[0]], ...players.map(e => e.name), curTurn, false, takenPieces);
+                        [...boards[0]], ...players.map(e => e.name), curTurn, false);
                     io.to(room.player1.id).emit('game',
-                        [...boards[0]], 'W', true, ...players.map(e => e.name), false, takenPieces);
+                        [...boards[0]], 'W', true, ...players.map(e => e.name), false);
                     io.to(room.player2.id).emit('game',
-                        [...boards[1]], 'B', false, ...players.map(e => e.name), false, takenPieces);
+                        [...boards[1]], 'B', false, ...players.map(e => e.name), false);
                 } else {
                     // 対戦者がすでに2人いる
                     socket.emit('room full', info.roomId);
@@ -144,11 +141,10 @@ io.on('connection', (socket: customSocket) => {
                 } else {
                     // 対戦者がすでに2人いて対戦中
                     socket.emit('watch',
-                        [...boards[0]], ...players.map(e => e.name), curTurn, false, takenPieces);
+                        [...boards[0]], ...players.map(e => e.name), curTurn, false);
                     if (winner === 0 || winner === 1) {
                         socket.emit('tell winner',
-                            players.map(e => e.name)[winner], [...boards[0]],
-                            ...players.map(e => e.name), takenPieces);
+                            players.map(e => e.name)[winner]);
                     }
                 }
             } else {
@@ -178,25 +174,12 @@ io.on('connection', (socket: customSocket) => {
             newBoard.set(`${1-boardId},` + String(to),
                 colors[curTurn] + promoteTo);
         }
-        // 相手の駒を取ったとき
-        /*
-        if (board.has(String(dest)) && board.get(String(dest)).turn !== turn) {
-            // 取った駒の色を記録する
-            takenPieces[turn][board.get(String(dest)).color] += 1;
-        }*/
         // turn 目線のボードを更新する
         boards[curTurn] = newBoard;
         // 相手目線のボードを更新する
         boards[1-curTurn] = config.rotateBoard(newBoard);
         // ターン交代
         curTurn = 1-curTurn as 0 | 1;
-        // 勝敗判定
-        /*
-        if (winReq(takenPieces, Array.from(board.keys()), turn, true)) {
-            winner = turn;
-        } else if (winReq(takenPieces, Array.from(board.keys()), (turn+1)%2 as 0 | 1, false)) {
-            winner = (turn+1)%2 as 0 | 1;
-        }*/
         // チェック判定
         const checked = game.isChecked(colors[curTurn], boards[1-curTurn]);
         const freezed = game.cannotMove(colors[curTurn], boards[curTurn]);
@@ -210,14 +193,11 @@ io.on('connection', (socket: customSocket) => {
         }
         // 盤面データをクライアントへ
         io.to(roomId).emit('watch',
-            [...boards[0]], ...players.map(e => e.name), curTurn,
-            checked, takenPieces);
+            [...boards[0]], ...players.map(e => e.name), curTurn, checked);
         io.to(players[0].id).emit('game',
-            [...boards[0]], 'W', curTurn === 0, ...players.map(e => e.name),
-            checked, takenPieces);
+            [...boards[0]], 'W', curTurn === 0, ...players.map(e => e.name), checked);
         io.to(players[1].id).emit('game',
-            [...boards[1]], 'B', curTurn === 1, ...players.map(e => e.name),
-            checked, takenPieces);
+            [...boards[1]], 'B', curTurn === 1, ...players.map(e => e.name), checked);
         // 勝者を通知する
         if (winner !== undefined) {
             io.to(roomId).emit('tell winner',
