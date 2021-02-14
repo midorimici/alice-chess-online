@@ -129,7 +129,9 @@ socket.on('game',
         takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
     const boardsMap: Map<string, string> = new Map(boards);
     /** 選択中の駒の位置 */
-    let selectingPos: [number, number];
+    let originPos: [number, number];
+    /** 行先の位置 */
+    let destPos: [number, number];
     // 対戦者名表示
     if (document.getElementById('user-names').innerText === '') {
         const opponent = color === 'W' ? second : first;
@@ -146,39 +148,65 @@ socket.on('game',
     if (myturn) {
         gameMessage.innerText = isEN ? "It's your turn." : 'あなたの番です。';
         if (!muted) snd('move');
-
+        
         for (const [index, canvas] of canvass.entries()) {
+            let prom = false;
             mouse = new Mouse(canvas);
             canvas.onclick = (e: MouseEvent) => {
                 const sqPos = mouse.getCoord(e);
                 if (boardsMap.get(`${index},` + String(sqPos))?.[0] === color) {
                     // 自分の駒を選択したとき
-                    selectingPos = sqPos;
+                    originPos = sqPos;
                     const pieceClass = abbrPieceDict[
                         boardsMap.get(`${index},` + String(sqPos))[1] as pieceNames];
                     const piece = new pieceClass(color, index as 0 | 1);
                     // 行先を描画
                     draw.board(boardsMap, color, showOppositePieces);
-                    draw.dest(piece, selectingPos, boardsMap);
+                    draw.dest(piece, originPos, boardsMap);
                     //draw.takenPieces(takenPieces, turn);
+                    prom = false;
                 } else {
-                    if (boardsMap.has(`${index},` + String(selectingPos))) {
+                    if (!prom && boardsMap.has(`${index},` + String(originPos))) {
+                        destPos = sqPos;
                         const pieceClass = abbrPieceDict[
-                            boardsMap.get(`${index},` + String(selectingPos))[1] as pieceNames];
+                            boardsMap.get(`${index},` + String(originPos))[1] as pieceNames];
                         const piece = new pieceClass(color, index as 0 | 1);
-                        if (piece.validMoves(selectingPos, boardsMap)
-                                .some(e => String(e) === String(sqPos))) {
+                        if (piece.validMoves(originPos, boardsMap)
+                                .some(e => String(e) === String(destPos))) {
                             // 行先を選択したとき
-                            if (!muted) snd('move');
-                            // サーバへ移動データを渡す
-                            socket.emit('move piece', index,
-                                selectingPos, sqPos);
+                            // プロモーションの選択肢表示
+                            if (piece.abbr === 'P' && destPos[1] === 0) {
+                                prom = true;
+                            } else {
+                                if (!muted) snd('move');
+                                // サーバへ移動データを渡す
+                                socket.emit('move piece', index,
+                                    originPos, destPos);
+                            }
                         }
                     }
                     // 盤面描画更新
                     draw.board(boardsMap, color, showOppositePieces);
+                    if (prom) {
+                        const pieces = ['N', 'B', 'R', 'Q'];
+                        for (let i = 2; i <= 5; i++) {
+                            if (sqPos[0] === i && (sqPos[1] === 3 || sqPos[1] === 4)) {
+                                prom = false;
+                                if (!muted) snd('move');
+                                // サーバへ移動データを渡す
+                                socket.emit('move piece', index,
+                                    originPos, destPos, pieces[i-2]);
+                            }
+                        }
+                        if (String(sqPos) === String(destPos)) draw.promotion(index as 0 | 1, color);
+                        else {
+                            prom = false;
+                            originPos = null;
+                        }
+                    } else {
+                        originPos = null;
+                    }
                     //draw.takenPieces(takenPieces, turn);
-                    selectingPos = null;
                 }
             }
         }

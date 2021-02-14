@@ -4,6 +4,7 @@ import * as socketio from 'socket.io';
 
 import config from '../config';
 import * as game from './game';
+import { pieceNames } from './piece';
 
 const app: express.Express = express();
 app.use(express.static(process.cwd() + '/public'));
@@ -163,12 +164,20 @@ io.on('connection', (socket: customSocket) => {
              * @param boardId 駒の移動前の盤面がどちらか
              * @param from 駒の移動前の位置
              * @param to 駒の移動後の位置
+             * @param promoteTo プロモーションのとき、プロモーション先
              */
-            (boardId: 0 | 1, from: [number, number], to: [number, number]) => {
+            (boardId: 0 | 1, from: [number, number], to: [number, number],
+                promoteTo?: pieceNames) => {
         const roomId = socket.info.roomId;
+        const colors: ['W', 'B'] = ['W', 'B'];
         const newBoard = boards[curTurn];
         // 駒の移動
         game.renewBoard(boardId, from, to, newBoard);
+        if (promoteTo) {
+            // プロモーション
+            newBoard.set(`${1-boardId},` + String(to),
+                colors[curTurn] + promoteTo);
+        }
         // 相手の駒を取ったとき
         /*
         if (board.has(String(dest)) && board.get(String(dest)).turn !== turn) {
@@ -189,7 +198,6 @@ io.on('connection', (socket: customSocket) => {
             winner = (turn+1)%2 as 0 | 1;
         }*/
         // チェック判定
-        const colors: ['W', 'B'] = ['W', 'B'];
         const checked = game.isChecked(colors[curTurn], boards[1-curTurn]);
         const freezed = game.cannotMove(colors[curTurn], boards[curTurn]);
         // 勝敗判定

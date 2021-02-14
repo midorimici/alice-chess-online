@@ -54,25 +54,34 @@ export default class Draw {
     }
 
     /**
+     * 画像を描画する
+     * @param ctx コンテキスト
+     * @param img 描画する画像
+     * @param pos 描画位置。盤面上の座標
+     */
+    private drawImg(ctx: CanvasRenderingContext2D, img: HTMLImageElement,
+            pos: [number, number]) {
+        const sqSize = this.squareSize;
+        ctx.drawImage(img, 0, 0, img.width, img.height,
+            this.margin + sqSize*pos[0], this.margin + sqSize*pos[1],
+            sqSize, sqSize)
+    }
+
+    /**
      * 画像を描画
      * @param pos 描画する位置。'盤面,x,y'
      * @param piece 描画する駒の名前。'WB'など
      * @param showOppositePieces 反対側の盤面の駒を表示するか
      */
-    private drawImg(posStr: string, piece: string, showOppositePieces: boolean) {
-        const squareSize = this.squareSize;
+    private drawPiece(posStr: string, piece: string, showOppositePieces: boolean) {
         const pos = posStr.split(',').map(e => +e);
         const anotherCtx = this.ctxs[1-pos[0]];
         const img = this.imgs.get(piece);
-        this.ctxs[pos[0]].drawImage(img, 0, 0, img.width, img.height,
-            this.margin + squareSize*pos[1], this.margin + squareSize*pos[2],
-            squareSize, squareSize);
+        this.drawImg(this.ctxs[pos[0]], img, [pos[1], pos[2]])
         if (showOppositePieces) {
             anotherCtx.save();
             anotherCtx.globalAlpha = 0.2;
-            anotherCtx.drawImage(img, 0, 0, img.width, img.height,
-                this.margin + squareSize*pos[1], this.margin + squareSize*pos[2],
-                squareSize, squareSize);
+            this.drawImg(anotherCtx, img, [pos[1], pos[2]]);
             anotherCtx.restore();
         }
     }
@@ -177,7 +186,7 @@ export default class Draw {
 
         // 駒
         for (let [pos, piece] of boardsMap.entries()) {
-            this.drawImg(pos, piece, showOppositePieces);
+            this.drawPiece(pos, piece, showOppositePieces);
         }
     }
 
@@ -198,6 +207,24 @@ export default class Draw {
             ctx.fillStyle = config.safe;
             ctx.fill();
         }
+    }
+
+    /**
+     * プロモーションの選択肢を表示
+     * @param boardId 駒の移動前の盤面がどちらか
+     * @param color 表示する駒色
+     */
+    promotion(boardId: 0 | 1, color: 'W' | 'B') {
+        const ctx = this.ctxs[boardId];
+        const margin = this.margin;
+        const sqSize = this.squareSize;
+        ctx.fillStyle = config.grey;
+        ctx.fillRect(margin + sqSize*3/2, margin + sqSize*3,
+            sqSize*5, sqSize*2);
+        this.drawImg(ctx, this.imgs.get(color+'N'), [2, 3.5]);
+        this.drawImg(ctx, this.imgs.get(color+'B'), [3, 3.5]);
+        this.drawImg(ctx, this.imgs.get(color+'R'), [4, 3.5]);
+        this.drawImg(ctx, this.imgs.get(color+'Q'), [5, 3.5]);
     }
 
     /**
