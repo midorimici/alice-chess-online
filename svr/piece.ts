@@ -104,14 +104,15 @@ abstract class Piece {
                 // その盤面上で合法である（敵の効きに移動していない）
                 const tmpBoards2 = new Map(boards);
                 tmpBoards2.set(`${this.side},` + String(dest),
-                    this.color + this.abbr);
+                    this.color + 'K');
                 tmpBoards2.delete(`${this.side},` + String(pos));
-                if (game.isChecked(this.color, tmpBoards2)) continue;
+                if (game.isChecked(this.color, game.rotateBoard(tmpBoards2)))
+                    continue;
                 // 向こうの盤面のその位置も敵の効きでない
             }
             game.renewBoard(this.side, pos, dest, tmpBoards);
             // チェックにならないなら結果に追加
-            if (!game.isChecked(this.color, tmpBoards)) {
+            if (!game.isChecked(this.color, game.rotateBoard(tmpBoards))) {
                 result.push(dest);
             }
         }
