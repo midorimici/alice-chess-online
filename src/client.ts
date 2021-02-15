@@ -121,10 +121,12 @@ socket.on('game',
          * @param first 先手のプレイヤー名
          * @param second 後手のプレイヤー名
          * @param checked どちらかがチェックされているか
+         * @param advanced2Pos ポーンが 2 歩進んだときの移動先
          */
         async (boards: [string, string][],
         color: 'W' | 'B', myturn: boolean,
-        first: string, second: string, checked: boolean) => {
+        first: string, second: string, checked: boolean,
+        advanced2Pos: number[] | null) => {
     const boardsMap: Map<string, string> = new Map(boards);
     /** 選択中の駒の位置 */
     let originPos: [number, number];
@@ -159,7 +161,7 @@ socket.on('game',
                     const piece = new pieceClass(color, index as 0 | 1);
                     // 行先を描画
                     draw.board(boardsMap, color, showOppositePieces);
-                    draw.dest(piece, originPos, boardsMap);
+                    draw.dest(piece, originPos, boardsMap, advanced2Pos);
                     prom = false;
                 } else {
                     if (!prom && boardsMap.has(`${index},` + String(originPos))) {
@@ -167,10 +169,9 @@ socket.on('game',
                         const pieceClass = abbrPieceDict[
                             boardsMap.get(`${index},` + String(originPos))[1] as pieceNames];
                         const piece = new pieceClass(color, index as 0 | 1);
-                        if (piece.validMoves(originPos, boardsMap)
+                        if (piece.validMoves(originPos, boardsMap, advanced2Pos)
                                 .some(e => String(e) === String(destPos))) {
                             // 行先を選択したとき
-                            // プロモーションの選択肢表示
                             if (piece.abbr === 'P' && destPos[1] === 0) {
                                 prom = true;
                             } else {
@@ -194,6 +195,7 @@ socket.on('game',
                                     originPos, destPos, pieces[i-2]);
                             }
                         }
+                        // プロモーションの選択肢表示
                         if (String(sqPos) === String(destPos)) draw.promotion(index as 0 | 1, color);
                         else {
                             prom = false;

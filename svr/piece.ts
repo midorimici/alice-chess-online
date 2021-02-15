@@ -1,9 +1,9 @@
-import config, { Vec } from '../config';
+import { Vec } from '../config';
 import * as game from './game';
 
-export abstract class Piece {
+abstract class Piece {
     readonly color: 'W' | 'B';
-    readonly abbr: string;
+    readonly abbr: pieceNames;
     readonly side: 0 | 1;
 
     /**
@@ -69,7 +69,7 @@ export abstract class Piece {
     }
 
     /**
-     * 駒が動ける位置リストを返す
+     * 駒が単独で動ける位置リストを返す
      * @param pos 駒の現在位置
      * @param board 盤面
      */
@@ -77,22 +77,34 @@ export abstract class Piece {
         pos: [number, number], boards: Map<string, string>): [number, number][];
 
     /**
-     * チェック回避のための制限も含めた駒が動ける位置リストを返す
+     * ゲーム内で駒が動ける位置リストを返す
      * @param pos 駒の現在位置
      * @param boards 盤面
+     * @param advanced2Pos ポーンが 2 歩進んだときの移動先
      */
-    validMoves(pos: [number, number], boards: Map<string, string>): [number, number][] {
+    validMoves(pos: [number, number], boards: Map<string, string>,
+            advanced2Pos: number[] | null): [number, number][] {
         let result: [number, number][] = [];
-        for (const dest of this.coveringSquares(pos, boards)) {
+        let dests = this.coveringSquares(pos, boards);
+        // en passant
+        if (advanced2Pos) {
+            const endpos: [number, number] = [7-advanced2Pos[1], 7-advanced2Pos[2]-1];
+            if (game.enPassantReq(pos, endpos, this.abbr, this.side,
+                    advanced2Pos[0] as 0 | 1, boards)) {
+                dests.push(endpos);
+            }
+        }
+        // チェック回避のための制限
+        for (const dest of dests) {
             // 盤面の複製
             const tmpBoards = new Map(boards);
             // 盤面の更新
-            if (tmpBoards.get(`${this.side},` + String(pos))[1] === 'K') {
+            if (this.abbr === 'K') {
                 // 動かす駒がキングのとき
                 // その盤面上で合法である（敵の効きに移動していない）
                 const tmpBoards2 = new Map(boards);
                 tmpBoards2.set(`${this.side},` + String(dest),
-                    tmpBoards2.get(`${this.side},` + String(pos)));
+                    this.color + this.abbr);
                 tmpBoards2.delete(`${this.side},` + String(pos));
                 if (game.isChecked(this.color, tmpBoards2)) continue;
                 // 向こうの盤面のその位置も敵の効きでない
@@ -107,8 +119,8 @@ export abstract class Piece {
     }
 }
 
-export class Knight extends Piece {
-    abbr = 'N';
+class Knight extends Piece {
+    abbr = 'N' as pieceNames;
 
     coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
         const dirList: [number, number][]
@@ -121,24 +133,24 @@ export class Knight extends Piece {
     }
 }
 
-export class Bishop extends Piece {
-    abbr = 'B';
+class Bishop extends Piece {
+    abbr = 'B' as pieceNames;
 
     coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
         return this.rider(pos, [[1, 1], [1, -1], [-1, -1], [-1, 1]], boards);
     }
 }
 
-export class Rook extends Piece {
-    abbr = 'R';
+class Rook extends Piece {
+    abbr = 'R' as pieceNames;
 
     coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
         return this.rider(pos, [[1, 0], [0, -1], [-1, 0], [0, 1]], boards);
     }
 }
 
-export class Queen extends Piece {
-    abbr = 'Q';
+class Queen extends Piece {
+    abbr = 'Q' as pieceNames;
 
     coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
         return this.rider(pos,
@@ -146,8 +158,8 @@ export class Queen extends Piece {
     }
 }
 
-export class King extends Piece {
-    abbr = 'K';
+class King extends Piece {
+    abbr = 'K' as pieceNames;
 
     coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
         const dirList: [number, number][]
@@ -160,18 +172,18 @@ export class King extends Piece {
     }
 }
 
-export class Pawn extends Piece {
-    abbr = 'P';
+class Pawn extends Piece {
+    abbr = 'P' as pieceNames;
 
     coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
         let answers: [number, number][] = [];
         // 駒を取る動き
         var target = new Vec(pos).add([1, -1]).val();
-        if (boards.get(`${this.side},` + String(target))?.[0] === config.opponent[this.color]) {
+        if (boards.get(`${this.side},` + String(target))?.[0] === game.opponent[this.color]) {
             answers.push(target);
         }
         var target = new Vec(pos).add([-1, -1]).val();
-        if (boards.get(`${this.side},` + String(target))?.[0] === config.opponent[this.color]) {
+        if (boards.get(`${this.side},` + String(target))?.[0] === game.opponent[this.color]) {
             answers.push(target);
         }
         // 一歩先
@@ -191,6 +203,8 @@ export class Pawn extends Piece {
     }
 }
 
-export type pieceNames = 'N' | 'B' | 'R' | 'Q' | 'K' | 'P';
+type pieceNames = 'N' | 'B' | 'R' | 'Q' | 'K' | 'P';
 
-export const abbrPieceDict = {'N': Knight, 'B': Bishop, 'R': Rook, 'Q': Queen, 'K': King, 'P': Pawn};
+const abbrPieceDict = {'N': Knight, 'B': Bishop, 'R': Rook, 'Q': Queen, 'K': King, 'P': Pawn};
+
+export { Piece, Knight, Bishop, Rook, Queen, King, Pawn, pieceNames, abbrPieceDict };

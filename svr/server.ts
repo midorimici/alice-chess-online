@@ -2,7 +2,6 @@ import * as express from 'express';
 import * as http from 'http';
 import * as socketio from 'socket.io';
 
-import config from '../config';
 import * as game from './game';
 import { pieceNames } from './piece';
 
@@ -98,7 +97,7 @@ io.on('connection', (socket: customSocket) => {
                     ];
                     // 盤面生成
                     boards = [initBoard(), new Map()];
-                    boards[1] = config.rotateBoard(boards[0]);
+                    boards[1] = game.rotateBoard(boards[0]);
                     curTurn = 0;
                     // クライアントへ送信
                     io.to(info.roomId).emit('watch',
@@ -167,6 +166,16 @@ io.on('connection', (socket: customSocket) => {
         const roomId = socket.info.roomId;
         const colors: ['W', 'B'] = ['W', 'B'];
         const newBoard = boards[curTurn];
+        // ポーンが 2 歩進んだときの移動先
+        const advanced2Pos = (newBoard.get(`${boardId},` + String(from))?.[1] === 'P'
+            && from[1] - to[1] === 2) ? [1-boardId, ...to] : null;
+        // en passant
+        if (game.enPassantReq(from, to,
+                newBoard.get(`${boardId},` + String(from))?.[1] as pieceNames, boardId,
+                boardId, newBoard)) {
+            // ポーンを除去する
+            newBoard.delete(`${boardId},${to[0]},${to[1]+1}`);
+        }
         // 駒の移動
         game.renewBoard(boardId, from, to, newBoard);
         if (promoteTo) {
@@ -174,15 +183,13 @@ io.on('connection', (socket: customSocket) => {
             newBoard.set(`${1-boardId},` + String(to),
                 colors[curTurn] + promoteTo);
         }
-        // turn 目線のボードを更新する
-        boards[curTurn] = newBoard;
         // 相手目線のボードを更新する
-        boards[1-curTurn] = config.rotateBoard(newBoard);
+        boards[1-curTurn] = game.rotateBoard(newBoard);
         // ターン交代
         curTurn = 1-curTurn as 0 | 1;
         // チェック判定
         const checked = game.isChecked(colors[curTurn], boards[1-curTurn]);
-        const freezed = game.cannotMove(colors[curTurn], boards[curTurn]);
+        const freezed = game.cannotMove(colors[curTurn], boards[curTurn], advanced2Pos);
         // 勝敗判定
         if (freezed) {
             if (checked) {
@@ -195,9 +202,11 @@ io.on('connection', (socket: customSocket) => {
         io.to(roomId).emit('watch',
             [...boards[0]], ...players.map(e => e.name), curTurn, checked);
         io.to(players[0].id).emit('game',
-            [...boards[0]], 'W', curTurn === 0, ...players.map(e => e.name), checked);
+            [...boards[0]], 'W', curTurn === 0, ...players.map(e => e.name),
+                checked, advanced2Pos);
         io.to(players[1].id).emit('game',
-            [...boards[1]], 'B', curTurn === 1, ...players.map(e => e.name), checked);
+            [...boards[1]], 'B', curTurn === 1, ...players.map(e => e.name),
+                checked, advanced2Pos);
         // 勝者を通知する
         if (winner !== undefined) {
             io.to(roomId).emit('tell winner',

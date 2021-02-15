@@ -195,11 +195,12 @@ export default class Draw {
      * @param piece 駒インスタンス
      * @param pos 位置。ゲーム内座標
      * @param boardmap 盤面データ
+     * @param advanced2Pos ポーンが 2 歩進んだときの移動先
      */
     dest(piece: Piece, pos: [number, number],
-            boardsMap: Map<string, string>) {
+            boardsMap: Map<string, string>, advanced2Pos: number[] | null) {
         const ctx = this.ctxs[piece.side];
-        for (const dest of piece.validMoves(pos, boardsMap)) {
+        for (const dest of piece.validMoves(pos, boardsMap, advanced2Pos)) {
             const coord = new Vec(dest).mul(this.squareSize)
                 .add(this.margin + this.squareSize/2).val();
             ctx.beginPath();
