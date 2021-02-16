@@ -83,17 +83,34 @@ abstract class Piece {
      * @param advanced2Pos ポーンが 2 歩進んだときの移動先
      */
     validMoves(pos: [number, number], boards: Map<string, string>,
-            advanced2Pos: number[] | null): [number, number][] {
+            advanced2Pos: number[] | null,
+            canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean]})
+            : [number, number][] {
         let result: [number, number][] = [];
         let dests = this.coveringSquares(pos, boards);
-        // en passant
-        if (advanced2Pos) {
-            const endpos: [number, number] = [7-advanced2Pos[1], 7-advanced2Pos[2]-1];
-            if (game.enPassantReq(pos, endpos, this.abbr, this.side,
-                    advanced2Pos[0] as 0 | 1, boards)) {
-                dests.push(endpos);
+
+        // キャスリング
+        if (this.abbr === 'K') {
+            for (const i of [0, 1] as [0, 1]) {
+                const endPos = (this.color === 'W'
+                    ? (i === 0 ? [2, 7] : [6, 7])
+                    : (i === 0 ? [5, 7] : [1, 7])) as [number, number];
+                if (game.castlingReq(
+                        canCastle, this.color, i, this.side, endPos, boards)) {
+                    dests.push(endPos);
+                }
             }
         }
+
+        // en passant
+        if (advanced2Pos) {
+            const endPos: [number, number] = [7-advanced2Pos[1], 7-advanced2Pos[2]-1];
+            if (game.enPassantReq(pos, endPos, this.abbr, this.side,
+                    advanced2Pos[0] as 0 | 1, boards)) {
+                dests.push(endPos);
+            }
+        }
+
         // チェック回避のための制限
         for (const dest of dests) {
             // 盤面の複製

@@ -126,7 +126,8 @@ socket.on('game',
         async (boards: [string, string][],
         color: 'W' | 'B', myturn: boolean,
         first: string, second: string, checked: boolean,
-        advanced2Pos: number[] | null) => {
+        advanced2Pos: number[] | null,
+        canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean]}) => {
     const boardsMap: Map<string, string> = new Map(boards);
     /** 選択中の駒の位置 */
     let originPos: [number, number];
@@ -161,7 +162,7 @@ socket.on('game',
                     const piece = new pieceClass(color, index as 0 | 1);
                     // 行先を描画
                     draw.board(boardsMap, color, showOppositePieces);
-                    draw.dest(piece, originPos, boardsMap, advanced2Pos);
+                    draw.dest(piece, originPos, boardsMap, advanced2Pos, canCastle);
                     prom = false;
                 } else {
                     if (!prom && boardsMap.has(`${index},` + String(originPos))) {
@@ -169,7 +170,7 @@ socket.on('game',
                         const pieceClass = abbrPieceDict[
                             boardsMap.get(`${index},` + String(originPos))[1] as pieceNames];
                         const piece = new pieceClass(color, index as 0 | 1);
-                        if (piece.validMoves(originPos, boardsMap, advanced2Pos)
+                        if (piece.validMoves(originPos, boardsMap, advanced2Pos, canCastle)
                                 .some(e => String(e) === String(destPos))) {
                             // 行先を選択したとき
                             if (piece.abbr === 'P' && destPos[1] === 0) {

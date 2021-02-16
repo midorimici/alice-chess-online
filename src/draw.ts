@@ -198,9 +198,10 @@ export default class Draw {
      * @param advanced2Pos ポーンが 2 歩進んだときの移動先
      */
     dest(piece: Piece, pos: [number, number],
-            boardsMap: Map<string, string>, advanced2Pos: number[] | null) {
+            boardsMap: Map<string, string>, advanced2Pos: number[] | null,
+            canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean]}) {
         const ctx = this.ctxs[piece.side];
-        for (const dest of piece.validMoves(pos, boardsMap, advanced2Pos)) {
+        for (const dest of piece.validMoves(pos, boardsMap, advanced2Pos, canCastle)) {
             const coord = new Vec(dest).mul(this.squareSize)
                 .add(this.margin + this.squareSize/2).val();
             ctx.beginPath();

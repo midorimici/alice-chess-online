@@ -60,13 +60,14 @@ const isChecked = (color: 'W' | 'B', boards: Map<string, string>): boolean => {
  * @param advanced2Pos ポーンが 2 歩進んだときの移動先
  */
 const cannotMove = (color: 'W' | 'B', boards: Map<string, string>,
-        advanced2Pos: number[] | null): boolean => {
+        advanced2Pos: number[] | null,
+        canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean]}): boolean => {
     for (const [posStr, pieceName] of boards.entries()) {
         if (color === pieceName[0]) {
             const pos = posStr.split(',').map(e => +e);
             const piece = new abbrPieceDict[pieceName[1] as pieceNames](
                 color, pos[0] as 0 | 1);
-            for (const dest of piece.validMoves([pos[1], pos[2]], boards, advanced2Pos)) {
+            for (const dest of piece.validMoves([pos[1], pos[2]], boards, advanced2Pos, canCastle)) {
                 // 駒の各移動先について、移動後にチェック回避できるなら false
                 const tmpBoards = new Map(boards);
                 renewBoard(pos[0] as 0 | 1, [pos[1], pos[2]], dest, tmpBoards);
@@ -75,6 +76,86 @@ const cannotMove = (color: 'W' | 'B', boards: Map<string, string>,
         }
     }
     return true;
+}
+
+/**
+ * キャスリングの条件を満たすか
+ * @param canCastle キャスリングのポテンシャルが残っているか
+ * @param color 自分の駒色
+ * @param side どちら側にキャスリングするか。0 - クイーンサイド, 1 - キングサイド
+ * @param boardId 自分がいる盤面がどちらか
+ * @param endPos キングの移動先の位置
+ * @param boards 盤面
+ */
+const castlingReq = (canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean]},
+        color: 'W' | 'B', side: 0 | 1, boardId: 0 | 1, endPos: [number, number],
+        boards: Map<string, string>): boolean => {
+    /**
+     * キングの通過するマスが攻撃されていないことを確認するために、
+     * キングがそのマスに動いたときに攻撃されるかを見るための
+     * 仮の盤面を出力する
+     * @param dest 行先の盤面と位置
+     */
+    const createTmpBoards = (dest: string): Map<string, string> => {
+        const tmpBoards = new Map(boards);
+        const [b, _, y] = dest.split(',');
+        tmpBoards.set(dest, color + 'K');
+        tmpBoards.delete(`${b},${4},${y}`);
+        return tmpBoards;
+    }
+
+    /**
+     * キングが通るマスのどれかが相手の駒に攻撃されていれば false を返す
+     */
+    const pathIsNotAttacked = () => {
+        const kingRoute = side === 0 ? [2, 3] : [6, 5];
+        for (const x of kingRoute) {
+            if (isChecked(color, rotateBoard(createTmpBoards(`${boardId},${x},7`)))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    const calcX = (v: number): number => {
+        return color === 'W' ? v : 7-v ;
+    }
+
+    const commonReq =
+        // キャスリングのポテンシャルが残っている
+        canCastle[color][side]
+        // 現在チェックされていない
+        && !isChecked(color, rotateBoard(boards))
+        // キャスリングに関与するルークが存在する
+        && boards.get(`${boardId},${7*side},7`) === color + 'R'
+        // キングが通過するマスが攻撃されていない
+        && pathIsNotAttacked();
+    let specialReq: boolean;
+    if (side === 0) {
+        // クイーンサイド
+        specialReq =
+            // 終了位置指定
+            String(endPos) === `${calcX(2)},7`
+            // キングとルークの間に駒がない
+            && !boards.has(`${boardId},${calcX(1)},7`)
+            && !boards.has(`${boardId},${calcX(2)},7`)
+            && !boards.has(`${boardId},${calcX(3)},7`)
+            // キャスリング後の対応するマスに駒がない
+            && !boards.has(`${1-boardId},${calcX(2)},7`)
+            && !boards.has(`${1-boardId},${calcX(3)},7`);
+    } else {
+        // キングサイド
+        specialReq =
+            // 終了位置指定
+            String(endPos) === `${calcX(6)},7`
+            // キングとルークの間に駒がない
+            && !boards.has(`${boardId},${calcX(6)},7`)
+            && !boards.has(`${boardId},${calcX(5)},7`)
+            // キャスリング後の対応するマスに駒がない
+            && !boards.has(`${1-boardId},${calcX(6)},7`)
+            && !boards.has(`${1-boardId},${calcX(5)},7`);
+    }
+    return commonReq && specialReq;
 }
 
 /**
@@ -113,4 +194,5 @@ const renewBoard = (boardId: 0 | 1, startpos: [number, number],
     boards.delete(`${boardId},` + String(endpos));
 }
 
-export { opponent, rotateBoard, isChecked, cannotMove, enPassantReq, renewBoard };
+export { opponent, rotateBoard, isChecked, cannotMove,
+    castlingReq, enPassantReq, renewBoard };
