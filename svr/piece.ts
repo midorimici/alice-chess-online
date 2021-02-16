@@ -92,9 +92,9 @@ abstract class Piece {
         // キャスリング
         if (this.abbr === 'K') {
             for (const i of [0, 1] as [0, 1]) {
-                const endPos = (this.color === 'W'
+                const endPos: [number, number] = (this.color === 'W'
                     ? (i === 0 ? [2, 7] : [6, 7])
-                    : (i === 0 ? [5, 7] : [1, 7])) as [number, number];
+                    : (i === 0 ? [5, 7] : [1, 7]));
                 if (game.castlingReq(
                         canCastle, this.color, i, this.side, endPos, boards)) {
                     dests.push(endPos);

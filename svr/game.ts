@@ -100,15 +100,15 @@ const castlingReq = (canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean
         const tmpBoards = new Map(boards);
         const [b, _, y] = dest.split(',');
         tmpBoards.set(dest, color + 'K');
-        tmpBoards.delete(`${b},${4},${y}`);
+        tmpBoards.delete(`${b},${calcX(4)},${y}`);
         return tmpBoards;
     }
 
     /**
      * キングが通るマスのどれかが相手の駒に攻撃されていれば false を返す
+     * @param kingRoute キングが通過するマスの x 位置
      */
-    const pathIsNotAttacked = () => {
-        const kingRoute = side === 0 ? [2, 3] : [6, 5];
+    const pathIsNotAttacked = (kingRoute: number[]) => {
         for (const x of kingRoute) {
             if (isChecked(color, rotateBoard(createTmpBoards(`${boardId},${x},7`)))) {
                 return false;
@@ -128,8 +128,6 @@ const castlingReq = (canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean
         && !isChecked(color, rotateBoard(boards))
         // キャスリングに関与するルークが存在する
         && boards.get(`${boardId},${7*side},7`) === color + 'R'
-        // キングが通過するマスが攻撃されていない
-        && pathIsNotAttacked();
     let specialReq: boolean;
     if (side === 0) {
         // クイーンサイド
@@ -142,7 +140,9 @@ const castlingReq = (canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean
             && !boards.has(`${boardId},${calcX(3)},7`)
             // キャスリング後の対応するマスに駒がない
             && !boards.has(`${1-boardId},${calcX(2)},7`)
-            && !boards.has(`${1-boardId},${calcX(3)},7`);
+            && !boards.has(`${1-boardId},${calcX(3)},7`)
+            // キングが通過するマスが攻撃されていない
+            && pathIsNotAttacked([calcX(2), calcX(3)]);
     } else {
         // キングサイド
         specialReq =
@@ -153,7 +153,9 @@ const castlingReq = (canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean
             && !boards.has(`${boardId},${calcX(5)},7`)
             // キャスリング後の対応するマスに駒がない
             && !boards.has(`${1-boardId},${calcX(6)},7`)
-            && !boards.has(`${1-boardId},${calcX(5)},7`);
+            && !boards.has(`${1-boardId},${calcX(5)},7`)
+            // キングが通過するマスが攻撃されていない
+            && pathIsNotAttacked([calcX(6), calcX(5)]);
     }
     return commonReq && specialReq;
 }

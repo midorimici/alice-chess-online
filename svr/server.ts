@@ -176,10 +176,6 @@ io.on('connection', (socket: customSocket) => {
         const pieceName = newBoard.get(`${boardId},` + String(from))?.[1] as pieceNames;
 
         // キャスリング
-        // キングが動いた
-        if (pieceName === 'K') {
-            canCastle[colors[curTurn]] = [false, false];
-        }
         // ルークが動いた
         if (pieceName === 'R') {
             // クイーンサイド
@@ -189,6 +185,34 @@ io.on('connection', (socket: customSocket) => {
             // キングサイド
             if (String(from) === '7,7') {
                 canCastle[colors[curTurn]][1-curTurn] = false;
+            }
+        }
+        // キングが動いた
+        if (pieceName === 'K') {
+            canCastle[colors[curTurn]] = [false, false];
+            // キャスリングが行われたときルークを動かす
+            if (Math.abs(to[0]-from[0]) === 2) {
+                let newX: number, oldX: number;
+                switch (to[0]) {
+                case 2:
+                    // 白クイーンサイド
+                    [newX, oldX] = [3, 0];
+                    break;
+                case 6:
+                    // 白キングサイド
+                    [newX, oldX] = [5, 7];
+                    break;
+                case 5:
+                    // 黒クイーンサイド
+                    [newX, oldX] = [4, 7];
+                    break;
+                case 1:
+                    // 黒キングサイド
+                    [newX, oldX] = [2, 0];
+                    break;
+                }
+                newBoard.set(`${1-boardId},${newX},7`, colors[curTurn] + 'R');
+                newBoard.delete(`${boardId},${oldX},7`);
             }
         }
 
