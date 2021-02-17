@@ -146,9 +146,14 @@ io.on('connection', (socket: customSocket) => {
                     socket.emit('wait opponent');
                 } else {
                     // 対戦者がすでに2人いて対戦中
-                    socket.emit('watch',
-                        [...boards[0]], ...players.map(e => e.name), curTurn, false);
-                    if (winner != null) {
+                    if (winner == null) {
+                        // 勝敗が決まっていないとき
+                        socket.emit('watch',
+                            [...boards[0]], ...players.map(e => e.name), curTurn, false);
+                    } else {
+                        // 勝敗が決まっているとき
+                        socket.emit('watch',
+                            [...boards[0]], ...players.map(e => e.name), curTurn, false, true);
                         socket.emit('tell winner',
                             players.map(e => e.name)[winner]);
                     }
