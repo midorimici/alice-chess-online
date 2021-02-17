@@ -148,7 +148,7 @@ io.on('connection', (socket: customSocket) => {
                     // 対戦者がすでに2人いて対戦中
                     socket.emit('watch',
                         [...boards[0]], ...players.map(e => e.name), curTurn, false);
-                    if (winner) {
+                    if (winner != null) {
                         socket.emit('tell winner',
                             players.map(e => e.name)[winner]);
                     }
@@ -260,7 +260,7 @@ io.on('connection', (socket: customSocket) => {
             [...boards[1]], 'B', curTurn === 1, ...players.map(e => e.name),
                 checked, advanced2Pos, canCastle);
         // 勝者を通知する
-        if (winner) {
+        if (winner != null) {
             io.to(roomId).emit('tell winner',
                 players.map(e => e.name)[winner]);
         }
