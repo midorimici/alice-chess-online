@@ -31,14 +31,31 @@
     height: max-content;
 }
 
+
+
 #chat {
-    flex-grow: 3;
-    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 5rem 2rem;
+    width: 30%;
+    height: calc(100% - 10rem);
+    background-color: ivory;
+    transition: right .4s;
+    will-change: right;
+    &.closed {
+        right: -40%;
+    }
 }
 
 #chat-icon {
+    cursor: pointer;
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
     width: 2rem;
     height: 2rem;
+    z-index: 1;
 }
 
 #chat-messages {

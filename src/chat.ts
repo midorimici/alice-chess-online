@@ -51,4 +51,11 @@ export default (socket: SocketIOClient.Socket, isEN: boolean) => {
         ul.appendChild(item);
         ul.scrollTop = ul.scrollHeight;
     });
+
+    // チャットタブのスライド
+    const chatIcon = document.getElementById('chat-icon');
+    const chat = document.getElementById('chat');
+    chatIcon.onclick = () => {
+        chat.classList.toggle('closed');
+    }
 }
