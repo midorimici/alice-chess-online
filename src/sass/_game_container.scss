@@ -48,14 +48,27 @@
     }
 }
 
-#chat-icon {
+#chat-btn {
     cursor: pointer;
     position: absolute;
     top: 2rem;
     right: 2rem;
-    width: 2rem;
-    height: 2rem;
     z-index: 1;
+    & > #chat-icon {
+        width: 2rem;
+        height: 2rem;
+    }
+    & > #chat-new {
+        position: absolute;
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 100%;
+        background-color: red;
+        &.hidden {
+            visibility: hidden;
+        }
+    }
 }
 
 #chat-messages {
