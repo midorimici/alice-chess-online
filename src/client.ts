@@ -57,8 +57,8 @@ let myrole: 'play' | 'watch';
 let myname: string;
 
 // フォーム取得
-// production: io('https://geister-online.herokuapp.com')
-const socket: SocketIOClient.Socket = io();
+// production: io('https://alice-chess-online.herokuapp.com')
+const socket: SocketIOClient.Socket = io('https://alice-chess-online.herokuapp.com');
 const form = document.getElementById('form') as HTMLFormElement;
 form.addEventListener('submit', (e: Event) => {
     e.preventDefault();

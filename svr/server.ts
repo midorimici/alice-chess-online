@@ -10,7 +10,7 @@ app.use(express.static(process.cwd() + '/public'));
 const server: http.Server = http.createServer(app);
 const io: socketio.Server = require('socket.io')(server, {
     cors: {
-        origin: 'https://geister-online.netlify.app',
+        origin: 'https://alice-chess-online.netlify.app',
         methods: ['GET', 'POST']
     }
 });
