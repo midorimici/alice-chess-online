@@ -1,6 +1,13 @@
 #game-container {
     display: none;
+    width: 96%;
     height: 90%;
+    align-items: center;
+    justify-content: space-around;
+}
+
+#settings-and-messages {
+    height: 100%;
 }
 
 #mute-icon, #eye-icon {
@@ -26,7 +33,6 @@
 }
 
 .canvas {
-    margin: 0 1rem;
     height: max-content;
 }
 

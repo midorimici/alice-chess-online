@@ -27,9 +27,12 @@ let showOppositePieces: boolean = true;
 /** 入力フォームを非表示にし、canvas などを表示する */
 const initCanvas = async () => {
     document.getElementById('settings').style.display = 'none';
-    
-    const cw: number = document.documentElement.clientWidth;
-    const ch: number = document.documentElement.clientHeight;
+
+    const gameContainer = document.getElementById('game-container');
+    gameContainer.style.display = 'flex';
+
+    const cw: number = gameContainer.clientWidth;
+    const ch: number = gameContainer.clientHeight;
 
     if (cw < ch || ch < 720) {
         document.getElementById('logo').style.display = 'none';
@@ -46,7 +49,6 @@ const initCanvas = async () => {
 
     draw = await Draw.init(canvass);
     doneInitCanvas = true;
-    document.getElementById('game-container').style.display = 'flex';
 };
 
 /** 対戦者か観戦者か */
