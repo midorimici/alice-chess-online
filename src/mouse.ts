@@ -46,6 +46,6 @@ export default class Mouse {
      */
     onArea(x: number, y: number,
             left: number, top: number, w: number, h: number): boolean {
-        return left <= x && x <= left+w && top <= y&& y <= top+h;
+        return left <= x && x <= left+w && top <= y && y <= top+h;
     }
 }

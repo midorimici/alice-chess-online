@@ -49,22 +49,41 @@ export default class Draw {
         return new Promise(resolve => {
             const img = new Image();
             img.onload = () => resolve(img);
-            img.src = `./static/img/${color}${name}.png`;
+            img.src = `../static/img/${color}${name}.png`;
         });
+    }
+
+    /**
+     * 画像を描画する
+     * @param ctx コンテキスト
+     * @param img 描画する画像
+     * @param pos 描画位置。盤面上の座標
+     */
+    private drawImg(ctx: CanvasRenderingContext2D, img: HTMLImageElement,
+            pos: [number, number]) {
+        const sqSize = this.squareSize;
+        ctx.drawImage(img, 0, 0, img.width, img.height,
+            this.margin + sqSize*pos[0], this.margin + sqSize*pos[1],
+            sqSize, sqSize)
     }
 
     /**
      * 画像を描画
      * @param pos 描画する位置。'盤面,x,y'
      * @param piece 描画する駒の名前。'WB'など
+     * @param showOppositePieces 反対側の盤面の駒を表示するか
      */
-    private drawImg(pos: string, piece: string) {
-        const squareSize = this.squareSize;
-        const pos_ = pos.split(',').map(e => +e);
+    private drawPiece(posStr: string, piece: string, showOppositePieces: boolean) {
+        const pos = posStr.split(',').map(e => +e);
+        const anotherCtx = this.ctxs[1-pos[0]];
         const img = this.imgs.get(piece);
-        this.ctxs[pos_[0]].drawImage(img, 0, 0, img.width, img.height,
-            this.margin + squareSize*pos_[1], this.margin + squareSize*pos_[2],
-            squareSize, squareSize);
+        this.drawImg(this.ctxs[pos[0]], img, [pos[1], pos[2]])
+        if (showOppositePieces) {
+            anotherCtx.save();
+            anotherCtx.globalAlpha = 0.2;
+            this.drawImg(anotherCtx, img, [pos[1], pos[2]]);
+            anotherCtx.restore();
+        }
     }
 
     /** アイボリーで画面全体を塗りつぶす */
@@ -141,8 +160,9 @@ export default class Draw {
     /** ゲームボードと盤面上の駒を描く
      * @param boardmap 盤面データ
      * @param color 駒色。先手後手どちら目線か
+     * @param showOppositePieces 反対側の盤面の駒を表示するか
      */
-    board(boardmap: Map<string, string>, color: 'W' | 'B') {
+    board(boardsMap: Map<string, string>, color: 'W' | 'B', showOppositePieces: boolean) {
         this.clearCanvas();
         const ctxs = this.ctxs;
 
@@ -165,8 +185,8 @@ export default class Draw {
         }
 
         // 駒
-        for (let [pos, piece] of boardmap.entries()) {
-            this.drawImg(pos, piece);
+        for (let [pos, piece] of boardsMap.entries()) {
+            this.drawPiece(pos, piece, showOppositePieces);
         }
     }
 
@@ -175,11 +195,13 @@ export default class Draw {
      * @param piece 駒インスタンス
      * @param pos 位置。ゲーム内座標
      * @param boardmap 盤面データ
+     * @param advanced2Pos ポーンが 2 歩進んだときの移動先
      */
     dest(piece: Piece, pos: [number, number],
-            boardmap: Map<string, string>) {
+            boardsMap: Map<string, string>, advanced2Pos: number[] | null,
+            canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean]}) {
         const ctx = this.ctxs[piece.side];
-        for (const dest of piece.coveringSquares(pos, boardmap)) {
+        for (const dest of piece.validMoves(pos, boardsMap, advanced2Pos, canCastle)) {
             const coord = new Vec(dest).mul(this.squareSize)
                 .add(this.margin + this.squareSize/2).val();
             ctx.beginPath();
@@ -190,48 +212,20 @@ export default class Draw {
     }
 
     /**
-     * 取った駒を盤面の端に描画する
-     * @param numbers それぞれが取った駒の色と数
-     * @param turn 先手後手どちら目線か
+     * プロモーションの選択肢を表示
+     * @param boardId 駒の移動前の盤面がどちらか
+     * @param color 表示する駒色
      */
-    /*
-    takenPieces(numbers: [{'R': number, 'B': number}, {'R': number, 'B': number}],
-            turn: 0 | 1) {
-        const ctx = this.ctx;
-        const smallPieceSize = this.pieceSize/6;
+    promotion(boardId: 0 | 1, color: 'W' | 'B') {
+        const ctx = this.ctxs[boardId];
         const margin = this.margin;
-        const squareSize = this.squareSize;
-
-        const drawPiece = (coord: [number, number], color: string) => {
-            ctx.save();
-            ctx.fillStyle = color;
-            ctx.translate(...coord);
-            ctx.scale(1/6, 1/6);
-            ctx.fill(this.piecePath);
-            ctx.restore();
-        }
-
-        const y1 = turn === 0 ? margin + 6*squareSize + smallPieceSize : smallPieceSize;
-        const y2 = turn === 1 ? margin + 6*squareSize + smallPieceSize : smallPieceSize;
-
-        // 先手が取った駒
-        for (let i = 0; i < numbers[0]['R']; i++) {
-            const coord: [number, number] = [(i+1)*smallPieceSize, y1];
-            drawPiece(coord, config.red);
-        }
-        for (let i = 0; i < numbers[0]['B']; i++) {
-            const coord: [number, number] = [(i+1+numbers[0]['R'])*smallPieceSize, y1];
-            drawPiece(coord, config.blue);
-        }
-        // 後手が取った駒
-        for (let i = 0; i < numbers[1]['R']; i++) {
-            const coord: [number, number] = [(i+1)*smallPieceSize, y2];
-            drawPiece(coord, config.red);
-        }
-        for (let i = 0; i < numbers[1]['B']; i++) {
-            const coord: [number, number] = [(i+1+numbers[1]['R'])*smallPieceSize, y2];
-            drawPiece(coord, config.blue);
-        }
+        const sqSize = this.squareSize;
+        ctx.fillStyle = config.grey;
+        ctx.fillRect(margin + sqSize*3/2, margin + sqSize*3,
+            sqSize*5, sqSize*2);
+        this.drawImg(ctx, this.imgs.get(color+'N'), [2, 3.5]);
+        this.drawImg(ctx, this.imgs.get(color+'B'), [3, 3.5]);
+        this.drawImg(ctx, this.imgs.get(color+'R'), [4, 3.5]);
+        this.drawImg(ctx, this.imgs.get(color+'Q'), [5, 3.5]);
     }
-    */
 };

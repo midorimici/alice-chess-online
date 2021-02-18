@@ -1,12 +1,18 @@
 #game-container {
     display: none;
+    width: 96%;
     height: 90%;
+    align-items: center;
+    justify-content: space-around;
 }
 
-#mute-icon {
+#settings-and-messages {
+    height: 100%;
+}
+
+#mute-icon, #eye-icon {
     margin-right: 1rem;
     cursor: pointer;
-    flex-shrink: 0;
     width: 2rem;
     height: 2rem;
     transition: transform .3s;
@@ -27,18 +33,47 @@
 }
 
 .canvas {
-    margin: 0 1rem;
     height: max-content;
 }
 
+
+
 #chat {
-    flex-grow: 3;
-    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 5rem 2rem;
+    width: 30%;
+    height: calc(100% - 10rem);
+    background-color: ivory;
+    transition: right .4s;
+    will-change: right;
+    &.closed {
+        right: -40%;
+    }
 }
 
-#chat-icon {
-    width: 2rem;
-    height: 2rem;
+#chat-btn {
+    cursor: pointer;
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    z-index: 1;
+    & > #chat-icon {
+        width: 2rem;
+        height: 2rem;
+    }
+    & > #chat-new {
+        position: absolute;
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 100%;
+        background-color: red;
+        &.hidden {
+            visibility: hidden;
+        }
+    }
 }
 
 #chat-messages {

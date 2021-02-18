@@ -19,6 +19,8 @@ export default (socket: SocketIOClient.Socket, isEN: boolean) => {
     };
 
     const ul = document.getElementById('chat-messages');
+    const chat = document.getElementById('chat');
+    const chatCircle = document.getElementById('chat-new');
     socket.on('chat message', 
             /**
              * チャット受信の処理
@@ -50,5 +52,14 @@ export default (socket: SocketIOClient.Socket, isEN: boolean) => {
 
         ul.appendChild(item);
         ul.scrollTop = ul.scrollHeight;
+
+        if (chat.className === 'closed') chatCircle.className = '';
     });
+
+    // チャットタブのスライド
+    const chatBtn = document.getElementById('chat-btn');
+    chatBtn.onclick = () => {
+        chatCircle.className = 'hidden';
+        chat.classList.toggle('closed');
+    }
 }

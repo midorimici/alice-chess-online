@@ -3,6 +3,7 @@ import * as http from 'http';
 import * as socketio from 'socket.io';
 
 import * as game from './game';
+import { pieceNames } from './piece';
 
 const app: express.Express = express();
 app.use(express.static(process.cwd() + '/public'));
@@ -52,54 +53,17 @@ const initBoard = (): Map<string, string> => {
     return m;
 }
 
-/**
- * 盤面を変換する
- * @param to 変換先。 0 -> 先手, 1 -> 後手
- */
-const rotateBoard = (to: 0 | 1): Map<string, string> => {
-    let orig = board[1-to];
-    let res = new Map();
-    for (const [pos, piece] of orig.entries()) {
-        let [b, x, y] = pos.split(',').map(e => +e);
-        res.set(`${b},${7-x},${7-y}`, piece);
-    }
-    return res;
-}
-
-/**
- * side が勝利条件を満たすか
- * @param taken それぞれが取った駒の色と数
- * @param posOnBoard 盤面上にある駒の位置リスト
- * @param side 先手か後手か
- * @param moved side が今駒を動かしたか
- */
-const winReq = (taken: [{'R': number, 'B': number},
-        {'R': number, 'B': number}],
-        posOnBoard: string[], side: 0 | 1, moved: boolean): boolean => {
-    if (moved) {
-        // 青を4つ取った
-        // or 青が盤面に出た
-        return (taken[side]['B'] === 4
-            || (posOnBoard.indexOf('0,-1') !== -1
-                || posOnBoard.indexOf('5,-1') !== -1));
-    } else {
-        // 赤を4つ取らせた
-        return taken[(side+1)%2]['R'] === 4;
-    }
-}
-
 // 盤面。{'0,0,0': 'WN'} のフォーマット
 /** 先手から見た盤面, 後手から見た盤面 */
-let board: [Map<string, string>, Map<string, string>];
+let boards: [Map<string, string>, Map<string, string>];
 /** 先手, 後手の名前と socket id */
 let players: [{name: string, id: string}, {name: string, id: string}];
 /** 現在のターン */
-let curTurn: 0 | 1 = 0;
-/** それぞれが取った駒の色と数 */
-let takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]
-    = [{'R': 0, 'B': 0}, {'R': 0, 'B': 0}];
-/** 勝者 0 - 先手, 1 - 後手 */
-let winner: 0 | 1;
+let curTurn: 0 | 1;
+/** 勝者 0 - 先手, 1 - 後手, 2 - 引き分け */
+let winner: 0 | 1 | 2;
+/** キャスリングのポテンシャルが残っているか */
+let canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean]};
 
 io.on('connection', (socket: customSocket) => {
     socket.on('enter room', 
@@ -133,16 +97,22 @@ io.on('connection', (socket: customSocket) => {
                             id: room.player2.id
                         }
                     ];
+                    // 変数の初期化
                     // 盤面生成
-                    board = [initBoard(), new Map()];
-                    board[1] = rotateBoard(1);
+                    boards = [initBoard(), new Map()];
+                    boards[1] = game.rotateBoard(boards[0]);
+                    curTurn = 0;
+                    winner = null;
+                    canCastle = {'W': [true, true], 'B': [true, true]};
                     // クライアントへ送信
                     io.to(info.roomId).emit('watch',
-                        [...board[0]], ...players.map(e => e.name), curTurn, false, takenPieces);
+                        [...boards[0]], ...players.map(e => e.name), curTurn, false);
                     io.to(room.player1.id).emit('game',
-                        [...board[0]], 'W', true, ...players.map(e => e.name), false, takenPieces);
+                        [...boards[0]], 'W', true, ...players.map(e => e.name), false,
+                        null, canCastle);
                     io.to(room.player2.id).emit('game',
-                        [...board[1]], 'B', false, ...players.map(e => e.name), false, takenPieces);
+                        [...boards[1]], 'B', false, ...players.map(e => e.name), false,
+                        null, canCastle);
                 } else {
                     // 対戦者がすでに2人いる
                     socket.emit('room full', info.roomId);
@@ -176,12 +146,16 @@ io.on('connection', (socket: customSocket) => {
                     socket.emit('wait opponent');
                 } else {
                     // 対戦者がすでに2人いて対戦中
-                    socket.emit('watch',
-                        [...board[0]], ...players.map(e => e.name), curTurn, false, takenPieces);
-                    if (winner === 0 || winner === 1) {
+                    if (winner == null) {
+                        // 勝敗が決まっていないとき
+                        socket.emit('watch',
+                            [...boards[0]], ...players.map(e => e.name), curTurn, false);
+                    } else {
+                        // 勝敗が決まっているとき
+                        socket.emit('watch',
+                            [...boards[0]], ...players.map(e => e.name), curTurn, false, true);
                         socket.emit('tell winner',
-                            players.map(e => e.name)[winner], [...board[0]],
-                            ...players.map(e => e.name), takenPieces);
+                            players.map(e => e.name)[winner]);
                     }
                 }
             } else {
@@ -194,55 +168,107 @@ io.on('connection', (socket: customSocket) => {
     socket.on('move piece',
             /**
              * 駒を動かしたときのサーバ側の処理
-             * @param boardmap 盤面データ
+             * @param boardId 駒の移動前の盤面がどちらか
+             * @param from 駒の移動前の位置
+             * @param to 駒の移動後の位置
+             * @param promoteTo プロモーションのとき、プロモーション先
              */
-            (boardnum: 0 | 1, from: string, to: string) => {
+            (boardId: 0 | 1, from: [number, number], to: [number, number],
+                promoteTo?: pieceNames) => {
         const roomId = socket.info.roomId;
-        const newBoard = board[curTurn];
+        const colors: ['W', 'B'] = ['W', 'B'];
+        const newBoard = boards[curTurn];
+        const pieceName = newBoard.get(`${boardId},` + String(from))?.[1] as pieceNames;
+
+        // キャスリング
+        // ルークが動いた
+        if (pieceName === 'R') {
+            // クイーンサイド
+            if (String(from) === '0,7') {
+                canCastle[colors[curTurn]][curTurn] = false;
+            }
+            // キングサイド
+            if (String(from) === '7,7') {
+                canCastle[colors[curTurn]][1-curTurn] = false;
+            }
+        }
+        // キングが動いた
+        if (pieceName === 'K') {
+            canCastle[colors[curTurn]] = [false, false];
+            // キャスリングが行われたときルークを動かす
+            if (Math.abs(to[0]-from[0]) === 2) {
+                let newX: number, oldX: number;
+                switch (to[0]) {
+                case 2:
+                    // 白クイーンサイド
+                    [newX, oldX] = [3, 0];
+                    break;
+                case 6:
+                    // 白キングサイド
+                    [newX, oldX] = [5, 7];
+                    break;
+                case 5:
+                    // 黒クイーンサイド
+                    [newX, oldX] = [4, 7];
+                    break;
+                case 1:
+                    // 黒キングサイド
+                    [newX, oldX] = [2, 0];
+                    break;
+                }
+                newBoard.set(`${1-boardId},${newX},7`, colors[curTurn] + 'R');
+                newBoard.delete(`${boardId},${oldX},7`);
+            }
+        }
+
+        // en passant
+        if (game.enPassantReq(from, to,
+                pieceName, boardId,
+                boardId, newBoard)) {
+            // ポーンを除去する
+            newBoard.delete(`${boardId},${to[0]},${to[1]+1}`);
+        }
+        // ポーンが 2 歩進んだときの移動先
+        const advanced2Pos = (pieceName === 'P' && from[1] - to[1] === 2)
+            ? [1-boardId, ...to] : null;
+        
         // 駒の移動
-        newBoard.set(`${1-boardnum},${to}`,
-            newBoard.get(`${boardnum},${from}`));
-        newBoard.delete(`${boardnum},${from}`);
-        // 敵駒があったら削除
-        newBoard.delete(`${boardnum},${to}`);
-        // 相手の駒を取ったとき
-        /*
-        if (board.has(String(dest)) && board.get(String(dest)).turn !== turn) {
-            // 取った駒の色を記録する
-            takenPieces[turn][board.get(String(dest)).color] += 1;
-        }*/
-        // turn 目線のボードを更新する
-        board[curTurn] = newBoard;
+        game.renewBoard(boardId, from, to, newBoard);
+        if (promoteTo) {
+            // プロモーション
+            newBoard.set(`${1-boardId},` + String(to),
+                colors[curTurn] + promoteTo);
+        }
         // 相手目線のボードを更新する
-        board[1-curTurn] = rotateBoard(1-curTurn as 0 | 1);
+        boards[1-curTurn] = game.rotateBoard(newBoard);
         // ターン交代
         curTurn = 1-curTurn as 0 | 1;
-        // 勝敗判定
-        /*
-        if (winReq(takenPieces, Array.from(board.keys()), turn, true)) {
-            winner = turn;
-        } else if (winReq(takenPieces, Array.from(board.keys()), (turn+1)%2 as 0 | 1, false)) {
-            winner = (turn+1)%2 as 0 | 1;
-        }*/
         // チェック判定
-        const checked = game.isChecked('W', board[1]) || game.isChecked('B', board[0]);
+        const checked = game.isChecked(colors[curTurn], boards[1-curTurn]);
+        const freezed = game.cannotMove(colors[curTurn], boards[curTurn],
+            advanced2Pos, canCastle);
+        // 勝敗判定
+        if (freezed) {
+            if (checked) {
+                winner = 1-curTurn as 0 | 1;
+            } else {
+                winner = 2;
+            }
+        }
         // 盤面データをクライアントへ
         io.to(roomId).emit('watch',
-            [...board[0]], ...players.map(e => e.name), curTurn, checked, takenPieces);
+            [...boards[0]], ...players.map(e => e.name), curTurn, checked);
         io.to(players[0].id).emit('game',
-            [...board[0]], 'W', curTurn === 0, ...players.map(e => e.name), checked, takenPieces);
+            [...boards[0]], 'W', curTurn === 0, ...players.map(e => e.name),
+                checked, advanced2Pos, canCastle);
         io.to(players[1].id).emit('game',
-            [...board[1]], 'B', curTurn === 1, ...players.map(e => e.name), checked, takenPieces);
+            [...boards[1]], 'B', curTurn === 1, ...players.map(e => e.name),
+                checked, advanced2Pos, canCastle);
         // 勝者を通知する
-        /*
-        if (winner === 0 || winner === 1) {
-            io.to(roomId).emit('tell winner to audience and first',
-                players.map(e => e.name)[winner], [...board[0]]
-                , ...players.map(e => e.name), takenPieces);
-            io.to(second.id).emit('tell winner to second',
-                players.map(e => e.name)[winner], [...board[1]]
-                , ...players.map(e => e.name), takenPieces);
-        }*/
+        if (winner != null) {
+            io.to(roomId).emit('tell winner',
+                players.map(e => e.name)[winner]);
+        }
     });
 
     socket.on('chat message', (msg: string) => {

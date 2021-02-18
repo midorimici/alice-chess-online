@@ -17,15 +17,22 @@ const canvass = Array.from(document.getElementsByClassName('canvas')) as HTMLCan
 const gameMessage = document.getElementById('game-message');
 /** ミュートボタン */
 const muteButton = document.getElementById('mute-icon') as HTMLImageElement;
+/** 駒表示ボタン */
+const showHideButton = document.getElementById('eye-icon') as HTMLImageElement;
 /** ミュート状態か */
 let muted: boolean = true;
+/** 反対側の盤面の駒を表示するか */
+let showOppositePieces: boolean = true;
 
 /** 入力フォームを非表示にし、canvas などを表示する */
 const initCanvas = async () => {
     document.getElementById('settings').style.display = 'none';
-    
-    const cw: number = document.documentElement.clientWidth;
-    const ch: number = document.documentElement.clientHeight;
+
+    const gameContainer = document.getElementById('game-container');
+    gameContainer.style.display = 'flex';
+
+    const cw: number = gameContainer.clientWidth;
+    const ch: number = gameContainer.clientHeight;
 
     if (cw < ch || ch < 720) {
         document.getElementById('logo').style.display = 'none';
@@ -42,7 +49,6 @@ const initCanvas = async () => {
 
     draw = await Draw.init(canvass);
     doneInitCanvas = true;
-    document.getElementById('game-container').style.display = 'flex';
 };
 
 /** 対戦者か観戦者か */
@@ -111,21 +117,24 @@ const snd = (file: string) => {
 socket.on('game', 
         /**
          * 対戦者側のゲーム処理
-         * @param board 盤面データ
+         * @param boards 盤面データ
          * @param color 自分の駒色
          * @param myturn 現在自分のターンか
          * @param first 先手のプレイヤー名
          * @param second 後手のプレイヤー名
          * @param checked どちらかがチェックされているか
-         * @param takenPieces それぞれが取った駒の色と数
+         * @param advanced2Pos ポーンが 2 歩進んだときの移動先
          */
-        async (board: [string, string][],
+        async (boards: [string, string][],
         color: 'W' | 'B', myturn: boolean,
         first: string, second: string, checked: boolean,
-        takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
-    const boardmap: Map<string, string> = new Map(board);
+        advanced2Pos: number[] | null,
+        canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean]}) => {
+    const boardsMap: Map<string, string> = new Map(boards);
     /** 選択中の駒の位置 */
-    let selectingPos: [number, number];
+    let originPos: [number, number];
+    /** 行先の位置 */
+    let destPos: [number, number];
     // 対戦者名表示
     if (document.getElementById('user-names').innerText === '') {
         const opponent = color === 'W' ? second : first;
@@ -134,47 +143,70 @@ socket.on('game',
     }
     // 盤面描画
     if (!doneInitCanvas) await initCanvas();
-    draw.board(boardmap, color);
-    //draw.takenPieces(takenPieces, turn);
+    draw.board(boardsMap, color, showOppositePieces);
+    showHideButton.onclick = () => toggleShowHide(boardsMap, color);
     // 手番の表示
     // マウスコールバック
     if (myturn) {
         gameMessage.innerText = isEN ? "It's your turn." : 'あなたの番です。';
         if (!muted) snd('move');
-
+        
         for (const [index, canvas] of canvass.entries()) {
+            let prom = false;
             mouse = new Mouse(canvas);
             canvas.onclick = (e: MouseEvent) => {
                 const sqPos = mouse.getCoord(e);
-                if (boardmap.get(`${index},` + String(sqPos))?.[0] === color) {
+                if (boardsMap.get(`${index},` + String(sqPos))?.[0] === color) {
                     // 自分の駒を選択したとき
-                    selectingPos = sqPos;
+                    originPos = sqPos;
                     const pieceClass = abbrPieceDict[
-                        boardmap.get(`${index},` + String(sqPos))[1] as pieceNames];
+                        boardsMap.get(`${index},` + String(sqPos))[1] as pieceNames];
                     const piece = new pieceClass(color, index as 0 | 1);
                     // 行先を描画
-                    draw.board(boardmap, color);
-                    draw.dest(piece, selectingPos, boardmap);
-                    //draw.takenPieces(takenPieces, turn);
+                    draw.board(boardsMap, color, showOppositePieces);
+                    draw.dest(piece, originPos, boardsMap, advanced2Pos, canCastle);
+                    prom = false;
                 } else {
-                    if (boardmap.has(`${index},` + String(selectingPos))) {
+                    if (!prom && boardsMap.has(`${index},` + String(originPos))) {
+                        destPos = sqPos;
                         const pieceClass = abbrPieceDict[
-                            boardmap.get(`${index},` + String(selectingPos))[1] as pieceNames];
+                            boardsMap.get(`${index},` + String(originPos))[1] as pieceNames];
                         const piece = new pieceClass(color, index as 0 | 1);
-                        if (piece.coveringSquares(selectingPos, boardmap)
-                                .some(e => String(e) === String(sqPos))) {
+                        if (piece.validMoves(originPos, boardsMap, advanced2Pos, canCastle)
+                                .some(e => String(e) === String(destPos))) {
                             // 行先を選択したとき
-                            if (!muted) snd('move');
-                            // サーバへ移動データを渡す
-                            socket.emit('move piece', index,
-                                String(selectingPos),
-                                String(sqPos));
+                            if (piece.abbr === 'P' && destPos[1] === 0) {
+                                prom = true;
+                            } else {
+                                if (!muted) snd('move');
+                                // サーバへ移動データを渡す
+                                socket.emit('move piece', index,
+                                    originPos, destPos);
+                            }
                         }
                     }
                     // 盤面描画更新
-                    draw.board(boardmap, color);
-                    //draw.takenPieces(takenPieces, turn);
-                    selectingPos = null;
+                    draw.board(boardsMap, color, showOppositePieces);
+                    if (prom) {
+                        const pieces = ['N', 'B', 'R', 'Q'];
+                        for (let i = 2; i <= 5; i++) {
+                            if (sqPos[0] === i && (sqPos[1] === 3 || sqPos[1] === 4)) {
+                                prom = false;
+                                if (!muted) snd('move');
+                                // サーバへ移動データを渡す
+                                socket.emit('move piece', index,
+                                    originPos, destPos, pieces[i-2]);
+                            }
+                        }
+                        // プロモーションの選択肢表示
+                        if (String(sqPos) === String(destPos)) draw.promotion(index as 0 | 1, color);
+                        else {
+                            prom = false;
+                            originPos = null;
+                        }
+                    } else {
+                        originPos = null;
+                    }
                 }
             }
         }
@@ -189,6 +221,7 @@ socket.on('game',
     if (checked) {
         gameMessage.innerHTML = (isEN ? "Check!" : 'チェック！') + '<br>'
             + gameMessage.innerText;
+        if (!muted) snd('check');
     }
 });
 
@@ -196,18 +229,18 @@ socket.on('game',
 socket.on('watch',
         /**
          * 観戦者側のゲーム処理
-         * @param board 盤面データ
+         * @param boards 盤面データ
          * @param first 先手のプレイヤー名
          * @param second 後手のプレイヤー名
          * @param turn 現在のターン
          * @param checked どちらかがチェックされているか
-         * @param takenPieces それぞれが取った駒の色と数
+         * @param omitMessage 手番やチェックのメッセージを省略するか
          */
-        async (board: [string, string][],
+        async (boards: [string, string][],
         first: string, second: string, turn: 0 | 1, checked: boolean,
-        takenPieces: [{'R': number, 'B': number}, {'R': number, 'B': number}]) => {
+        omitMessage: boolean = false) => {
     if (myrole === 'watch') {
-        const boardmap: Map<string, string> = new Map(board);
+        const boardsMap: Map<string, string> = new Map(boards);
         // 対戦者名表示
         if (document.getElementById('user-names').innerText === '') {
             document.getElementById('user-names').innerText
@@ -220,23 +253,36 @@ socket.on('watch',
         }
         // 盤面描画
         if (!doneInitCanvas) await initCanvas();
-        draw.board(boardmap, 'W');
-        //draw.takenPieces(takenPieces, 0);
+        draw.board(boardsMap, 'W', showOppositePieces);
+        showHideButton.onclick = () => toggleShowHide(boardsMap, 'W');
+        if (omitMessage) return;
+        // 手番表示
         const curPlayer: string = turn === 0 ? first : second;
         gameMessage.innerText = isEN
-        ? `It's ${curPlayer}'s turn.`
-        : `${curPlayer} さんの番です。`;
+            ? `It's ${curPlayer}'s turn.`
+            : `${curPlayer} さんの番です。`;
         if (!muted) snd('move');
+        // チェック表示
+        if (checked) {
+            gameMessage.innerHTML = (isEN ? "Check!" : 'チェック！') + '<br>'
+                + gameMessage.innerText;
+            if (!muted) snd('check');
+        }
     }
 });
 
 // 勝者が決まったとき
 socket.on('tell winner',
         /** 勝者が決まったときの処理
-         * @param winner 勝者のプレイヤー名
+         * @param winner 勝者のプレイヤー名。undefined なら引き分け
         */
-        (winner: string) => {
-    gameMessage.innerText = isEN ? `${winner} won!` : `${winner} の勝ち！`;
+        (winner: string | undefined) => {
+    if (winner === undefined) {
+        gameMessage.innerText = (isEN ? "Draw!" : '引き分け！');
+    } else {
+        gameMessage.innerHTML = (isEN ? "Checkmate!" : 'チェックメイト！') + '<br>'
+            + (isEN ? `${winner} won!` : `${winner} の勝ち！`);
+    }
     if (!muted) snd('win');
 });
 
@@ -257,9 +303,21 @@ muteButton.onclick = () => {
         ? '../static/svg/volume-up-solid.svg'
         : '../static/svg/volume-mute-solid.svg';
     muteButton.title = muted
-    ? (isEN ? 'Mute' : 'ミュート')
-    : (isEN ? 'Unmute' : 'ミュート解除');
+        ? (isEN ? 'Mute' : 'ミュート')
+        : (isEN ? 'Unmute' : 'ミュート解除');
     muted = !muted;
+};
+
+// 駒表示ボタン
+const toggleShowHide = (boardsMap: Map<string, string>, color: 'W' | 'B') => {
+    showHideButton.src = showOppositePieces
+        ? '../static/svg/eye-slash-regular.svg'
+        : '../static/svg/eye-regular.svg';
+    showHideButton.title = showOppositePieces
+        ? (isEN ? 'Show pieces in opposite board' : '反対側の盤面の駒を表示する')
+        : (isEN ? 'Hide pieces in opposite board' : '反対側の盤面の駒を隠す');
+    showOppositePieces = !showOppositePieces;
+    draw.board(boardsMap, color, showOppositePieces)
 };
 
 // info ボタン

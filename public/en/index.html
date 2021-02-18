@@ -47,15 +47,19 @@
             </div>
         </section>
         <section id='game-container'>
-            <div>
+            <div id='settings-and-messages'>
                 <img id='mute-icon' src='../static/svg/volume-mute-solid.svg' alt='mute-button' title='Unmute'>
+                <img id='eye-icon' src='../static/svg/eye-regular.svg' alt='show-hide-button' title='Hide pieces in opposite board'>
                 <p id='user-names'></p>
                 <p id='game-message'></p>
             </div>
             <canvas class='canvas'></canvas>
             <canvas class='canvas'></canvas>
-            <div id='chat'>
+            <div id='chat-btn'>
                 <img id='chat-icon' src='../static/svg/comments-regular.svg' alt='chat-icon' title='Chat'>
+                <span id='chat-new' class='hidden'></span>
+            </div>
+            <div id='chat' class='closed'>
                 <ul id='chat-messages'></ul>
                 <form id='chat-form'>
                     <input id='chat-input'>
