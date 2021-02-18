@@ -124,6 +124,7 @@ socket.on('game',
          * @param second 後手のプレイヤー名
          * @param checked どちらかがチェックされているか
          * @param advanced2Pos ポーンが 2 歩進んだときの移動先
+         * @param canCastle キャスリングのポテンシャルが残っているか
          */
         async (boards: [string, string][],
         color: 'W' | 'B', myturn: boolean,
@@ -308,7 +309,11 @@ muteButton.onclick = () => {
     muted = !muted;
 };
 
-// 駒表示ボタン
+/**
+ * 駒表示ボタン
+ * @param boardsMap 盤面
+ * @param color 自分の色
+ */
 const toggleShowHide = (boardsMap: Map<string, string>, color: 'W' | 'B') => {
     showHideButton.src = showOppositePieces
         ? '../static/svg/eye-slash-regular.svg'

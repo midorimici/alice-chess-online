@@ -58,6 +58,7 @@ const isChecked = (color: 'W' | 'B', boards: Map<string, string>): boolean => {
  * @param color 駒色
  * @param boards color 側から見た盤面
  * @param advanced2Pos ポーンが 2 歩進んだときの移動先
+ * @param canCastle キャスリングのポテンシャルが残っているか
  */
 const cannotMove = (color: 'W' | 'B', boards: Map<string, string>,
         advanced2Pos: number[] | null,

@@ -95,10 +95,8 @@ export default class Draw {
     }
 
     /**
-     * 一辺 squareSize のグリッドを描く
-     * @param coord 左上の座標。ウィンドウ座標
-     * @param col 列数
-     * @param row 行数
+     * チェッカーボードを描く
+     * @param ctx コンテキスト
      */
     private grid(ctx: CanvasRenderingContext2D) {
         const squareSize: number = this.squareSize;
@@ -130,32 +128,6 @@ export default class Draw {
         ctx.closePath();
         ctx.stroke();
     }
-
-    /**
-     * ボタンを描く
-     * @param coord 位置。ウィンドウ座標
-     * @param size 幅と高さ
-     * @param disabled 押せなくする
-     */
-    /*
-    private button(coord: [number, number], size: [number, number],
-            disabled: boolean) {
-        const ctx = this.ctx;
-
-        ctx.fillStyle = disabled ?
-            'rgb(160, 140, 120)' : 'rgb(200, 180, 160)';
-        ctx.fillRect(...coord, ...size);
-
-        ctx.font = `${this.canvas.width/30}px Meiryo`;
-        ctx.save();
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = config.dark;
-        ctx.fillText('OK',
-            ...new Vec(size).div(2).add(coord).val());
-        ctx.restore();
-    }
-    */
 
     /** ゲームボードと盤面上の駒を描く
      * @param boardmap 盤面データ
@@ -196,6 +168,7 @@ export default class Draw {
      * @param pos 位置。ゲーム内座標
      * @param boardmap 盤面データ
      * @param advanced2Pos ポーンが 2 歩進んだときの移動先
+     * @param canCastle キャスリングのポテンシャルが残っているか
      */
     dest(piece: Piece, pos: [number, number],
             boardsMap: Map<string, string>, advanced2Pos: number[] | null,

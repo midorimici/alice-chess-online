@@ -13,7 +13,7 @@ export default class Mouse {
      * キャンバス座標を取得する
      * @param e マウスイベント
      */
-    getWindowPos(e: MouseEvent): [number, number] {
+    private getWindowPos(e: MouseEvent): [number, number] {
         const rect: DOMRect = (e.target as Element).getBoundingClientRect();
         return [e.clientX - rect.left, e.clientY - rect.top];
     }
@@ -33,19 +33,5 @@ export default class Mouse {
      */
     getCoord(e: MouseEvent): [number, number] {
         return this.chcoord(this.getWindowPos(e));
-    }
-
-    /**
-     * (x, y) が指定範囲内にあるか
-     * @param x 位置
-     * @param y 位置
-     * @param left 左端
-     * @param top 上端
-     * @param w 幅
-     * @param h 高さ
-     */
-    onArea(x: number, y: number,
-            left: number, top: number, w: number, h: number): boolean {
-        return left <= x && x <= left+w && top <= y && y <= top+h;
     }
 }
