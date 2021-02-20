@@ -27,14 +27,20 @@ interface customSocket extends socketio.Socket {
 }
 
 /** 部屋番号と部屋のデータの Map
- * @property player1 先に入室したプレイヤー
- * @property player2 後から入室したプレイヤー
+ * @property players 先手, 後手の名前と socket id
  * @property state 部屋の状態
+ * @property boards 先手から見た盤面, 後手から見た盤面。{'0,0,0': 'WN'} のフォーマット
+ * @property curTurn 現在のターン
+ * @property winner 勝者 0 - 先手, 1 - 後手, 2 - 引き分け
+ * @property canCastle キャスリングのポテンシャルが残っているか
 */
 let rooms: Map<string, {
-    player1: {id: string, name: string, turn: 0 | 1},
-    player2: {id: string, name: string, turn: 0 | 1},
-    state: 'waiting' | 'playing'
+    players: [{name: string, id: string}, {name: string, id: string}],
+    state: 'waiting' | 'playing',
+    boards: [Map<string, string>, Map<string, string>],
+    curTurn: 0 | 1,
+    winner: 0 | 1 | 2,
+    canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean]}
 }> = new Map();
 
 /**
@@ -53,18 +59,6 @@ const initBoard = (): Map<string, string> => {
     return m;
 }
 
-// 盤面。{'0,0,0': 'WN'} のフォーマット
-/** 先手から見た盤面, 後手から見た盤面 */
-let boards: [Map<string, string>, Map<string, string>];
-/** 先手, 後手の名前と socket id */
-let players: [{name: string, id: string}, {name: string, id: string}];
-/** 現在のターン */
-let curTurn: 0 | 1;
-/** 勝者 0 - 先手, 1 - 後手, 2 - 引き分け */
-let winner: 0 | 1 | 2;
-/** キャスリングのポテンシャルが残っているか */
-let canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean]};
-
 io.on('connection', (socket: customSocket) => {
     socket.on('enter room', 
             /**
@@ -79,40 +73,28 @@ io.on('connection', (socket: customSocket) => {
             if (room) {
                 // 指定のルームに対戦者がいたとき
                 if (room.state === 'waiting') {
+                    const players = room.players;
                     // 対戦者が1人待機している
-                    room.player2 = {
-                        id: socket.id,
+                    players[1] = {
                         name: info.name,
-                        turn: 1
+                        id: socket.id
                     };
                     room.state = 'playing';
                     socket.join(info.roomId);
-                    players = [
-                        {
-                            name: room.player1.name,
-                            id: room.player1.id
-                        },
-                        {
-                            name: room.player2.name,
-                            id: room.player2.id
-                        }
-                    ];
                     // 変数の初期化
                     // 盤面生成
-                    boards = [initBoard(), new Map()];
-                    boards[1] = game.rotateBoard(boards[0]);
-                    curTurn = 0;
-                    winner = null;
-                    canCastle = {'W': [true, true], 'B': [true, true]};
+                    room.boards = [initBoard(), new Map()];
+                    room.boards[1] = game.rotateBoard(room.boards[0]);
+                    const boards = room.boards;
                     // クライアントへ送信
                     io.to(info.roomId).emit('watch',
-                        [...boards[0]], ...players.map(e => e.name), curTurn, false);
-                    io.to(room.player1.id).emit('game',
+                        [...boards[0]], ...players.map(e => e.name), room.curTurn, false);
+                    io.to(players[0].id).emit('game',
                         [...boards[0]], 'W', true, ...players.map(e => e.name), false,
-                        null, canCastle);
-                    io.to(room.player2.id).emit('game',
+                        null, room.canCastle);
+                    io.to(players[1].id).emit('game',
                         [...boards[1]], 'B', false, ...players.map(e => e.name), false,
-                        null, canCastle);
+                        null, room.canCastle);
                 } else {
                     // 対戦者がすでに2人いる
                     socket.emit('room full', info.roomId);
@@ -120,19 +102,22 @@ io.on('connection', (socket: customSocket) => {
                 }
             } else {
                 // 新たにルームを作成する
-                rooms.set(info.roomId, {
-                    player1: {
-                        id: socket.id,
-                        name: info.name,
-                        turn: 0
-                    },
-                    player2: {
-                        id: '',
-                        name: '',
-                        turn: 0
-                    },
-                    state: 'waiting'
-                });
+                rooms.set(info.roomId,
+                    {
+                        players: [{
+                            name: info.name,
+                            id: socket.id
+                        }, 
+                        {
+                            name: '',
+                            id: ''
+                        }],
+                        state: 'waiting',
+                        boards: null,
+                        curTurn: 0,
+                        winner: null,
+                        canCastle: {'W': [true, true], 'B': [true, true]}
+                    });
                 socket.join(info.roomId);
                 socket.emit('wait opponent');
             }
@@ -146,16 +131,16 @@ io.on('connection', (socket: customSocket) => {
                     socket.emit('wait opponent');
                 } else {
                     // 対戦者がすでに2人いて対戦中
-                    if (winner == null) {
+                    if (room.winner == null) {
                         // 勝敗が決まっていないとき
                         socket.emit('watch',
-                            [...boards[0]], ...players.map(e => e.name), curTurn, false);
+                            [...room.boards[0]], ...room.players.map(e => e.name), room.curTurn, false);
                     } else {
                         // 勝敗が決まっているとき
                         socket.emit('watch',
-                            [...boards[0]], ...players.map(e => e.name), curTurn, false, true);
+                            [...room.boards[0]], ...room.players.map(e => e.name), room.curTurn, false, true);
                         socket.emit('tell winner',
-                            players.map(e => e.name)[winner]);
+                            room.players.map(e => e.name)[room.winner]);
                     }
                 }
             } else {
@@ -176,6 +161,12 @@ io.on('connection', (socket: customSocket) => {
             (boardId: 0 | 1, from: [number, number], to: [number, number],
                 promoteTo?: pieceNames) => {
         const roomId = socket.info.roomId;
+        const room = rooms.get(roomId);
+        const players = room.players;
+        const boards = room.boards;
+        let curTurn = room.curTurn;
+        let canCastle = room.canCastle;
+
         const colors: ['W', 'B'] = ['W', 'B'];
         const newBoard = boards[curTurn];
         const pieceName = newBoard.get(`${boardId},` + String(from))?.[1] as pieceNames;
@@ -242,7 +233,8 @@ io.on('connection', (socket: customSocket) => {
         // 相手目線のボードを更新する
         boards[1-curTurn] = game.rotateBoard(newBoard);
         // ターン交代
-        curTurn = 1-curTurn as 0 | 1;
+        room.curTurn = 1-curTurn as 0 | 1;
+        curTurn = room.curTurn;
         // チェック判定
         const checked = game.isChecked(colors[curTurn], boards[1-curTurn]);
         const freezed = game.cannotMove(colors[curTurn], boards[curTurn],
@@ -250,9 +242,9 @@ io.on('connection', (socket: customSocket) => {
         // 勝敗判定
         if (freezed) {
             if (checked) {
-                winner = 1-curTurn as 0 | 1;
+                room.winner = 1-curTurn as 0 | 1;
             } else {
-                winner = 2;
+                room.winner = 2;
             }
         }
         // 盤面データをクライアントへ
@@ -265,9 +257,9 @@ io.on('connection', (socket: customSocket) => {
             [...boards[1]], 'B', curTurn === 1, ...players.map(e => e.name),
                 checked, advanced2Pos, canCastle);
         // 勝者を通知する
-        if (winner != null) {
+        if (room.winner != null) {
             io.to(roomId).emit('tell winner',
-                players.map(e => e.name)[winner]);
+                players.map(e => e.name)[room.winner]);
         }
     });
 
