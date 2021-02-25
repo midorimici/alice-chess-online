@@ -36,6 +36,7 @@ interface customSocket extends socketio.Socket {
 */
 let rooms: Map<string, {
     players: [{name: string, id: string}, {name: string, id: string}],
+    watchersNum: number,
     state: 'waiting' | 'playing',
     boards: [Map<string, string>, Map<string, string>],
     curTurn: 0 | 1,
@@ -95,6 +96,7 @@ io.on('connection', (socket: customSocket) => {
                     io.to(players[1].id).emit('game',
                         [...boards[1]], 'B', false, ...players.map(e => e.name), false,
                         null, room.canCastle);
+                    socket.emit('audience i/o', room.watchersNum);
                 } else {
                     // 対戦者がすでに2人いる
                     socket.emit('room full', info.roomId);
@@ -112,6 +114,7 @@ io.on('connection', (socket: customSocket) => {
                             name: '',
                             id: ''
                         }],
+                        watchersNum: 0,
                         state: 'waiting',
                         boards: null,
                         curTurn: 0,
@@ -143,6 +146,9 @@ io.on('connection', (socket: customSocket) => {
                             room.players.map(e => e.name)[room.winner]);
                     }
                 }
+                // 観戦者数を更新
+                room.watchersNum++;
+                io.to(info.roomId).emit('audience i/o', room.watchersNum);
             } else {
                 // 指定したルームがないとき
                 socket.emit('no room', info.roomId);
@@ -269,16 +275,23 @@ io.on('connection', (socket: customSocket) => {
     })
 
     socket.on('disconnect', () => {
-        const info = socket.info;
         // 接続が切れたとき
+        const info = socket.info;
         if (info) {
             // ルームに入っていたとき
-            if (info.role === 'play') {
-                // 対戦者としてルームにいたとき
-                rooms.delete(info.roomId);
-                // 観戦者ともう一方の対戦者も退出させる
-                socket.to(info.roomId).leave(info.roomId);
-                socket.to(info.roomId).emit('player discon', info.name);
+            const room = rooms.get(info.roomId);
+            if (room) {
+                if (info.role === 'play') {
+                    // 対戦者としてルームにいたとき
+                    rooms.delete(info.roomId);
+                    // 観戦者ともう一方の対戦者も退出させる
+                    socket.to(info.roomId).leave(info.roomId);
+                    socket.to(info.roomId).emit('player discon', info.name);
+                } else {
+                    // 観戦者数を減らす
+                    room.watchersNum = Math.max(room.watchersNum-1, 0);
+                    io.to(info.roomId).emit('audience i/o', room.watchersNum);
+                }
             }
         }
     });

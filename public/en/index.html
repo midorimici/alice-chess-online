@@ -55,6 +55,7 @@
             </div>
             <canvas class='canvas'></canvas>
             <canvas class='canvas'></canvas>
+            <p id='watchers'><span id='watcher-number'>0</span> audience(s)...</p>
             <div id='chat-btn'>
                 <img id='chat-icon' src='../static/svg/comments-regular.svg' alt='chat-icon' title='Chat'>
                 <span id='chat-new' class='hidden'></span>
@@ -91,7 +92,7 @@
                 <p>Beware that you do not write private information.</p>
             </div>
         </div>
-        <script src='https://alice-chess-online.herokuapp.com/socket.io/socket.io.js'></script>
+        <script src='/socket.io/socket.io.js'></script>
         <script src='../bundle.js'></script>
     </body>
 </html>

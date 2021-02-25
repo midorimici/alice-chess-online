@@ -58,7 +58,7 @@ let myname: string;
 
 // フォーム取得
 // production: io('https://alice-chess-online.herokuapp.com')
-const socket: SocketIOClient.Socket = io('https://alice-chess-online.herokuapp.com');
+const socket: SocketIOClient.Socket = io();
 const form = document.getElementById('form') as HTMLFormElement;
 form.addEventListener('submit', (e: Event) => {
     e.preventDefault();
@@ -98,6 +98,11 @@ socket.on('wait opponent', () => {
         ? 'Waiting for the opponent...'
         : '対戦相手の入室を待っています...'
 });
+
+// 観戦者が増えたとき
+socket.on('audience i/o', (num: number) => {
+    document.getElementById('watcher-number').innerText = String(num);
+})
 
 
 
