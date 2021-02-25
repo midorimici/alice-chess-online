@@ -66,7 +66,9 @@ io.on('connection', (socket: customSocket) => {
              * 入室したときのサーバ側の処理
              * @param info 入室者のデータ
              */
-            (info: {roomId: string, role: 'play' | 'watch', name: string}) => {
+            (info: {
+                private: boolean, roomId: string, role: 'play' | 'watch', name: string
+            }) => {
         socket.info = info;
         const room = rooms.get(info.roomId);
         if (info.role === 'play') {
@@ -104,7 +106,7 @@ io.on('connection', (socket: customSocket) => {
                 }
             } else {
                 // 新たにルームを作成する
-                rooms.set(info.roomId,
+                rooms.set(info.private ? info.roomId : ' 0',
                     {
                         players: [{
                             name: info.name,

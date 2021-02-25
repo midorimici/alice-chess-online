@@ -18,29 +18,37 @@
                     <li><a href='../ja'>JA</a></li>
                     <li><a href='../en'>EN</a></li>
                 </ul>
-                <p>ルーム番号と参加方法を指定してください。</p>
+                <p>ルームのキーと参加方法を指定してください。</p>
                 <form id='form'>
-                    <div>
-                        <label class='form-label'>
-                            ルーム
-                            <input id='room-input' type='number' required min='1' max='100' name='room'>
-                        </label>
-                    </div>
-                    <div>
-                        <label class='form-label'>
-                            参加方法
-                            <div>
-                                <label><input type='radio' name='role' required value='play'>対戦する</label>
-                                <label><input type='radio' name='role' value='watch'>観戦する</label>
-                            </div>
-                        </label>
-                    </div>
-                    <div>
-                        <label class='form-label'>
-                            ユーザー名（任意）
-                            <input id='name-input' type='text' name='username'>
-                        </label>
-                    </div>
+                    <label class='form-label'>
+                        ルーム
+                        <div>
+                            <label title='誰でも対戦や観戦ができる部屋です'>
+                                <input type='radio' name='visibility' required value='public'>
+                                パブリック
+                            </label>
+                            <label title='キーを知る人しか対戦や観戦ができない部屋です'>
+                                <input type='radio' name='visibility' value='private'>
+                                プライベート
+                            </label>
+                        </div>
+                    </label>
+                    <label class='form-label' id='room-key'>
+                        ルームキー
+                        <input id='room-input' type='text' name='room'
+                            required pattern='^[^\s]+$' placeholder='空白文字は使用不可'>
+                    </label>
+                    <label class='form-label'>
+                        参加方法
+                        <div>
+                            <label><input type='radio' name='role' required value='play'>対戦する</label>
+                            <label><input type='radio' name='role' value='watch'>観戦する</label>
+                        </div>
+                    </label>
+                    <label class='form-label'>
+                        ユーザー名（任意）
+                        <input id='name-input' type='text' name='username'>
+                    </label>
                     <input id='submit-btn' type='submit' value='GO'>
                 </form>
                 <p id='message'></p>

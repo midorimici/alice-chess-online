@@ -56,14 +56,31 @@ let myrole: 'play' | 'watch';
 /** 自分のユーザ名 */
 let myname: string;
 
-// フォーム取得
 // production: io('https://alice-chess-online.herokuapp.com')
 const socket: SocketIOClient.Socket = io();
+
+// ルームの可視性の設定。パブリックならルームキーは不要なので隠して required をはずす
+const visibilityBtns = document.getElementsByName('visibility');
+let roomKey = document.getElementById('room-key');
+let roomKeyInput = document.getElementById('room-input') as HTMLInputElement;
+if ((visibilityBtns[0] as HTMLInputElement).checked) {
+    roomKey.style.visibility = 'hidden';
+    roomKeyInput.required = false;
+}
+for (let i = 0; i <= 1; i++) {
+    visibilityBtns[i].onclick = () => {
+        roomKey.style.visibility = i === 0 ? 'hidden' : 'visible';
+        roomKeyInput.required = i === 1;
+    };
+}
+
+// フォーム取得
 const form = document.getElementById('form') as HTMLFormElement;
 form.addEventListener('submit', (e: Event) => {
     e.preventDefault();
     const data = new FormData(form);
     const info = {
+        private: data.get('visibility') === 'private',
         roomId: data.get('room') as string,
         role: data.get('role') as ('play' | 'watch'),
         name: data.get('username') === ''
