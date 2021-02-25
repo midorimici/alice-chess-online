@@ -45,6 +45,18 @@ let rooms: Map<string, {
 }> = new Map();
 
 /**
+ * パブリックルームのキーを生成する
+ * 先頭に半角スペースが入った3桁のランダムな数字
+ */
+const generatePublicRoomKey = (): string => {
+    let res: string = ' ' + String(Math.random()).slice(-3);
+    while (rooms.has(res)) {
+        res = ' ' + String(Math.random()).slice(-3);
+    }
+    return res;
+}
+
+/**
  * 先手の初期盤面を生成する
  * @returns Map
  */
@@ -70,7 +82,24 @@ io.on('connection', (socket: customSocket) => {
                 private: boolean, roomId: string, role: 'play' | 'watch', name: string
             }) => {
         socket.info = info;
-        const room = rooms.get(info.roomId);
+        // public のとき既存の部屋を探し、なかったら新たに生成
+        const pubRooms = Array.from(rooms.keys())
+            .filter((k: string) => k[0] === ' ');
+        const waitingPubRooms = pubRooms.filter((k: string) =>
+            rooms.get(k).state === 'waiting');
+        const playingPubRooms = pubRooms.filter((k: string) =>
+            rooms.get(k).state === 'playing');
+        const targetRooms = info.role === 'play'
+            ? waitingPubRooms
+            : (playingPubRooms.length
+                ? playingPubRooms
+                : waitingPubRooms);
+        const roomId = info.private ? info.roomId
+            : (targetRooms[Math.floor(Math.random()*targetRooms.length)]
+                ?? generatePublicRoomKey());
+        socket.info.roomId = roomId;
+        const room = rooms.get(roomId);
+        
         if (info.role === 'play') {
             // 対戦者として参加
             if (room) {
@@ -83,14 +112,14 @@ io.on('connection', (socket: customSocket) => {
                         id: socket.id
                     };
                     room.state = 'playing';
-                    socket.join(info.roomId);
+                    socket.join(roomId);
                     // 変数の初期化
                     // 盤面生成
                     room.boards = [initBoard(), new Map()];
                     room.boards[1] = game.rotateBoard(room.boards[0]);
                     const boards = room.boards;
                     // クライアントへ送信
-                    io.to(info.roomId).emit('watch',
+                    io.to(roomId).emit('watch',
                         [...boards[0]], ...players.map(e => e.name), room.curTurn, false);
                     io.to(players[0].id).emit('game',
                         [...boards[0]], 'W', true, ...players.map(e => e.name), false,
@@ -101,12 +130,12 @@ io.on('connection', (socket: customSocket) => {
                     socket.emit('audience i/o', room.watchersNum);
                 } else {
                     // 対戦者がすでに2人いる
-                    socket.emit('room full', info.roomId);
+                    socket.emit('room full', roomId);
                     socket.info.role = 'watch';
                 }
             } else {
                 // 新たにルームを作成する
-                rooms.set(info.private ? info.roomId : ' 0',
+                rooms.set(roomId,
                     {
                         players: [{
                             name: info.name,
@@ -123,14 +152,14 @@ io.on('connection', (socket: customSocket) => {
                         winner: null,
                         canCastle: {'W': [true, true], 'B': [true, true]}
                     });
-                socket.join(info.roomId);
+                socket.join(roomId);
                 socket.emit('wait opponent');
             }
         } else {
             // 観戦者として参加
             if (room) {
                 // 指定のルームが存在するとき
-                socket.join(info.roomId);
+                socket.join(roomId);
                 if (room.state === 'waiting') {
                     // 対戦者が1人待機している
                     socket.emit('wait opponent');
@@ -150,10 +179,14 @@ io.on('connection', (socket: customSocket) => {
                 }
                 // 観戦者数を更新
                 room.watchersNum++;
-                io.to(info.roomId).emit('audience i/o', room.watchersNum);
+                io.to(roomId).emit('audience i/o', room.watchersNum);
             } else {
                 // 指定したルームがないとき
-                socket.emit('no room', info.roomId);
+                if (info.private) {
+                    socket.emit('no private room', roomId);
+                } else {
+                    socket.emit('no public room');
+                }
             }
         }
     });

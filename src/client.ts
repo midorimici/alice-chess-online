@@ -101,12 +101,19 @@ socket.on('room full', /** @param id 部屋番号 */ (id: string) => {
 });
 
 // 空室を観戦しようとしたとき
-socket.on('no room', /** @param id 部屋番号 */ (id: string)=> {
+socket.on('no private room', /** @param id 部屋番号 */ (id: string)=> {
     const p: HTMLElement = document.getElementById('message');
     p.innerText = isEN
     ? `No player is present in the room ${id}.`
     : `ルーム ${id} では対戦が行われていません。`;
 });
+
+socket.on('no public room', () => {
+    const p: HTMLElement = document.getElementById('message');
+    p.innerText = isEN
+    ? `No player is present in public rooms.`
+    : `パブリックルームでは対戦が行われていません。`;
+})
 
 // 対戦相手を待っているとき
 socket.on('wait opponent', () => {
