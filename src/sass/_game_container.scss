@@ -36,6 +36,12 @@
     height: max-content;
 }
 
+#watchers {
+    position: absolute;
+    top: 2rem;
+    z-index: 1;
+}
+
 
 
 #chat {

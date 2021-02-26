@@ -18,29 +18,37 @@
                     <li><a href='../ja'>JA</a></li>
                     <li><a href='../en'>EN</a></li>
                 </ul>
-                <p>ルーム番号と参加方法を指定してください。</p>
+                <p>ルームのキーと参加方法を指定してください。</p>
                 <form id='form'>
-                    <div>
-                        <label class='form-label'>
-                            ルーム
-                            <input id='room-input' type='number' required min='1' max='100' name='room'>
-                        </label>
-                    </div>
-                    <div>
-                        <label class='form-label'>
-                            参加方法
-                            <div>
-                                <label><input type='radio' name='role' required value='play'>対戦する</label>
-                                <label><input type='radio' name='role' value='watch'>観戦する</label>
-                            </div>
-                        </label>
-                    </div>
-                    <div>
-                        <label class='form-label'>
-                            ユーザー名（任意）
-                            <input id='name-input' type='text' name='username'>
-                        </label>
-                    </div>
+                    <label class='form-label'>
+                        ルーム
+                        <div>
+                            <label title='誰でも対戦や観戦ができる部屋です'>
+                                <input type='radio' name='visibility' required value='public'>
+                                パブリック
+                            </label>
+                            <label title='キーを知る人しか対戦や観戦ができない部屋です'>
+                                <input type='radio' name='visibility' value='private'>
+                                プライベート
+                            </label>
+                        </div>
+                    </label>
+                    <label class='form-label' id='room-key'>
+                        ルームキー
+                        <input id='room-input' type='text' name='room'
+                            required pattern='^[^\s]+$' placeholder='空白文字は使用不可'>
+                    </label>
+                    <label class='form-label'>
+                        参加方法
+                        <div>
+                            <label><input type='radio' name='role' required value='play'>対戦する</label>
+                            <label><input type='radio' name='role' value='watch'>観戦する</label>
+                        </div>
+                    </label>
+                    <label class='form-label'>
+                        ユーザー名（任意）
+                        <input id='name-input' type='text' name='username'>
+                    </label>
                     <input id='submit-btn' type='submit' value='GO'>
                 </form>
                 <p id='message'></p>
@@ -55,6 +63,7 @@
             </div>
             <canvas class='canvas'></canvas>
             <canvas class='canvas'></canvas>
+            <p id='watchers'><span id='watcher-number'>0</span>人が観戦中…</p>
             <div id='chat-btn'>
                 <img id='chat-icon' src='../static/svg/comments-regular.svg' alt='chat-icon' title='チャット'>
                 <span id='chat-new' class='hidden'></span>
@@ -82,16 +91,20 @@
                 <img id='close-icon' src='../static/svg/times-solid.svg' alt='close' title='閉じる'>
                 <p>このアプリはオンラインでアリスチェスの対戦ができるものです。</p>
                 <strong>【対戦する】</strong>
-                <p>ルーム番号を指定して部屋をつくり、対戦者を待ちます。</p>
+                <p>部屋をつくって対戦者を待ちます。</p>
                 <p>すでに対戦者がいる場合はすぐに試合が始まります。</p>
                 <strong>【観戦する】</strong>
-                <p>対戦中の部屋のルーム番号を指定すると、ゲームを観戦することができます。</p>
+                <p>部屋に入るとゲームを観戦することができます。</p>
+                <strong>【パブリック/プライベートルーム】</strong>
+                <p>パブリックルームは誰でも対戦や観戦ができますが、</p>
+                <p>プライベートルームはルームキーを知る人しか入れません。</p>
+                <p>部屋の作成者はルームキーを対戦者や観戦者に伝えてあげてください。</p>
                 <strong>【注意】</strong>
                 <p>チャット機能もありますが、部屋にいる人は誰でも見ることができるので、</p>
                 <p>プライベートな情報を書き込まないようにしてください。</p>
             </div>
         </div>
-        <script src='https://alice-chess-online.herokuapp.com/socket.io/socket.io.js'></script>
+        <script src='/socket.io/socket.io.js'></script>
         <script src='../bundle.js'></script>
     </body>
 </html>

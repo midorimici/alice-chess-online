@@ -36,12 +36,25 @@ interface customSocket extends socketio.Socket {
 */
 let rooms: Map<string, {
     players: [{name: string, id: string}, {name: string, id: string}],
+    watchersNum: number,
     state: 'waiting' | 'playing',
     boards: [Map<string, string>, Map<string, string>],
     curTurn: 0 | 1,
     winner: 0 | 1 | 2,
     canCastle: {'W': [boolean, boolean], 'B': [boolean, boolean]}
 }> = new Map();
+
+/**
+ * パブリックルームのキーを生成する
+ * 先頭に半角スペースが入った3桁のランダムな数字
+ */
+const generatePublicRoomKey = (): string => {
+    let res: string = ' ' + String(Math.random()).slice(-3);
+    while (rooms.has(res)) {
+        res = ' ' + String(Math.random()).slice(-3);
+    }
+    return res;
+}
 
 /**
  * 先手の初期盤面を生成する
@@ -65,9 +78,28 @@ io.on('connection', (socket: customSocket) => {
              * 入室したときのサーバ側の処理
              * @param info 入室者のデータ
              */
-            (info: {roomId: string, role: 'play' | 'watch', name: string}) => {
+            (info: {
+                private: boolean, roomId: string, role: 'play' | 'watch', name: string
+            }) => {
         socket.info = info;
-        const room = rooms.get(info.roomId);
+        // public のとき既存の部屋を探し、なかったら新たに生成
+        const pubRooms = Array.from(rooms.keys())
+            .filter((k: string) => k[0] === ' ');
+        const waitingPubRooms = pubRooms.filter((k: string) =>
+            rooms.get(k).state === 'waiting');
+        const playingPubRooms = pubRooms.filter((k: string) =>
+            rooms.get(k).state === 'playing');
+        const targetRooms = info.role === 'play'
+            ? waitingPubRooms
+            : (playingPubRooms.length
+                ? playingPubRooms
+                : waitingPubRooms);
+        const roomId = info.private ? info.roomId
+            : (targetRooms[Math.floor(Math.random()*targetRooms.length)]
+                ?? generatePublicRoomKey());
+        socket.info.roomId = roomId;
+        const room = rooms.get(roomId);
+        
         if (info.role === 'play') {
             // 対戦者として参加
             if (room) {
@@ -80,14 +112,14 @@ io.on('connection', (socket: customSocket) => {
                         id: socket.id
                     };
                     room.state = 'playing';
-                    socket.join(info.roomId);
+                    socket.join(roomId);
                     // 変数の初期化
                     // 盤面生成
                     room.boards = [initBoard(), new Map()];
                     room.boards[1] = game.rotateBoard(room.boards[0]);
                     const boards = room.boards;
                     // クライアントへ送信
-                    io.to(info.roomId).emit('watch',
+                    io.to(roomId).emit('watch',
                         [...boards[0]], ...players.map(e => e.name), room.curTurn, false);
                     io.to(players[0].id).emit('game',
                         [...boards[0]], 'W', true, ...players.map(e => e.name), false,
@@ -95,14 +127,15 @@ io.on('connection', (socket: customSocket) => {
                     io.to(players[1].id).emit('game',
                         [...boards[1]], 'B', false, ...players.map(e => e.name), false,
                         null, room.canCastle);
+                    socket.emit('audience i/o', room.watchersNum);
                 } else {
                     // 対戦者がすでに2人いる
-                    socket.emit('room full', info.roomId);
+                    socket.emit('room full', roomId);
                     socket.info.role = 'watch';
                 }
             } else {
                 // 新たにルームを作成する
-                rooms.set(info.roomId,
+                rooms.set(roomId,
                     {
                         players: [{
                             name: info.name,
@@ -112,20 +145,21 @@ io.on('connection', (socket: customSocket) => {
                             name: '',
                             id: ''
                         }],
+                        watchersNum: 0,
                         state: 'waiting',
                         boards: null,
                         curTurn: 0,
                         winner: null,
                         canCastle: {'W': [true, true], 'B': [true, true]}
                     });
-                socket.join(info.roomId);
+                socket.join(roomId);
                 socket.emit('wait opponent');
             }
         } else {
             // 観戦者として参加
             if (room) {
                 // 指定のルームが存在するとき
-                socket.join(info.roomId);
+                socket.join(roomId);
                 if (room.state === 'waiting') {
                     // 対戦者が1人待機している
                     socket.emit('wait opponent');
@@ -143,9 +177,16 @@ io.on('connection', (socket: customSocket) => {
                             room.players.map(e => e.name)[room.winner]);
                     }
                 }
+                // 観戦者数を更新
+                room.watchersNum++;
+                io.to(roomId).emit('audience i/o', room.watchersNum);
             } else {
                 // 指定したルームがないとき
-                socket.emit('no room', info.roomId);
+                if (info.private) {
+                    socket.emit('no private room', roomId);
+                } else {
+                    socket.emit('no public room');
+                }
             }
         }
     });
@@ -269,16 +310,23 @@ io.on('connection', (socket: customSocket) => {
     })
 
     socket.on('disconnect', () => {
-        const info = socket.info;
         // 接続が切れたとき
+        const info = socket.info;
         if (info) {
             // ルームに入っていたとき
-            if (info.role === 'play') {
-                // 対戦者としてルームにいたとき
-                rooms.delete(info.roomId);
-                // 観戦者ともう一方の対戦者も退出させる
-                socket.to(info.roomId).leave(info.roomId);
-                socket.to(info.roomId).emit('player discon', info.name);
+            const room = rooms.get(info.roomId);
+            if (room) {
+                if (info.role === 'play') {
+                    // 対戦者としてルームにいたとき
+                    rooms.delete(info.roomId);
+                    // 観戦者ともう一方の対戦者も退出させる
+                    socket.to(info.roomId).leave(info.roomId);
+                    socket.to(info.roomId).emit('player discon', info.name);
+                } else {
+                    // 観戦者数を減らす
+                    room.watchersNum = Math.max(room.watchersNum-1, 0);
+                    io.to(info.roomId).emit('audience i/o', room.watchersNum);
+                }
             }
         }
     });
