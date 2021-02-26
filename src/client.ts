@@ -57,7 +57,7 @@ let myrole: 'play' | 'watch';
 let myname: string;
 
 // production: io('https://alice-chess-online.herokuapp.com')
-const socket: SocketIOClient.Socket = io();
+const socket: SocketIOClient.Socket = io('https://alice-chess-online.herokuapp.com');
 
 // ルームの可視性の設定。パブリックならルームキーは不要なので隠して required をはずす
 const visibilityBtns = document.getElementsByName('visibility');
