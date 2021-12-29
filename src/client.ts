@@ -1,6 +1,6 @@
 import Draw from './game/draw';
 import Mouse from './game/mouse';
-import { abbrPieceDict, pieceNames } from './game/piece';
+import { abbrPieceDict } from './game/piece';
 import chat from './chat';
 
 /** 言語が英語である */
@@ -204,7 +204,7 @@ socket.on(
             // 自分の駒を選択したとき
             originPos = sqPos;
             const pieceClass =
-              abbrPieceDict[boardsMap.get(`${index},` + String(sqPos))[1] as pieceNames];
+              abbrPieceDict[boardsMap.get(`${index},` + String(sqPos))[1] as PieceName];
             const piece = new pieceClass(color, index as 0 | 1);
             // 行先を描画
             draw.board(boardsMap, color, showOppositePieces);
@@ -214,7 +214,7 @@ socket.on(
             if (!prom && boardsMap.has(`${index},` + String(originPos))) {
               destPos = sqPos;
               const pieceClass =
-                abbrPieceDict[boardsMap.get(`${index},` + String(originPos))[1] as pieceNames];
+                abbrPieceDict[boardsMap.get(`${index},` + String(originPos))[1] as PieceName];
               const piece = new pieceClass(color, index as 0 | 1);
               if (
                 piece

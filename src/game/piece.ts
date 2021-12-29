@@ -3,7 +3,7 @@ import * as game from './game';
 
 abstract class Piece {
   readonly color: 'W' | 'B';
-  readonly abbr: pieceNames;
+  readonly abbr: PieceName;
   readonly side: 0 | 1;
 
   /**
@@ -141,7 +141,7 @@ abstract class Piece {
 }
 
 class Knight extends Piece {
-  abbr = 'N' as pieceNames;
+  abbr: PieceName = 'N';
 
   coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
     const dirList: [number, number][] = [
@@ -161,7 +161,7 @@ class Knight extends Piece {
 }
 
 class Bishop extends Piece {
-  abbr = 'B' as pieceNames;
+  abbr: PieceName = 'B';
 
   coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
     return this.rider(
@@ -178,7 +178,7 @@ class Bishop extends Piece {
 }
 
 class Rook extends Piece {
-  abbr = 'R' as pieceNames;
+  abbr: PieceName = 'R';
 
   coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
     return this.rider(
@@ -195,7 +195,7 @@ class Rook extends Piece {
 }
 
 class Queen extends Piece {
-  abbr = 'Q' as pieceNames;
+  abbr: PieceName = 'Q';
 
   coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
     return this.rider(
@@ -216,7 +216,7 @@ class Queen extends Piece {
 }
 
 class King extends Piece {
-  abbr = 'K' as pieceNames;
+  abbr: PieceName = 'K';
 
   coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
     const dirList: [number, number][] = [
@@ -236,7 +236,7 @@ class King extends Piece {
 }
 
 class Pawn extends Piece {
-  abbr = 'P' as pieceNames;
+  abbr: PieceName = 'P';
 
   coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
     let answers: [number, number][] = [];
@@ -268,8 +268,6 @@ class Pawn extends Piece {
   }
 }
 
-type pieceNames = 'N' | 'B' | 'R' | 'Q' | 'K' | 'P';
-
 const abbrPieceDict = { N: Knight, B: Bishop, R: Rook, Q: Queen, K: King, P: Pawn };
 
-export { Piece, Knight, Bishop, Rook, Queen, King, Pawn, pieceNames, abbrPieceDict };
+export { Piece, Knight, Bishop, Rook, Queen, King, Pawn, abbrPieceDict };
