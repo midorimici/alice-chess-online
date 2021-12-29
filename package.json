@@ -4,6 +4,7 @@
   "description": "Socket.IO による Alice Chess",
   "dependencies": {
     "express": "^4.17.1",
+    "firebase": "^9.6.1",
     "socket.io": "^3.0.4"
   },
   "devDependencies": {
