@@ -8,7 +8,7 @@ import {
   onValue,
   ref,
 } from 'firebase/database';
-import { showWaitingPlayerScreen } from './canvasHandlers';
+import { showWaitingPlayerScreen } from './lib/canvasHandlers';
 import { db } from './firebase';
 import { t } from './i18n';
 import { showAudienceNumber } from './lib/messageHandlers';

@@ -1,5 +1,5 @@
-import Draw from './game/draw';
-import { t } from './i18n';
+import Draw from '~/game/draw';
+import { t } from '~/i18n';
 
 let draw: Draw;
 /** Whether `initCanvas` has executed. */
