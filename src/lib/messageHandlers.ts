@@ -1,5 +1,5 @@
 import { t } from '~/i18n';
-import { audienceNumberValue, roomIdValue } from '~/states';
+import { roomIdValue } from '~/states';
 
 const p: HTMLElement = document.getElementById('message');
 
@@ -20,8 +20,10 @@ export const showPublicRoomEmptyMessage = () => {
   p.innerText = t('publicRoomIsEmpty');
 };
 
-/** Show the number of audience in the room. */
-export const showAudienceNumber = () => {
-  const num = audienceNumberValue();
+/**
+ * Show the number of audience in the room.
+ * @param num The number of audience in the room.
+ */
+export const showAudienceNumber = (num: number) => {
   document.getElementById('watcher-number').innerText = String(num);
 };

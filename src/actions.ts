@@ -6,11 +6,7 @@ import {
   showPublicRoomEmptyMessage,
   showRoomFullMessage,
 } from './lib/messageHandlers';
-import {
-  listenAudienceDisconnection,
-  listenPlayerDisconnection,
-  listenRoomDataChange,
-} from './listeners';
+import { listenPlayerDisconnection, listenRoomDataChange } from './listeners';
 import { setPlayerTurn, setRoomId, setUserName } from './states';
 import { generatePublicRoomKey, m2o } from './utils';
 
@@ -125,8 +121,6 @@ export const handleEnterRoom = (info: {
           set(child(roomRef, 'audienceNumber'), room.audienceNumber + 1).catch((err) =>
             console.error(err)
           );
-          // Setup disconnection event listener
-          listenAudienceDisconnection();
           // Setup room state change event listener
           listenRoomDataChange('preparing', false);
         }

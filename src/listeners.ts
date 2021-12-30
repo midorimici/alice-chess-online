@@ -12,7 +12,7 @@ import { showWaitingPlayerScreen } from './canvasHandlers';
 import { db } from './firebase';
 import { t } from './i18n';
 import { showAudienceNumber } from './lib/messageHandlers';
-import { audienceNumberValue, roomIdValue, setAudienceNumber, setPlayerNames } from './states';
+import { roomIdValue, setPlayerNames } from './states';
 
 /** Returns the `Reference` to the current room. */
 export const getRoomRef = () => {
@@ -23,12 +23,6 @@ export const getRoomRef = () => {
 /** Removes data of the room when one of the players disconnected. */
 export const listenPlayerDisconnection = () => {
   onDisconnect(getRoomRef()).remove();
-};
-
-/** Decriments the audience number when an audience disconnected. */
-export const listenAudienceDisconnection = () => {
-  const audienceNumber = audienceNumberValue();
-  onDisconnect(child(getRoomRef(), 'audienceNumber')).set(audienceNumber - 1);
 };
 
 /**
@@ -142,13 +136,18 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
  * @param roomRef Database reference to the room.
  */
 const onAudienceNumberChange = (roomRef: DatabaseReference) => {
-  onValue(child(roomRef, 'audienceNumber'), (snapshot: DataSnapshot) => {
+  const audienceNumberRef = child(roomRef, 'audienceNumber');
+  onValue(audienceNumberRef, (snapshot: DataSnapshot) => {
     if (!snapshot.exists()) {
       return;
     }
 
     const num: number = snapshot.val();
-    setAudienceNumber(num);
-    showAudienceNumber();
+    showAudienceNumber(num);
+
+    // Update disconnection listener
+    const onDisconnectRef = onDisconnect(audienceNumberRef);
+    onDisconnectRef.cancel();
+    onDisconnectRef.set(num - 1);
   });
 };

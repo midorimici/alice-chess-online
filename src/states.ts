@@ -74,14 +74,3 @@ export const setPlayerNames = (state: [string, string]) => {
 export const playerNamesValue = () => playerNames;
 
 export const usePlayerNames = () => ({ playerNames, setPlayerNames });
-
-/** The number of audience in the room. */
-let audienceNumber: number = 0;
-
-export const setAudienceNumber = (state: number) => {
-  audienceNumber = state;
-};
-
-export const audienceNumberValue = () => audienceNumber;
-
-export const useAudienceNumber = () => ({ audienceNumber, setAudienceNumber });
