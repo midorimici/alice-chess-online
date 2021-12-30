@@ -1,3 +1,5 @@
+declare type Vector = [number, number];
+
 declare type PieceColor = 'W' | 'B';
 
 declare type PieceName = 'N' | 'B' | 'R' | 'Q' | 'K' | 'P';

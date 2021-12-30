@@ -3,7 +3,8 @@
 import { Piece, abbrPieceDict } from './piece';
 
 /** 自分の色と相手の色の対応 */
-const opponent: { W: 'B'; B: 'W' } = { W: 'B', B: 'W' };
+const opponent = { W: 'B', B: 'W' } as const;
+const colorIdMap = { W: 0, B: 1 } as const;
 
 /**
  * Generates and returns an initial board of the first player.
@@ -27,7 +28,7 @@ export const initBoard = (): BoardMap => {
  * 盤面を変換する
  * @param boards 変換元の盤面
  */
-const rotateBoard = (boards: Map<string, string>): Map<string, string> => {
+const rotateBoard = (boards: BoardMap): BoardMap => {
   let orig = boards;
   let res = new Map();
   for (const [pos, piece] of orig.entries()) {
@@ -42,9 +43,9 @@ const rotateBoard = (boards: Map<string, string>): Map<string, string> => {
  * @param color 駒色
  * @param boards color の相手側から見た盤面
  */
-const isChecked = (color: 'W' | 'B', boards: Map<string, string>): boolean => {
+const isChecked = (color: PieceColor, boards: BoardMap): boolean => {
   let targetPos: number[];
-  let enemies: Map<[number, number], Piece> = new Map();
+  let enemies: Map<Vector, Piece> = new Map();
   // キングを探す
   for (const [pos, piece] of boards.entries()) {
     if (piece === color + 'K') {
@@ -84,10 +85,10 @@ const isChecked = (color: 'W' | 'B', boards: Map<string, string>): boolean => {
  * @param canCastle キャスリングのポテンシャルが残っているか
  */
 const cannotMove = (
-  color: 'W' | 'B',
-  boards: Map<string, string>,
+  color: PieceColor,
+  boards: BoardMap,
   advanced2Pos: number[] | null,
-  canCastle: { W: [boolean, boolean]; B: [boolean, boolean] }
+  canCastle: CastlingPotentials
 ): boolean => {
   for (const [posStr, pieceName] of boards.entries()) {
     if (color === pieceName[0]) {
@@ -114,12 +115,12 @@ const cannotMove = (
  * @param boards 盤面
  */
 const castlingReq = (
-  canCastle: { W: [boolean, boolean]; B: [boolean, boolean] },
-  color: 'W' | 'B',
+  canCastle: CastlingPotentials,
+  color: PieceColor,
   side: 0 | 1,
   boardId: 0 | 1,
-  endPos: [number, number],
-  boards: Map<string, string>
+  endPos: Vector,
+  boards: BoardMap
 ): boolean => {
   /**
    * キングの通過するマスが攻撃されていないことを確認するために、
@@ -127,7 +128,7 @@ const castlingReq = (
    * 仮の盤面を出力する
    * @param dest 行先の盤面と位置
    */
-  const createTmpBoards = (dest: string): Map<string, string> => {
+  const createTmpBoards = (dest: string): BoardMap => {
     const tmpBoards = new Map(boards);
     const [b, _, y] = dest.split(',');
     tmpBoards.set(dest, color + 'K');
@@ -154,7 +155,7 @@ const castlingReq = (
 
   const commonReq =
     // キャスリングのポテンシャルが残っている
-    canCastle[color][side] &&
+    canCastle[colorIdMap[color]][side] &&
     // 現在チェックされていない
     !isChecked(color, rotateBoard(boards)) &&
     // キャスリングに関与するルークが存在する
@@ -201,12 +202,12 @@ const castlingReq = (
  * @param boards 盤面
  */
 const enPassantReq = (
-  startPos: [number, number],
-  endPos: [number, number],
+  startPos: Vector,
+  endPos: Vector,
   pieceName: PieceName,
   side: 0 | 1,
   advanced2Side: 0 | 1,
-  boards: Map<string, string>
+  boards: BoardMap
 ): boolean => {
   return (
     pieceName === 'P' &&
@@ -224,12 +225,7 @@ const enPassantReq = (
  * @param endpos 駒の移動後の位置
  * @param boards 盤面
  */
-const renewBoard = (
-  boardId: 0 | 1,
-  startpos: [number, number],
-  endpos: [number, number],
-  boards: Map<string, string>
-) => {
+const renewBoard = (boardId: 0 | 1, startpos: Vector, endpos: Vector, boards: BoardMap) => {
   // 駒移動
   boards.set(`${1 - boardId},` + String(endpos), boards.get(`${boardId},` + String(startpos)));
   boards.delete(`${boardId},` + String(startpos));
