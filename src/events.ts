@@ -1,6 +1,6 @@
 import { handleEnterRoom } from './actions';
 import { t } from './i18n';
-import { setUserName, setUserRole, useMuted, useShowOppositePieces } from './states';
+import { setUserName, setUserRole, useIsMuted, useShowOppositePieces } from './states';
 
 export const addInfoButtonClickEventListener = () => {
   const infoBtn = document.getElementById('info-icon');
@@ -60,13 +60,13 @@ export const addFormEventListener = () => {
 
 export const addMuteButtonClickEventListener = () => {
   const muteButton = document.getElementById('mute-icon') as HTMLImageElement;
-  const { muted, toggleMuted } = useMuted();
+  const { isMuted, toggleIsMuted } = useIsMuted();
   muteButton.onclick = () => {
-    muteButton.src = muted
+    muteButton.src = isMuted
       ? '../static/svg/volume-up-solid.svg'
       : '../static/svg/volume-mute-solid.svg';
-    muteButton.title = muted ? t('mute') : t('unmute');
-    toggleMuted();
+    muteButton.title = isMuted ? t('mute') : t('unmute');
+    toggleIsMuted();
   };
 };
 
