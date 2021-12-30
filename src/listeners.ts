@@ -11,7 +11,8 @@ import {
 import { showWaitingPlayerScreen } from './canvasHandlers';
 import { db } from './firebase';
 import { t } from './i18n';
-import { audienceNumberValue, roomIdValue, setPlayerNames } from './states';
+import { showAudienceNumber } from './lib/messageHandlers';
+import { audienceNumberValue, roomIdValue, setAudienceNumber, setPlayerNames } from './states';
 
 /** Returns the `Reference` to the current room. */
 export const getRoomRef = () => {
@@ -67,6 +68,8 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
     //   );
     // });
   }
+
+  onAudienceNumberChange(roomRef);
 
   // const { chatInitialized, setChatInitialized } = useChatInitialized();
 
@@ -132,4 +135,20 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
       }
     });
   }
+};
+
+/**
+ * Listens for the number of audience in the room and update display of the number when it is changed.
+ * @param roomRef Database reference to the room.
+ */
+const onAudienceNumberChange = (roomRef: DatabaseReference) => {
+  onValue(child(roomRef, 'audienceNumber'), (snapshot: DataSnapshot) => {
+    if (!snapshot.exists()) {
+      return;
+    }
+
+    const num: number = snapshot.val();
+    setAudienceNumber(num);
+    showAudienceNumber();
+  });
 };

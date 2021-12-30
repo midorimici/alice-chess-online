@@ -47,11 +47,6 @@ let myname: string;
 // production: io('https://alice-chess-online.herokuapp.com')
 // const socket: SocketIOClient.Socket = io('https://alice-chess-online.herokuapp.com');
 
-// // 観戦者が増えたとき
-// socket.on('audience i/o', (num: number) => {
-//   document.getElementById('watcher-number').innerText = String(num);
-// });
-
 // // ゲーム進行
 
 // let mouse: Mouse;
