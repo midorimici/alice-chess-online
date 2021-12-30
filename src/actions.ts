@@ -1,6 +1,11 @@
 import { child, DataSnapshot, get, ref, set } from 'firebase/database';
 import { db } from './firebase';
 import { initBoard, rotateBoard } from './game/game';
+import {
+  showPrivateRoomEmptyMessage,
+  showPublicRoomEmptyMessage,
+  showRoomFullMessage,
+} from './lib/messageHandlers';
 import { listenPlayerDisconnection } from './listeners';
 import { setPlayerTurn, setRoomId, setUserName } from './states';
 import { generatePublicRoomKey, m2o } from './utils';
@@ -46,6 +51,7 @@ export const handleEnterRoom = (info: {
       }
 
       const room: RoomInfo = rooms ? rooms[roomId] : undefined;
+      setRoomId(roomId);
       // When the specified room does not exist
       if (room === undefined) {
         // When the user is joining as a player
@@ -64,7 +70,6 @@ export const handleEnterRoom = (info: {
           // Set room data
           set(child(roomsRef, roomId), roomInfo).catch((err) => console.error(err));
           // Set states
-          setRoomId(roomId);
           setUserName(info.name);
           setPlayerTurn(0);
           // Setup disconnection event listener
@@ -74,9 +79,9 @@ export const handleEnterRoom = (info: {
         // When the user is joining as audience
         else {
           if (info.private) {
-            // socket.emit('no private room', roomId);
+            showPrivateRoomEmptyMessage();
           } else {
-            // socket.emit('no public room');
+            showPublicRoomEmptyMessage();
           }
         }
       }
@@ -97,7 +102,6 @@ export const handleEnterRoom = (info: {
             const boards: [Board, Board] = [m2o(boardMap), m2o(rotateBoard(boardMap))];
             set(child(roomRef, 'boards'), boards).catch((err) => console.error(err));
             // Set states
-            setRoomId(roomId);
             setUserName(info.name);
             setPlayerTurn(1);
             // Setup disconnection event listener
@@ -105,7 +109,7 @@ export const handleEnterRoom = (info: {
           }
           // When two players are already in the room
           else {
-            // socket.emit('room full', roomId);
+            showRoomFullMessage();
           }
         }
         // When the user is joining as audience

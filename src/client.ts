@@ -74,29 +74,6 @@ let myname: string;
 // production: io('https://alice-chess-online.herokuapp.com')
 // const socket: SocketIOClient.Socket = io('https://alice-chess-online.herokuapp.com');
 
-// 部屋がいっぱいだったとき
-// socket.on(
-//   'room full',
-//   /** @param id 部屋番号 */ (id: string) => {
-//     const p: HTMLElement = document.getElementById('message');
-//     p.innerText = t('roomIsFull', id);
-//   }
-// );
-
-// // 空室を観戦しようとしたとき
-// socket.on(
-//   'no private room',
-//   /** @param id 部屋番号 */ (id: string) => {
-//     const p: HTMLElement = document.getElementById('message');
-//     p.innerText = t('roomIsEmpty', id);
-//   }
-// );
-
-// socket.on('no public room', () => {
-//   const p: HTMLElement = document.getElementById('message');
-//   p.innerText = t('publicRoomIsEmpty');
-// });
-
 // // 対戦相手を待っているとき
 // socket.on('wait opponent', () => {
 //   if (!doneInitCanvas) initCanvas();
