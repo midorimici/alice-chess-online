@@ -24,4 +24,7 @@ export {
   playerNamesValue,
   setPlayerNames,
   usePlayerNames,
+  boardMapValue,
+  setBoardMap,
+  useBoardMap,
 } from './room';

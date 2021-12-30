@@ -1,5 +1,6 @@
 import { handleEnterRoom } from './actions';
 import { t } from './i18n';
+import { drawBoard } from './lib/canvasHandlers';
 import { setUserName, setUserRole, useIsMuted, useShowOppositePieces } from './states';
 
 export const addInfoButtonClickEventListener = () => {
@@ -60,8 +61,8 @@ export const addFormEventListener = () => {
 
 export const addMuteButtonClickEventListener = () => {
   const muteButton = document.getElementById('mute-icon') as HTMLImageElement;
-  const { isMuted, toggleIsMuted } = useIsMuted();
   muteButton.onclick = () => {
+    const { isMuted, toggleIsMuted } = useIsMuted();
     muteButton.src = isMuted
       ? '../static/svg/volume-up-solid.svg'
       : '../static/svg/volume-mute-solid.svg';
@@ -70,21 +71,15 @@ export const addMuteButtonClickEventListener = () => {
   };
 };
 
-/**
- * 駒表示ボタン
- * @param boardsMap 盤面
- * @param color 自分の色
- */
-export const addShowHideButtonClickEventListener = () =>
-  // boardsMap: Map<string, string>,
-  // color: 'W' | 'B'
-  {
-    const showHideButton = document.getElementById('eye-icon') as HTMLImageElement;
+export const addShowHideButtonClickEventListener = () => {
+  const showHideButton = document.getElementById('eye-icon') as HTMLImageElement;
+  showHideButton.onclick = () => {
     const { showOppositePieces, toggleShowOppositePieces } = useShowOppositePieces();
     showHideButton.src = showOppositePieces
       ? '../static/svg/eye-slash-regular.svg'
       : '../static/svg/eye-regular.svg';
     showHideButton.title = showOppositePieces ? t('showOppositePieces') : t('hideOppositePieces');
     toggleShowOppositePieces();
-    // draw.board(boardsMap, color, showOppositePieces);
+    drawBoard();
   };
+};

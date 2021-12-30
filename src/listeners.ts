@@ -8,11 +8,11 @@ import {
   onValue,
   ref,
 } from 'firebase/database';
-import { showWaitingPlayerScreen } from './lib/canvasHandlers';
+import { handlePlayerGameScreen, showWaitingPlayerScreen } from './lib/canvasHandlers';
 import { db } from './firebase';
 import { t } from './i18n';
 import { showAudienceNumber } from './lib/messageHandlers';
-import { roomIdValue, setPlayerNames } from './states';
+import { playerTurnValue, roomIdValue, setBoardMap, setPlayerNames } from './states';
 
 /** Returns the `Reference` to the current room. */
 export const getRoomRef = () => {
@@ -34,33 +34,30 @@ export const listenPlayerDisconnection = () => {
  */
 export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: boolean) => {
   const roomRef = getRoomRef();
+  const playerTurn: Turn = playerTurnValue();
 
   if (phase === 'preparing') {
-    handleRoomValueChange(
-      roomRef,
-      'state',
-      (val) => {
-        const state: RoomState = val;
-        handleRoomStateChange(state, isPlayer);
-      },
-      true
-    );
+    handleRoomValueChange(roomRef, 'state', (val) => {
+      const state: RoomState = val;
+      handleRoomStateChange(state, isPlayer);
+    });
   } else if (phase === 'playing') {
-    // handleRoomValueChange(roomRef, 'boards', (val) => {
-    //   const boards: Boards = val;
-    //   onValue(
-    //     roomRef,
-    //     (snapshot: DataSnapshot) => {
-    //       const info: RoomInfo = snapshot.val();
-    //       handleRoomBoardsChange(boards, isPlayer, info.curTurn, info.takenPieces);
-    //       const winner: PlayerId = info.winner;
-    //       if (winner !== undefined) {
-    //         handleRoomWinnerChange(winner, info.boards, info.takenPieces);
-    //       }
-    //     },
-    //     { onlyOnce: true }
-    //   );
-    // });
+    handleRoomValueChange(roomRef, 'boards', (val) => {
+      const boards: [Board, Board] = val;
+      setBoardMap(new Map(Object.entries(boards[playerTurn])));
+      onValue(
+        roomRef,
+        (snapshot: DataSnapshot) => {
+          const info: RoomInfo = snapshot.val();
+          handleRoomBoardsChange(isPlayer, info.curTurn, info.canCastle);
+          // const winner: PlayerId = info.winner;
+          // if (winner !== undefined) {
+          //   handleRoomWinnerChange(winner, info.boards, info.takenPieces);
+          // }
+        },
+        { onlyOnce: true }
+      );
+    });
   }
 
   onAudienceNumberChange(roomRef);
@@ -88,19 +85,17 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
  * @param ref Database reference to the room.
  * @param path Path to the data from the reference.
  * @param callback A callback that fires when the data in the specified path exists. Receives snapshot value as a parameter.
- * @param reloadWhenEmpty Whether the page should be reloaded when the snapshot does not exist.
  */
 const handleRoomValueChange = (
   ref: DatabaseReference,
   path: keyof RoomInfo,
-  callback: (val: any) => void,
-  reloadWhenEmpty: boolean = false
+  callback: (val: any) => void
 ) => {
   off(ref);
   onValue(child(ref, path), (snapshot: DataSnapshot) => {
     if (snapshot.exists()) {
       callback(snapshot.val());
-    } else if (reloadWhenEmpty) {
+    } else {
       // Reload the page when one of the player is disconnected.
       alert(t('disconnected'));
       location.reload();
@@ -120,12 +115,12 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
     showWaitingPlayerScreen();
   }
   // When two players are in the room and the game is ongoing
-  else if (!isPlayer) {
-    get(getRoomRef()).then((snapshot: DataSnapshot) => {
+  else {
+    get(child(getRoomRef(), 'players')).then((snapshot: DataSnapshot) => {
       if (snapshot.exists()) {
-        const info: RoomInfo = snapshot.val();
-        setPlayerNames(info.players);
-        listenRoomDataChange('playing', false);
+        const players: [string, string] = snapshot.val();
+        setPlayerNames(players);
+        listenRoomDataChange('playing', isPlayer);
       }
     });
   }
@@ -150,4 +145,24 @@ const onAudienceNumberChange = (roomRef: DatabaseReference) => {
     onDisconnectRef.cancel();
     onDisconnectRef.set(num - 1);
   });
+};
+
+/**
+ * Handles process when the game boards are changed.
+ * @param isPlayer Whether the user is joining as a player.
+ * @param curTurn The current turn.
+ * @param canCastle Lists that represent whether it is available to castle.
+ */
+const handleRoomBoardsChange = (
+  isPlayer: boolean,
+  curTurn: Turn,
+  canCastle: CastlingPotentials
+) => {
+  const playerTurn = playerTurnValue();
+  // const playerNames = playerNamesValue();
+  if (isPlayer) {
+    handlePlayerGameScreen(curTurn === playerTurn, false, null, canCastle);
+  } else {
+    // showGameScreenForAudience(boards[0], curTurn, playerNames, takenPieces);
+  }
 };

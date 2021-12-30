@@ -7,7 +7,7 @@ import {
   showRoomFullMessage,
 } from './lib/messageHandlers';
 import { listenPlayerDisconnection, listenRoomDataChange } from './listeners';
-import { setPlayerTurn, setRoomId, setUserName } from './states';
+import { setBoardMap, setPlayerTurn, setRoomId, setUserName } from './states';
 import { generatePublicRoomKey, m2o } from './utils';
 
 /**
@@ -108,7 +108,7 @@ export const handleEnterRoom = (info: {
             // Setup disconnection event listener
             listenPlayerDisconnection();
             // Setup room state change event listener
-            listenRoomDataChange('playing', true);
+            listenRoomDataChange('preparing', true);
           }
           // When two players are already in the room
           else {
