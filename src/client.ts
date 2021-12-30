@@ -39,33 +39,6 @@ let muted: boolean = true;
 /** 反対側の盤面の駒を表示するか */
 let showOppositePieces: boolean = true;
 
-/** 入力フォームを非表示にし、canvas などを表示する */
-const initCanvas = async () => {
-  document.getElementById('settings').style.display = 'none';
-
-  const gameContainer = document.getElementById('game-container');
-  gameContainer.style.display = 'flex';
-
-  const cw: number = gameContainer.clientWidth;
-  const ch: number = gameContainer.clientHeight;
-
-  if (cw < ch || ch < 720) {
-    document.getElementById('logo').style.display = 'none';
-    document.getElementById('info-icon').style.display = 'none';
-    document.getElementsByTagName('footer')[0].style.display = 'none';
-  }
-
-  const max: number = cw < ch ? ch : cw;
-  const cvsize: string = (0.4 * max).toString();
-  for (const canvas of canvass) {
-    canvas.setAttribute('width', cvsize);
-    canvas.setAttribute('height', cvsize);
-  }
-
-  draw = await Draw.init(canvass);
-  doneInitCanvas = true;
-};
-
 /** 対戦者か観戦者か */
 let myrole: 'play' | 'watch';
 /** 自分のユーザ名 */
@@ -73,12 +46,6 @@ let myname: string;
 
 // production: io('https://alice-chess-online.herokuapp.com')
 // const socket: SocketIOClient.Socket = io('https://alice-chess-online.herokuapp.com');
-
-// // 対戦相手を待っているとき
-// socket.on('wait opponent', () => {
-//   if (!doneInitCanvas) initCanvas();
-//   gameMessage.innerText = t('waitingOpponent');
-// });
 
 // // 観戦者が増えたとき
 // socket.on('audience i/o', (num: number) => {

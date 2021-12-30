@@ -1,4 +1,5 @@
 import { child, DataSnapshot, get, ref, set } from 'firebase/database';
+import { showWaitingPlayerScreen } from './canvasHandlers';
 import { db } from './firebase';
 import { initBoard, rotateBoard } from './game/game';
 import {
@@ -74,7 +75,7 @@ export const handleEnterRoom = (info: {
           setPlayerTurn(0);
           // Setup disconnection event listener
           listenPlayerDisconnection();
-          // socket.emit('wait opponent');
+          showWaitingPlayerScreen();
         }
         // When the user is joining as audience
         else {
@@ -119,6 +120,8 @@ export const handleEnterRoom = (info: {
             console.error(err)
           );
           // Setup disconnection event listener
+
+          showWaitingPlayerScreen();
         }
       }
     })
