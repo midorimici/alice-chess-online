@@ -6,6 +6,24 @@ import { Piece, abbrPieceDict } from './piece';
 const opponent: { W: 'B'; B: 'W' } = { W: 'B', B: 'W' };
 
 /**
+ * Generates and returns an initial board of the first player.
+ * @returns Object with the keys of positions and values of pieces.
+ * A position string is made of three numbers separated by commas that represent board, x coord and y coord.
+ * A piece string is a color string (`W` or `B`) followed by a abbreviated name of a piece (`N`, `Q` etc.).
+ */
+export const initBoard = (): BoardMap => {
+  let m: BoardMap = new Map();
+  const order: string = 'RNBQKBNR';
+  for (let i = 0; i < 8; i++) {
+    m.set(`0,${i},7`, 'W' + order[i]);
+    m.set(`0,${i},6`, 'WP');
+    m.set(`0,${i},0`, 'B' + order[i]);
+    m.set(`0,${i},1`, 'BP');
+  }
+  return m;
+};
+
+/**
  * 盤面を変換する
  * @param boards 変換元の盤面
  */

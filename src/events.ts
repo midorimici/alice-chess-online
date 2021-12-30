@@ -1,5 +1,6 @@
+import { handleEnterRoom } from './actions';
 import { t } from './i18n';
-import { useMuted, useShowOppositePieces } from './states';
+import { setUserName, setUserRole, useMuted, useShowOppositePieces } from './states';
 
 export const addInfoButtonClickEventListener = () => {
   const infoBtn = document.getElementById('info-icon');
@@ -40,15 +41,18 @@ export const addFormEventListener = () => {
     (e: Event) => {
       e.preventDefault();
       const data = new FormData(form);
+      const role: Role = data.get('role') as Role;
+      const userName = data.get('username') as string;
+      const name = userName === '' ? t('anonymous') : userName;
       const info = {
         private: data.get('visibility') === 'private',
         roomId: data.get('room') as string,
-        role: data.get('role') as 'play' | 'watch',
-        name: data.get('username') === '' ? t('anonymous') : (data.get('username') as string),
+        role,
+        name,
       };
-      // myrole = info.role;
-      // myname = info.name;
-      // socket.emit('enter room', info);
+      setUserRole(role);
+      setUserName(name);
+      handleEnterRoom(info);
     },
     false
   );
