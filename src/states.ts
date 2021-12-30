@@ -64,6 +64,17 @@ export const playerTurnValue = () => playerTurn;
 
 export const usePlayerTurn = () => ({ playerTurn, setPlayerTurn });
 
+/** Names of players. */
+let playerNames: [string, string];
+
+export const setPlayerNames = (state: [string, string]) => {
+  playerNames = state;
+};
+
+export const playerNamesValue = () => playerNames;
+
+export const usePlayerNames = () => ({ playerNames, setPlayerNames });
+
 /** The number of audience in the room. */
 let audienceNumber: number = 0;
 

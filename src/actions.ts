@@ -1,5 +1,4 @@
 import { child, DataSnapshot, get, ref, set } from 'firebase/database';
-import { showWaitingPlayerScreen } from './canvasHandlers';
 import { db } from './firebase';
 import { initBoard, rotateBoard } from './game/game';
 import {
@@ -7,7 +6,11 @@ import {
   showPublicRoomEmptyMessage,
   showRoomFullMessage,
 } from './lib/messageHandlers';
-import { listenAudienceDisconnection, listenPlayerDisconnection } from './listeners';
+import {
+  listenAudienceDisconnection,
+  listenPlayerDisconnection,
+  listenRoomDataChange,
+} from './listeners';
 import { setPlayerTurn, setRoomId, setUserName } from './states';
 import { generatePublicRoomKey, m2o } from './utils';
 
@@ -75,7 +78,8 @@ export const handleEnterRoom = (info: {
           setPlayerTurn(0);
           // Setup disconnection event listener
           listenPlayerDisconnection();
-          showWaitingPlayerScreen();
+          // Setup room state change event listener
+          listenRoomDataChange('preparing', true);
         }
         // When the user is joining as audience
         else {
@@ -107,6 +111,8 @@ export const handleEnterRoom = (info: {
             setPlayerTurn(1);
             // Setup disconnection event listener
             listenPlayerDisconnection();
+            // Setup room state change event listener
+            listenRoomDataChange('playing', true);
           }
           // When two players are already in the room
           else {
@@ -121,7 +127,8 @@ export const handleEnterRoom = (info: {
           );
           // Setup disconnection event listener
           listenAudienceDisconnection();
-          showWaitingPlayerScreen();
+          // Setup room state change event listener
+          listenRoomDataChange('preparing', false);
         }
       }
     })
