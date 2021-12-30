@@ -1,8 +1,27 @@
 import Draw from './game/draw';
 import Mouse from './game/mouse';
 import { abbrPieceDict } from './game/piece';
-import chat from './chat';
+import { addChatEventListener } from './chat';
 import { t } from './i18n';
+import {
+  addFormEventListener,
+  addInfoButtonClickEventListener,
+  addMuteButtonClickEventListener,
+  addShowHideButtonClickEventListener,
+  addVisibilityButtonsClickEventListener,
+} from './events';
+
+addInfoButtonClickEventListener();
+
+addVisibilityButtonsClickEventListener();
+
+addFormEventListener();
+
+addMuteButtonClickEventListener();
+
+addShowHideButtonClickEventListener();
+
+addChatEventListener();
 
 // 入室～対戦相手待機
 
@@ -13,8 +32,6 @@ let doneInitCanvas: boolean = false;
 const canvass = Array.from(document.getElementsByClassName('canvas')) as HTMLCanvasElement[];
 /** canvas 横のメッセージ */
 const gameMessage = document.getElementById('game-message');
-/** ミュートボタン */
-const muteButton = document.getElementById('mute-icon') as HTMLImageElement;
 /** 駒表示ボタン */
 const showHideButton = document.getElementById('eye-icon') as HTMLImageElement;
 /** ミュート状態か */
@@ -56,41 +73,6 @@ let myname: string;
 
 // production: io('https://alice-chess-online.herokuapp.com')
 const socket: SocketIOClient.Socket = io('https://alice-chess-online.herokuapp.com');
-
-// ルームの可視性の設定。パブリックならルームキーは不要なので隠して required をはずす
-const visibilityBtns = document.getElementsByName('visibility');
-let roomKey = document.getElementById('room-key');
-let roomKeyInput = document.getElementById('room-input') as HTMLInputElement;
-if ((visibilityBtns[0] as HTMLInputElement).checked) {
-  roomKey.style.visibility = 'hidden';
-  roomKeyInput.required = false;
-}
-for (let i = 0; i <= 1; i++) {
-  visibilityBtns[i].onclick = () => {
-    roomKey.style.visibility = i === 0 ? 'hidden' : 'visible';
-    roomKeyInput.required = i === 1;
-  };
-}
-
-// フォーム取得
-const form = document.getElementById('form') as HTMLFormElement;
-form.addEventListener(
-  'submit',
-  (e: Event) => {
-    e.preventDefault();
-    const data = new FormData(form);
-    const info = {
-      private: data.get('visibility') === 'private',
-      roomId: data.get('room') as string,
-      role: data.get('role') as 'play' | 'watch',
-      name: data.get('username') === '' ? t('anonymous') : (data.get('username') as string),
-    };
-    myrole = info.role;
-    myname = info.name;
-    socket.emit('enter room', info);
-  },
-  false
-);
 
 // 部屋がいっぱいだったとき
 socket.on(
@@ -329,40 +311,3 @@ socket.on(
     location.reload();
   }
 );
-
-// ミュートボタン
-muteButton.onclick = () => {
-  muteButton.src = muted
-    ? '../static/svg/volume-up-solid.svg'
-    : '../static/svg/volume-mute-solid.svg';
-  muteButton.title = muted ? t('mute') : t('unmute');
-  muted = !muted;
-};
-
-/**
- * 駒表示ボタン
- * @param boardsMap 盤面
- * @param color 自分の色
- */
-const toggleShowHide = (boardsMap: Map<string, string>, color: 'W' | 'B') => {
-  showHideButton.src = showOppositePieces
-    ? '../static/svg/eye-slash-regular.svg'
-    : '../static/svg/eye-regular.svg';
-  showHideButton.title = showOppositePieces ? t('showOppositePieces') : t('hideOppositePieces');
-  showOppositePieces = !showOppositePieces;
-  draw.board(boardsMap, color, showOppositePieces);
-};
-
-// info ボタン
-const infoBtn = document.getElementById('info-icon');
-infoBtn.onclick = () => {
-  document.getElementById('info-overlay').style.display = 'flex';
-};
-
-const infoCloseBtn = document.getElementById('close-icon');
-infoCloseBtn.onclick = () => {
-  document.getElementById('info-overlay').style.display = 'none';
-};
-
-// チャット
-chat(socket);
