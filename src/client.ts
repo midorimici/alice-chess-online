@@ -2,9 +2,7 @@ import Draw from './game/draw';
 import Mouse from './game/mouse';
 import { abbrPieceDict } from './game/piece';
 import chat from './chat';
-
-/** 言語が英語である */
-const isEN: boolean = location.pathname === '/en/';
+import { t } from './i18n';
 
 // 入室～対戦相手待機
 
@@ -85,12 +83,7 @@ form.addEventListener(
       private: data.get('visibility') === 'private',
       roomId: data.get('room') as string,
       role: data.get('role') as 'play' | 'watch',
-      name:
-        data.get('username') === ''
-          ? isEN
-            ? 'anonymous'
-            : '名無し'
-          : (data.get('username') as string),
+      name: data.get('username') === '' ? t('anonymous') : (data.get('username') as string),
     };
     myrole = info.role;
     myname = info.name;
@@ -104,9 +97,7 @@ socket.on(
   'room full',
   /** @param id 部屋番号 */ (id: string) => {
     const p: HTMLElement = document.getElementById('message');
-    p.innerText = isEN
-      ? `The room ${id} is full. You cannot join in as a player.`
-      : `ルーム ${id} はいっぱいです。対戦者として参加することはできません。`;
+    p.innerText = t('roomIsFull', id);
   }
 );
 
@@ -115,23 +106,19 @@ socket.on(
   'no private room',
   /** @param id 部屋番号 */ (id: string) => {
     const p: HTMLElement = document.getElementById('message');
-    p.innerText = isEN
-      ? `No player is present in the room ${id}.`
-      : `ルーム ${id} では対戦が行われていません。`;
+    p.innerText = t('roomIsEmpty', id);
   }
 );
 
 socket.on('no public room', () => {
   const p: HTMLElement = document.getElementById('message');
-  p.innerText = isEN
-    ? `No player is present in public rooms.`
-    : `パブリックルームでは対戦が行われていません。`;
+  p.innerText = t('publicRoomIsEmpty');
 });
 
 // 対戦相手を待っているとき
 socket.on('wait opponent', () => {
   if (!doneInitCanvas) initCanvas();
-  gameMessage.innerText = isEN ? 'Waiting for the opponent...' : '対戦相手の入室を待っています...';
+  gameMessage.innerText = t('waitingOpponent');
 });
 
 // 観戦者が増えたとき
@@ -192,7 +179,7 @@ socket.on(
     // 手番の表示
     // マウスコールバック
     if (myturn) {
-      gameMessage.innerText = isEN ? "It's your turn." : 'あなたの番です。';
+      gameMessage.innerText = t('isYourTurn');
       if (!muted) snd('move');
 
       for (const [index, canvas] of canvass.entries()) {
@@ -256,7 +243,7 @@ socket.on(
         };
       }
     } else {
-      gameMessage.innerText = isEN ? "It's your opponent's turn." : '相手の番です。';
+      gameMessage.innerText = t('isOpponentTurn');
 
       for (const canvas of canvass) {
         canvas.onclick = () => {};
@@ -264,7 +251,7 @@ socket.on(
     }
     // チェック表示
     if (checked) {
-      gameMessage.innerHTML = (isEN ? 'Check!' : 'チェック！') + '<br>' + gameMessage.innerText;
+      gameMessage.innerHTML = t('check') + '<br>' + gameMessage.innerText;
       if (!muted) snd('check');
     }
   }
@@ -298,7 +285,7 @@ socket.on(
       }
       // チェック表示
       if (checked) {
-        gameMessage.innerHTML = (isEN ? 'Check!' : 'チェック！') + '<br>' + gameMessage.innerText;
+        gameMessage.innerHTML = t('check') + '<br>' + gameMessage.innerText;
       }
       // 盤面描画
       if (!doneInitCanvas) await initCanvas();
@@ -307,11 +294,11 @@ socket.on(
       if (omitMessage) return;
       // 手番表示
       const curPlayer: string = turn === 0 ? first : second;
-      gameMessage.innerText = isEN ? `It's ${curPlayer}'s turn.` : `${curPlayer} さんの番です。`;
+      gameMessage.innerText = t('isPlayersTurn', curPlayer);
       if (!muted) snd('move');
       // チェック表示
       if (checked) {
-        gameMessage.innerHTML = (isEN ? 'Check!' : 'チェック！') + '<br>' + gameMessage.innerText;
+        gameMessage.innerHTML = t('check') + '<br>' + gameMessage.innerText;
         if (!muted) snd('check');
       }
     }
@@ -326,12 +313,9 @@ socket.on(
    */
   (winner: string | undefined) => {
     if (winner === undefined) {
-      gameMessage.innerText = isEN ? 'Draw!' : '引き分け！';
+      gameMessage.innerText = t('draw');
     } else {
-      gameMessage.innerHTML =
-        (isEN ? 'Checkmate!' : 'チェックメイト！') +
-        '<br>' +
-        (isEN ? `${winner} won!` : `${winner} の勝ち！`);
+      gameMessage.innerHTML = t('checkmate') + '<br>' + t('winner', winner);
     }
     if (!muted) snd('win');
   }
@@ -341,7 +325,7 @@ socket.on(
 socket.on(
   'player discon',
   /** @param name 接続が切れたプレイヤー名 */ (name: string) => {
-    alert(isEN ? `${name}'s connection is closed.` : `${name} さんの接続が切れました。`);
+    alert(t('disconnected'));
     location.reload();
   }
 );
@@ -351,7 +335,7 @@ muteButton.onclick = () => {
   muteButton.src = muted
     ? '../static/svg/volume-up-solid.svg'
     : '../static/svg/volume-mute-solid.svg';
-  muteButton.title = muted ? (isEN ? 'Mute' : 'ミュート') : isEN ? 'Unmute' : 'ミュート解除';
+  muteButton.title = muted ? t('mute') : t('unmute');
   muted = !muted;
 };
 
@@ -364,13 +348,7 @@ const toggleShowHide = (boardsMap: Map<string, string>, color: 'W' | 'B') => {
   showHideButton.src = showOppositePieces
     ? '../static/svg/eye-slash-regular.svg'
     : '../static/svg/eye-regular.svg';
-  showHideButton.title = showOppositePieces
-    ? isEN
-      ? 'Show pieces in opposite board'
-      : '反対側の盤面の駒を表示する'
-    : isEN
-    ? 'Hide pieces in opposite board'
-    : '反対側の盤面の駒を隠す';
+  showHideButton.title = showOppositePieces ? t('showOppositePieces') : t('hideOppositePieces');
   showOppositePieces = !showOppositePieces;
   draw.board(boardsMap, color, showOppositePieces);
 };
@@ -387,4 +365,4 @@ infoCloseBtn.onclick = () => {
 };
 
 // チャット
-chat(socket, isEN);
+chat(socket);
