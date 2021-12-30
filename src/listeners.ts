@@ -1,6 +1,6 @@
-import { onDisconnect, ref } from 'firebase/database';
+import { child, DataSnapshot, onDisconnect, onValue, ref } from 'firebase/database';
 import { db } from './firebase';
-import { roomIdValue } from './states';
+import { audienceNumberValue, roomIdValue } from './states';
 
 /** Returns the `Reference` to the current room. */
 export const getRoomRef = () => {
@@ -11,4 +11,10 @@ export const getRoomRef = () => {
 /** Removes data of the room when one of the players disconnected. */
 export const listenPlayerDisconnection = () => {
   onDisconnect(getRoomRef()).remove();
+};
+
+/** Decriments the audience number when an audience disconnected. */
+export const listenAudienceDisconnection = () => {
+  const audienceNumber = audienceNumberValue();
+  onDisconnect(child(getRoomRef(), 'audienceNumber')).set(audienceNumber - 1);
 };

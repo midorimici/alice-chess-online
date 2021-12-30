@@ -7,7 +7,7 @@ import {
   showPublicRoomEmptyMessage,
   showRoomFullMessage,
 } from './lib/messageHandlers';
-import { listenPlayerDisconnection } from './listeners';
+import { listenAudienceDisconnection, listenPlayerDisconnection } from './listeners';
 import { setPlayerTurn, setRoomId, setUserName } from './states';
 import { generatePublicRoomKey, m2o } from './utils';
 
@@ -120,7 +120,7 @@ export const handleEnterRoom = (info: {
             console.error(err)
           );
           // Setup disconnection event listener
-
+          listenAudienceDisconnection();
           showWaitingPlayerScreen();
         }
       }
