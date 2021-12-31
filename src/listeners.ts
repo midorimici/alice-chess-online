@@ -7,7 +7,11 @@ import {
   onValue,
   ref,
 } from 'firebase/database';
-import { handlePlayerGameScreen, showWaitingPlayerScreen } from './lib/canvasHandlers';
+import {
+  handlePlayerGameScreen,
+  showAudienceGameScreen,
+  showWaitingPlayerScreen,
+} from './lib/canvasHandlers';
 import { db } from './firebase';
 import { t } from './i18n';
 import { showAudienceNumber } from './lib/messageHandlers';
@@ -168,10 +172,9 @@ const handleRoomBoardsChange = (
   canCastle: CastlingPotentials
 ) => {
   const playerTurn = playerTurnValue();
-  // const playerNames = playerNamesValue();
   if (isPlayer) {
     handlePlayerGameScreen(curTurn === playerTurn, false, null, canCastle);
   } else {
-    // showGameScreenForAudience(boards[0], curTurn, playerNames, takenPieces);
+    showAudienceGameScreen(curTurn, false);
   }
 };

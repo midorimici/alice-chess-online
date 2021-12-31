@@ -49,54 +49,6 @@ let myname: string;
 
 // // ゲーム進行
 
-// // 観戦者の処理
-// socket.on(
-//   'watch',
-//   /**
-//    * 観戦者側のゲーム処理
-//    * @param boards 盤面データ
-//    * @param first 先手のプレイヤー名
-//    * @param second 後手のプレイヤー名
-//    * @param turn 現在のターン
-//    * @param checked どちらかがチェックされているか
-//    * @param omitMessage 手番やチェックのメッセージを省略するか
-//    */
-//   async (
-//     boards: [string, string][],
-//     first: string,
-//     second: string,
-//     turn: 0 | 1,
-//     checked: boolean,
-//     omitMessage: boolean = false
-//   ) => {
-//     if (myrole === 'watch') {
-//       const boardsMap: Map<string, string> = new Map(boards);
-//       // 対戦者名表示
-//       if (document.getElementById('user-names').innerText === '') {
-//         document.getElementById('user-names').innerText = `↑ ${second}\n↓ ${first}`;
-//       }
-//       // チェック表示
-//       if (checked) {
-//         gameMessage.innerHTML = t('check') + '<br>' + gameMessage.innerText;
-//       }
-//       // 盤面描画
-//       if (!doneInitCanvas) await initCanvas();
-//       draw.board(boardsMap, 'W', showOppositePieces);
-//       showHideButton.onclick = () => toggleShowHide(boardsMap, 'W');
-//       if (omitMessage) return;
-//       // 手番表示
-//       const curPlayer: string = turn === 0 ? first : second;
-//       gameMessage.innerText = t('isPlayersTurn', curPlayer);
-//       if (!muted) snd('move');
-//       // チェック表示
-//       if (checked) {
-//         gameMessage.innerHTML = t('check') + '<br>' + gameMessage.innerText;
-//         if (!muted) snd('check');
-//       }
-//     }
-//   }
-// );
-
 // // 勝者が決まったとき
 // socket.on(
 //   'tell winner',

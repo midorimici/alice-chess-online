@@ -201,3 +201,45 @@ export const handlePlayerGameScreen = async (
     snd('check');
   }
 };
+
+/**
+ * Displays the game screen for audience.
+ * @param turn The current turn.
+ * @param checked Whether one of the players is checked.
+ * @param omitMessage 🤔 手番やチェックのメッセージを省略するか
+ */
+export const showAudienceGameScreen = async (
+  turn: Turn,
+  checked: boolean,
+  omitMessage: boolean = false
+) => {
+  const playerNames = playerNamesValue();
+
+  // Display player names.
+  if (document.getElementById('user-names').innerText === '') {
+    document.getElementById('user-names').innerText = `↑ ${playerNames[1]}\n↓ ${playerNames[0]}`;
+  }
+
+  // 🚧 // Display if it is checked.
+  // if (checked) {
+  //   gameMessage.innerHTML = t('check') + '<br>' + gameMessage.innerText;
+  // }
+
+  // Draw the game board.
+  if (!doneInitCanvas) await initCanvas();
+  drawBoard();
+  // 🚧 showHideButton.onclick = () => toggleShowHide(boardsMap, 'W');
+
+  if (omitMessage) return;
+
+  // Show player's turn.
+  const curPlayer: string = playerNames[turn];
+  gameMessage.innerText = t('isPlayersTurn', curPlayer);
+  snd('move');
+
+  // Display if it is checked.
+  if (checked) {
+    gameMessage.innerHTML = t('check') + '<br>' + gameMessage.innerText;
+    snd('check');
+  }
+};
