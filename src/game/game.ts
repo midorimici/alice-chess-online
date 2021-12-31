@@ -96,8 +96,7 @@ const cannotMove = (
       const piece = new abbrPieceDict[pieceName[1] as PieceName](color, pos[0] as 0 | 1);
       for (const dest of piece.validMoves([pos[1], pos[2]], boards, advanced2Pos, canCastle)) {
         // 駒の各移動先について、移動後にチェック回避できるなら false
-        const tmpBoards = new Map(boards);
-        renewBoard(pos[0] as 0 | 1, [pos[1], pos[2]], dest, tmpBoards);
+        const tmpBoards = renewedBoard(pos[0] as 0 | 1, [pos[1], pos[2]], dest, new Map(boards));
         if (!isChecked(color, rotateBoard(tmpBoards))) return false;
       }
     }
@@ -219,18 +218,25 @@ const enPassantReq = (
 };
 
 /**
- * 駒を移動して盤面を更新する
+ * 駒を移動して更新された盤面を返す
  * @param boardId 駒の移動前の盤面がどちらか
  * @param startpos 駒の移動前の位置
  * @param endpos 駒の移動後の位置
  * @param boards 盤面
+ * @returns 更新された盤面
  */
-const renewBoard = (boardId: 0 | 1, startpos: Vector, endpos: Vector, boards: BoardMap) => {
+const renewedBoard = (
+  boardId: 0 | 1,
+  startpos: Vector,
+  endpos: Vector,
+  boards: BoardMap
+): BoardMap => {
   // 駒移動
-  boards.set(`${1 - boardId},` + String(endpos), boards.get(`${boardId},` + String(startpos)));
-  boards.delete(`${boardId},` + String(startpos));
+  boards.set(`${1 - boardId},${String(endpos)}`, boards.get(`${boardId},${String(startpos)}`));
+  boards.delete(`${boardId},${String(startpos)}`);
   // 敵駒があったら削除
-  boards.delete(`${boardId},` + String(endpos));
+  boards.delete(`${boardId},${String(endpos)}`);
+  return boards;
 };
 
-export { opponent, rotateBoard, isChecked, cannotMove, castlingReq, enPassantReq, renewBoard };
+export { opponent, rotateBoard, isChecked, cannotMove, castlingReq, enPassantReq, renewedBoard };

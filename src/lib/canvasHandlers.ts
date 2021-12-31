@@ -1,3 +1,4 @@
+import { handleMovePiece } from '~/actions';
 import Draw from '~/game/draw';
 import Mouse from '~/game/mouse';
 import { abbrPieceDict } from '~/game/piece';
@@ -152,7 +153,7 @@ export const handlePlayerGameScreen = async (
               } else {
                 snd('move');
                 // Move the piece and apply that move to Database.
-                // socket.emit('move piece', index, originPos, destPos);
+                handleMovePiece(index as 0 | 1, originPos, destPos);
               }
             }
           }
@@ -168,7 +169,7 @@ export const handlePlayerGameScreen = async (
                 prom = false;
                 snd('move');
                 // Apply the promotion to Database.
-                // socket.emit('move piece', index, originPos, destPos, pieces[i - 2]);
+                handleMovePiece(index as 0 | 1, originPos, destPos, pieces[i - 2]);
               }
             }
             // When it is right after the selection of the destination

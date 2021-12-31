@@ -18,6 +18,7 @@ declare type Turn = 0 | 1;
 
 declare type Winner = Turn | 2;
 
+/** [[White queen side, White king side], [Black king side, Black queen side]] */
 declare type CastlingPotentials = Pair<Pair<boolean>>;
 
 declare type RoomInfo = Partial<{
