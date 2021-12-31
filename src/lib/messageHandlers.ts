@@ -1,7 +1,9 @@
 import { t } from '~/i18n';
-import { roomIdValue } from '~/states';
+import { playerNamesValue, roomIdValue } from '~/states';
+import { snd } from './canvasHandlers';
 
 const p: HTMLElement = document.getElementById('message');
+const gameMessage = document.getElementById('game-message');
 
 /** Show message that tells the user that the room is full and does not receive new players. */
 export const showRoomFullMessage = () => {
@@ -26,4 +28,17 @@ export const showPublicRoomEmptyMessage = () => {
  */
 export const showAudienceNumber = (num: number) => {
   document.getElementById('watcher-number').innerText = String(num);
+};
+
+/** Displays the result of the game.
+ * @param winner The id of the winner. It is `2` when it is draw.
+ */
+export const showResult = (winner: Winner) => {
+  if (winner === 2) {
+    gameMessage.innerText = t('draw');
+  } else {
+    const players = playerNamesValue();
+    gameMessage.innerHTML = t('checkmate') + '<br>' + t('winner', players[winner]);
+  }
+  snd('win');
 };

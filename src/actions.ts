@@ -240,16 +240,19 @@ export const handleMovePiece = (
         playerBoard.delete(`${boardId},${to[0]},${to[1] + 1}`);
       }
       /** The destination position when the pawn has moved two steps. */
-      const advanced2Pos = pieceName === 'P' && from[1] - to[1] === 2 ? [1 - boardId, ...to] : null;
-
-      // When the player is black
-      if (advanced2Pos !== null && playerTurn === 1) {
-        // Convert to the position seen from white
-        advanced2Pos[1] = 7 - advanced2Pos[1];
-        advanced2Pos[2] = 7 - advanced2Pos[2];
+      const playerAdvanced2Pos =
+        pieceName === 'P' && from[1] - to[1] === 2 ? [1 - boardId, ...to] : null;
+      /** The destination position seen from opponent when the pawn has moved two steps. */
+      const opponentAdvanced2Pos = playerAdvanced2Pos ? [...playerAdvanced2Pos] : null;
+      if (opponentAdvanced2Pos !== null) {
+        opponentAdvanced2Pos[1] = 7 - opponentAdvanced2Pos[1];
+        opponentAdvanced2Pos[2] = 7 - opponentAdvanced2Pos[2];
       }
 
-      set(child(roomRef, 'advanced2Pos'), advanced2Pos).catch((err) => console.error(err));
+      // Convert to the position seen from white
+      const newAdvanced2Pos = playerTurn === 0 ? playerAdvanced2Pos : opponentAdvanced2Pos;
+
+      set(child(roomRef, 'advanced2Pos'), newAdvanced2Pos).catch((err) => console.error(err));
 
       // Move the piece.
       const playerNewBoard = renewedBoard(boardId, from, to, playerBoard);
@@ -267,31 +270,28 @@ export const handleMovePiece = (
       const newTurn: Turn = (1 - playerTurn) as Turn;
 
       // Judge check.
-      /** Whether the current player is checked. */
-      const playerIsChecked = isChecked(colors[playerTurn], opponentNewBoard);
       /** Whether the opponent player is checked. */
       const opponentIsChecked = isChecked(colors[1 - playerTurn], playerNewBoard);
-      /** Whether the current player cannot move any pieces. */
-      const playerIsFreezed = cannotMove(
-        colors[playerTurn],
-        playerNewBoard,
-        advanced2Pos,
+      /** Whether the opponent player cannot move any pieces. */
+      const opponentIsFreezed = cannotMove(
+        colors[1 - playerTurn],
+        opponentNewBoard,
+        opponentAdvanced2Pos,
         newCanCastle
       );
 
       // Judge the winner.
       let winner: Winner;
-      if (playerIsFreezed) {
-        if (playerIsChecked) {
-          // Checkmate. The opponent wins.
-          winner = (1 - playerTurn) as Winner;
+      if (opponentIsFreezed) {
+        if (opponentIsChecked) {
+          // Checkmate. The current player wins.
+          winner = playerTurn;
         } else {
           // Stale mate. It is draw.
           winner = 2;
         }
         // Set the winner to the Database
         set(child(roomRef, 'winner'), winner).catch((err) => console.error(err));
-        // TODO: Display the winner
       }
 
       /** The renewed game board seen from the white player. */
@@ -301,7 +301,7 @@ export const handleMovePiece = (
       const updateValues: RoomInfo = {
         board: m2o(newBoard),
         curTurn: newTurn,
-        checked: playerIsChecked || opponentIsChecked,
+        checked: opponentIsChecked,
         canCastle: newCanCastle,
       };
       update(roomRef, updateValues).catch((err) => console.error(err));

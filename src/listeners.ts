@@ -14,7 +14,7 @@ import {
 } from './lib/canvasHandlers';
 import { db } from './firebase';
 import { t } from './i18n';
-import { showAudienceNumber } from './lib/messageHandlers';
+import { showAudienceNumber, showResult } from './lib/messageHandlers';
 import { playerTurnValue, roomIdValue, setBoardMap, setPlayerNames } from './states';
 import { rotateBoard } from './game/game';
 
@@ -59,17 +59,20 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
         roomRef,
         (snapshot: DataSnapshot) => {
           const info: RoomInfo = snapshot.val();
+          const winner: Winner = info.winner;
+          const gameIsOver = winner !== undefined;
           handleRoomBoardChange(
             isPlayer,
             info.curTurn,
             info.checked,
             info.advanced2Pos,
-            info.canCastle
+            info.canCastle,
+            gameIsOver
           );
-          // const winner: PlayerId = info.winner;
-          // if (winner !== undefined) {
-          //   handleRoomWinnerChange(winner, info.boards, info.takenPieces);
-          // }
+          if (gameIsOver) {
+            // Display the result of the game
+            showResult(winner);
+          }
         },
         { onlyOnce: true }
       );
@@ -173,13 +176,15 @@ const onAudienceNumberChange = (roomRef: DatabaseReference, isPlayer: boolean) =
  * @param checked Whether one of the players is checked.
  * @param advanced2Pos The destination position (seen from white) of the pawn that has moved two steps.
  * @param canCastle Lists that represent whether it is available to castle.
+ * @param gameIsOver Whether the game is over.
  */
 const handleRoomBoardChange = (
   isPlayer: boolean,
   curTurn: Turn,
   checked: boolean,
   advanced2Pos: number[] | undefined,
-  canCastle: CastlingPotentials
+  canCastle: CastlingPotentials,
+  gameIsOver: boolean
 ) => {
   const playerTurn = playerTurnValue();
   if (isPlayer) {
@@ -191,6 +196,6 @@ const handleRoomBoardChange = (
     }
     handlePlayerGameScreen(curTurn === playerTurn, checked, advanced2Pos, canCastle);
   } else {
-    showAudienceGameScreen(curTurn, checked);
+    showAudienceGameScreen(curTurn, checked, gameIsOver);
   }
 };
