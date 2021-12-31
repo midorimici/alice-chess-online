@@ -20,7 +20,7 @@ export const playerNamesValue = () => playerNames;
 
 export const usePlayerNames = () => ({ playerNames, setPlayerNames });
 
-/** A `Map` object that represents game boards. */
+/** A `Map` object that represents game board seen from the current user. */
 let boardMap: BoardMap = new Map();
 
 export const setBoardMap = (state: BoardMap) => {

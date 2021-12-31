@@ -25,7 +25,8 @@ declare type RoomInfo = Partial<{
   players: Pair<string>;
   audienceNumber: number;
   state: RoomState;
-  boards: Pair<Board>;
+  /** The game board seen from the white player. */
+  board: Board;
   curTurn: Turn;
   winner: Winner;
   canCastle: CastlingPotentials;

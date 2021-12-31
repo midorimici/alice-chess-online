@@ -16,6 +16,7 @@ import { db } from './firebase';
 import { t } from './i18n';
 import { showAudienceNumber } from './lib/messageHandlers';
 import { playerTurnValue, roomIdValue, setBoardMap, setPlayerNames } from './states';
+import { rotateBoard } from './game/game';
 
 /** Returns the `Reference` to the current room. */
 export const getRoomRef = () => {
@@ -31,7 +32,7 @@ export const listenPlayerDisconnection = () => {
 /**
  * Handles process when the room data is changed, such as a new player joins, chat messages and so on.
  * @param phase If this arg is `preparing`, it listens to the `state` field of the data.
- *              If this arg is `playing`, it listens to the `boards` and check for the winner.
+ *              If this arg is `playing`, it listens to the `board` and check for the winner.
  *              In both cases, it listens to the `audienceNumber` and `chatMessages`.
  * @param isPlayer Whether the user is joining as a player.
  */
@@ -50,14 +51,15 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
       true
     );
   } else if (phase === 'playing') {
-    handleRoomValueChange(roomRef, 'boards', (val) => {
-      const boards: Pair<Board> = val;
-      setBoardMap(new Map(Object.entries(boards[playerTurn])));
+    handleRoomValueChange(roomRef, 'board', (val) => {
+      const board: Board = val;
+      const boardMap: BoardMap = new Map(Object.entries(board));
+      setBoardMap(playerTurn === 0 ? boardMap : rotateBoard(boardMap));
       onValue(
         roomRef,
         (snapshot: DataSnapshot) => {
           const info: RoomInfo = snapshot.val();
-          handleRoomBoardsChange(isPlayer, info.curTurn, info.canCastle);
+          handleRoomBoardChange(isPlayer, info.curTurn, info.canCastle);
           // const winner: PlayerId = info.winner;
           // if (winner !== undefined) {
           //   handleRoomWinnerChange(winner, info.boards, info.takenPieces);
@@ -161,16 +163,12 @@ const onAudienceNumberChange = (roomRef: DatabaseReference, isPlayer: boolean) =
 };
 
 /**
- * Handles process when the game boards are changed.
+ * Handles process when the game board are changed.
  * @param isPlayer Whether the user is joining as a player.
  * @param curTurn The current turn.
  * @param canCastle Lists that represent whether it is available to castle.
  */
-const handleRoomBoardsChange = (
-  isPlayer: boolean,
-  curTurn: Turn,
-  canCastle: CastlingPotentials
-) => {
+const handleRoomBoardChange = (isPlayer: boolean, curTurn: Turn, canCastle: CastlingPotentials) => {
   const playerTurn = playerTurnValue();
   if (isPlayer) {
     handlePlayerGameScreen(curTurn === playerTurn, false, null, canCastle);

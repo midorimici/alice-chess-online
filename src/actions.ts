@@ -124,10 +124,10 @@ export const handleEnterRoom = (info: {
             // Update the room state
             const roomState: RoomState = 'playing';
             set(child(roomRef, 'state'), roomState).catch((err) => console.error(err));
-            // Generate and set initial boards
+            // Generate and set initial board
             const boardMap: BoardMap = initBoard();
-            const boards: Pair<Board> = [m2o(boardMap), m2o(rotateBoard(boardMap))];
-            set(child(roomRef, 'boards'), boards).catch((err) => console.error(err));
+            const board: Board = m2o(boardMap);
+            set(child(roomRef, 'board'), board).catch((err) => console.error(err));
             // Set states
             setUserName(info.name);
             setPlayerTurn(1);
@@ -158,8 +158,8 @@ export const handleEnterRoom = (info: {
 };
 
 /**
- * Move the piece and update the game boards.
- * @param boardId Which side of boards the piece was before the move.
+ * Move the piece and update the game board.
+ * @param boardId Which side of board the piece was before the move.
  * @param from The original position of the piece.
  * @param to The destination position of the piece.
  * @param promoteTo Which piece the piece will promote to. Only available when the piece is to promote.
@@ -187,12 +187,14 @@ export const handleMovePiece = (
         console.warn(`curTurn and playerTurn do not match: ${room.curTurn}, ${playerTurn}`);
       }
 
-      const boards = room.boards;
+      const board = room.board;
       const canCastle: CastlingPotentials = room.canCastle;
 
-      const newBoard: BoardMap = new Map(Object.entries(boards[playerTurn]));
+      const boardMap: BoardMap = new Map(Object.entries(board));
+      /** The game board seen from the current player. */
+      const playerBoard: BoardMap = playerTurn === 0 ? boardMap : rotateBoard(boardMap);
       const newCanCastle: CastlingPotentials = [...canCastle];
-      const pieceName = newBoard.get(`${boardId},${String(from)}`)?.[1] as PieceName;
+      const pieceName = playerBoard.get(`${boardId},${String(from)}`)?.[1] as PieceName;
 
       // Castling
       // When rook has moved
@@ -227,33 +229,30 @@ export const handleMovePiece = (
             [newX, oldX] = [2, 0];
           }
           // Update the board
-          newBoard.set(`${1 - boardId},${newX},7`, colors[playerTurn] + 'R');
-          newBoard.delete(`${boardId},${oldX},7`);
+          playerBoard.set(`${1 - boardId},${newX},7`, colors[playerTurn] + 'R');
+          playerBoard.delete(`${boardId},${oldX},7`);
         }
       }
 
       // When en passant has occured
-      if (enPassantReq(from, to, pieceName, boardId, boardId, newBoard)) {
+      if (enPassantReq(from, to, pieceName, boardId, boardId, playerBoard)) {
         // Remove the attacked pawn
-        newBoard.delete(`${boardId},${to[0]},${to[1] + 1}`);
+        playerBoard.delete(`${boardId},${to[0]},${to[1] + 1}`);
       }
       /** The destination position when the pawn has moved two steps. */
       const advanced2Pos = pieceName === 'P' && from[1] - to[1] === 2 ? [1 - boardId, ...to] : null;
 
       // Move the piece.
-      const newBoardMap = renewedBoard(boardId, from, to, newBoard);
+      const playerNewBoard = renewedBoard(boardId, from, to, playerBoard);
 
       // When it is a promotion
       if (promoteTo) {
         // Promote the pawn.
-        newBoardMap.set(`${1 - boardId},${String(to)}`, colors[playerTurn] + promoteTo);
+        playerNewBoard.set(`${1 - boardId},${String(to)}`, colors[playerTurn] + promoteTo);
       }
 
       // Update the board from the opponent viewpoint.
-      const opponentNewBoard = rotateBoard(newBoardMap);
-      const newBoards: Pair<Board> = [{}, {}];
-      newBoards[playerTurn] = m2o(newBoardMap);
-      newBoards[1 - playerTurn] = m2o(opponentNewBoard);
+      const opponentNewBoard = rotateBoard(playerNewBoard);
 
       // Switch the turn.
       const newTurn: Turn = (1 - playerTurn) as Turn;
@@ -262,7 +261,7 @@ export const handleMovePiece = (
       /** Whether the current player is checked. */
       const checked = isChecked(colors[playerTurn], opponentNewBoard);
       /** Whether the current player cannot move any pieces. */
-      const freezed = cannotMove(colors[playerTurn], newBoardMap, advanced2Pos, newCanCastle);
+      const freezed = cannotMove(colors[playerTurn], playerNewBoard, advanced2Pos, newCanCastle);
 
       // Judge the winner.
       let winner: Winner;
@@ -279,9 +278,12 @@ export const handleMovePiece = (
         // TODO: Display the winner
       }
 
+      /** The renewed game board seen from the white player. */
+      const newBoard: BoardMap = playerTurn === 0 ? playerNewBoard : opponentNewBoard;
+
       // Update the Database
       const updateValues: RoomInfo = {
-        boards: newBoards,
+        board: m2o(newBoard),
         curTurn: newTurn,
         canCastle: newCanCastle,
       };
