@@ -2,3 +2,5 @@ node_modules
 .git-old
 .env
 public/bundle.js
+public/static/style.css
+public/static/style.css.map

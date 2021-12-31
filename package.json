@@ -7,7 +7,7 @@
   },
   "devDependencies": {
     "dotenv-webpack": "^7.0.3",
-    "node-sass": "^6.0.1",
+    "sass": "^1.45.2",
     "ts-loader": "^8.0.12",
     "typescript": "^4.1.3",
     "webpack": "^5.17.0",
@@ -16,7 +16,7 @@
   "scripts": {
     "b": "npx webpack",
     "bw": "npx webpack --watch",
-    "sass": "npx node-sass src/sass/main.scss public/static/style.css --output-style compressed --watch"
+    "sass": "npx sass src/sass/main.scss public/static/style.css -s compressed"
   },
   "author": "midori mici",
   "license": "ISC"
