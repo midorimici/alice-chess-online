@@ -3,8 +3,11 @@ import {
   DatabaseReference,
   DataSnapshot,
   get,
+  limitToLast,
+  onChildAdded,
   onDisconnect,
   onValue,
+  query,
   ref,
 } from 'firebase/database';
 import {
@@ -14,7 +17,7 @@ import {
 } from './lib/canvasHandlers';
 import { db } from './firebase';
 import { t } from './i18n';
-import { showAudienceNumber, showResult } from './lib/messageHandlers';
+import { addChatMessage, showAudienceNumber, showResult } from './lib/messageHandlers';
 import { playerTurnValue, roomIdValue, setBoardMap, setPlayerNames } from './states';
 import { rotateBoard } from './game/game';
 
@@ -50,6 +53,18 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
       },
       true
     );
+    // Listen for chat messages.
+    onChildAdded(
+      query(child(roomRef, 'chatMessages'), limitToLast(20)),
+      (snapshot: DataSnapshot) => {
+        if (!snapshot.exists()) {
+          return;
+        }
+
+        const message: ChatMessage = snapshot.val();
+        addChatMessage(message);
+      }
+    );
   } else if (phase === 'playing') {
     handleRoomValueChange(roomRef, 'board', (val) => {
       const board: Board = val;
@@ -80,22 +95,6 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
   }
 
   onAudienceNumberChange(roomRef, isPlayer);
-
-  // const { chatInitialized, setChatInitialized } = useChatInitialized();
-
-  // if (chatInitialized) {
-  //   return;
-  // }
-
-  // onChildAdded(query(child(roomRef, 'chatMessages'), limitToLast(20)), (snapshot: DataSnapshot) => {
-  //   if (!snapshot.exists()) {
-  //     return;
-  //   }
-
-  //   const message: ChatMessage = snapshot.val();
-  //   addChatMessage(message);
-  // });
-  // setChatInitialized(true);
 };
 
 /**

@@ -1,4 +1,15 @@
-import { child, DataSnapshot, get, onValue, ref, set, update } from 'firebase/database';
+import {
+  child,
+  DataSnapshot,
+  get,
+  limitToLast,
+  onValue,
+  push,
+  query,
+  ref,
+  set,
+  update,
+} from 'firebase/database';
 import { db } from './firebase';
 import {
   cannotMove,
@@ -14,7 +25,14 @@ import {
   showRoomFullMessage,
 } from './lib/messageHandlers';
 import { getRoomRef, listenPlayerDisconnection, listenRoomDataChange } from './listeners';
-import { playerTurnValue, setPlayerTurn, setRoomId, setUserName } from './states';
+import {
+  playerTurnValue,
+  setPlayerTurn,
+  setRoomId,
+  setUserName,
+  userNameValue,
+  userRoleValue,
+} from './states';
 import { generatePublicRoomKey, m2o } from './utils';
 
 /**
@@ -305,6 +323,36 @@ export const handleMovePiece = (
         canCastle: newCanCastle,
       };
       update(roomRef, updateValues).catch((err) => console.error(err));
+    },
+    { onlyOnce: true }
+  );
+};
+
+/**
+ * Handles process when a user send a chat message.
+ * @param message A message content that the user is going to send.
+ */
+export const handleChatSend = (message: string) => {
+  const userName = userNameValue();
+  const userRole = userRoleValue();
+  const chatMessageData: ChatMessage = {
+    name: userName,
+    isPlayer: userRole === 'play',
+    message,
+  };
+  const chatRef = child(getRoomRef(), 'chatMessages');
+  // Add a new message.
+  push(chatRef, chatMessageData).catch((err) => console.error(err));
+  // Pick up only latest 100 messages to limit all messages up to 100.
+  onValue(
+    query(chatRef, limitToLast(100)),
+    (snapshot: DataSnapshot) => {
+      if (!snapshot.exists()) {
+        return;
+      }
+
+      const messages: ChatMessage[] = snapshot.val();
+      set(chatRef, messages).catch((err) => console.error(err));
     },
     { onlyOnce: true }
   );
