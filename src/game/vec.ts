@@ -2,19 +2,19 @@
  * @classdesc 二次元ベクトルの計算を補助する
  */
 export class Vec {
-  private v: [number, number];
+  private v: Vector;
 
   /**
    * @param v 二数の配列
    */
-  constructor(v: [number, number]) {
+  constructor(v: Vector) {
     this.v = v;
   }
 
   /**
    * Vec インスタンスから二数の配列を返す
    */
-  val(): [number, number] {
+  val(): Vector {
     return this.v;
   }
 
@@ -22,7 +22,7 @@ export class Vec {
    * ベクトルに加算する
    * @param v 加算する数またはベクトル
    */
-  add(v: number | [number, number]): Vec {
+  add(v: number | Vector): Vec {
     if (Array.isArray(v)) {
       return new Vec([v[0] + this.v[0], v[1] + this.v[1]]);
     } else {

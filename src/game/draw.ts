@@ -27,8 +27,8 @@ export default class Draw {
    */
   static async init(canvass: HTMLCanvasElement[]) {
     const draw = new Draw(canvass);
-    let pieces: [string, string][] = [];
-    for (const color of 'WB') {
+    let pieces: [PieceColor, string][] = [];
+    for (const color of ['W', 'B'] as const) {
       for (const name of 'NBRQKP') {
         pieces.push([color, name]);
       }
@@ -45,7 +45,7 @@ export default class Draw {
    * @param color 駒色
    * @param name 駒の名前
    */
-  private loadImg(color: string, name: string) {
+  private loadImg(color: PieceColor, name: string) {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => resolve(img);
@@ -59,7 +59,7 @@ export default class Draw {
    * @param img 描画する画像
    * @param pos 描画位置。盤面上の座標
    */
-  private drawImg(ctx: CanvasRenderingContext2D, img: HTMLImageElement, pos: [number, number]) {
+  private drawImg(ctx: CanvasRenderingContext2D, img: HTMLImageElement, pos: Vector) {
     const sqSize = this.squareSize;
     ctx.drawImage(
       img,
@@ -107,7 +107,7 @@ export default class Draw {
    */
   private grid(ctx: CanvasRenderingContext2D) {
     const squareSize: number = this.squareSize;
-    const coord: [number, number] = [this.margin, this.margin];
+    const coord: Vector = [this.margin, this.margin];
 
     // マス目を描く
     ctx.fillStyle = colors.buff;
@@ -136,11 +136,11 @@ export default class Draw {
   }
 
   /** ゲームボードと盤面上の駒を描く
-   * @param boardmap 盤面データ
+   * @param boardsmap 盤面データ
    * @param color 駒色。先手後手どちら目線か
    * @param showOppositePieces 反対側の盤面の駒を表示するか
    */
-  board(boardsMap: Map<string, string>, color: 'W' | 'B', showOppositePieces: boolean) {
+  board(boardsMap: BoardMap, color: PieceColor, showOppositePieces: boolean) {
     this.clearCanvas();
     const ctxs = this.ctxs;
 
@@ -184,10 +184,10 @@ export default class Draw {
    */
   dest(
     piece: Piece,
-    pos: [number, number],
-    boardsMap: Map<string, string>,
+    pos: Vector,
+    boardsMap: BoardMap,
     advanced2Pos: number[] | null,
-    canCastle: { W: [boolean, boolean]; B: [boolean, boolean] }
+    canCastle: CastlingPotentials
   ) {
     const ctx = this.ctxs[piece.side];
     for (const dest of piece.validMoves(pos, boardsMap, advanced2Pos, canCastle)) {
@@ -207,7 +207,7 @@ export default class Draw {
    * @param boardId 駒の移動前の盤面がどちらか
    * @param color 表示する駒色
    */
-  promotion(boardId: 0 | 1, color: 'W' | 'B') {
+  promotion(boardId: 0 | 1, color: PieceColor) {
     const ctx = this.ctxs[boardId];
     const margin = this.margin;
     const sqSize = this.squareSize;

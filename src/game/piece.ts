@@ -2,7 +2,7 @@ import { Vec } from './vec';
 import * as game from './game';
 
 abstract class Piece {
-  readonly color: 'W' | 'B';
+  readonly color: PieceColor;
   readonly abbr: PieceName;
   readonly side: 0 | 1;
 
@@ -11,7 +11,7 @@ abstract class Piece {
    * @param name 駒の名前 'WB' など
    * @param side 駒がどちらの盤にあるか
    */
-  constructor(color: 'W' | 'B', side: 0 | 1) {
+  constructor(color: PieceColor, side: 0 | 1) {
     this.color = color;
     this.side = side;
   }
@@ -20,7 +20,7 @@ abstract class Piece {
    * 指定の位置が盤面内に収まっているか
    * @param pos 位置
    */
-  protected inBoard(pos: [number, number]): boolean {
+  protected inBoard(pos: Vector): boolean {
     return pos[0] >= 0 && pos[0] < 8 && pos[1] >= 0 && pos[1] < 8;
   }
 
@@ -29,7 +29,7 @@ abstract class Piece {
    * @param pos 位置
    * @param boards 盤面
    */
-  protected legal(pos: [number, number], boards: Map<string, string>): boolean {
+  protected legal(pos: Vector, boards: BoardMap): boolean {
     // 盤面内に収まる && 向こう側の盤面の対応する位置に駒がない && 行先に自分の駒がない
     return (
       this.inBoard(pos) &&
@@ -44,12 +44,8 @@ abstract class Piece {
    * @param intervals 走る方向
    * @param boards 盤面
    */
-  protected rider(
-    pos: [number, number],
-    intervals: [number, number][],
-    boards: Map<string, string>
-  ): [number, number][] {
-    let answers: [number, number][] = [];
+  protected rider(pos: Vector, intervals: Vector[], boards: BoardMap): Vector[] {
+    let answers: Vector[] = [];
     for (let [dx, dy] of intervals) {
       let xtmp = pos[0] + dx,
         ytmp = pos[1] + dy;
@@ -79,7 +75,7 @@ abstract class Piece {
    * @param pos 駒の現在位置
    * @param board 盤面
    */
-  abstract coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][];
+  abstract coveringSquares(pos: Vector, boards: BoardMap): Vector[];
 
   /**
    * ゲーム内で駒が動ける位置リストを返す
@@ -89,18 +85,18 @@ abstract class Piece {
    * @param canCastle キャスリングのポテンシャルが残っているか
    */
   validMoves(
-    pos: [number, number],
-    boards: Map<string, string>,
+    pos: Vector,
+    boards: BoardMap,
     advanced2Pos: number[] | null,
-    canCastle: { W: [boolean, boolean]; B: [boolean, boolean] }
-  ): [number, number][] {
-    let result: [number, number][] = [];
+    canCastle: CastlingPotentials
+  ): Vector[] {
+    let result: Vector[] = [];
     let dests = this.coveringSquares(pos, boards);
 
     // キャスリング
     if (this.abbr === 'K') {
       for (const i of [0, 1] as [0, 1]) {
-        const endPos: [number, number] =
+        const endPos: Vector =
           this.color === 'W' ? (i === 0 ? [2, 7] : [6, 7]) : i === 0 ? [5, 7] : [1, 7];
         if (game.castlingReq(canCastle, this.color, i, this.side, endPos, boards)) {
           dests.push(endPos);
@@ -110,7 +106,7 @@ abstract class Piece {
 
     // en passant
     if (advanced2Pos) {
-      const endPos: [number, number] = [7 - advanced2Pos[1], 7 - advanced2Pos[2] - 1];
+      const endPos: Vector = [7 - advanced2Pos[1], 7 - advanced2Pos[2] - 1];
       if (game.enPassantReq(pos, endPos, this.abbr, this.side, advanced2Pos[0] as 0 | 1, boards)) {
         dests.push(endPos);
       }
@@ -143,8 +139,8 @@ abstract class Piece {
 class Knight extends Piece {
   abbr: PieceName = 'N';
 
-  coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
-    const dirList: [number, number][] = [
+  coveringSquares(pos: Vector, boards: BoardMap): Vector[] {
+    const dirList: Vector[] = [
       [1, 2],
       [2, 1],
       [2, -1],
@@ -156,14 +152,14 @@ class Knight extends Piece {
     ];
     return dirList
       .map((e) => new Vec(pos).add(e).val())
-      .filter((dest: [number, number]) => this.legal(dest, boards));
+      .filter((dest: Vector) => this.legal(dest, boards));
   }
 }
 
 class Bishop extends Piece {
   abbr: PieceName = 'B';
 
-  coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
+  coveringSquares(pos: Vector, boards: BoardMap): Vector[] {
     return this.rider(
       pos,
       [
@@ -180,7 +176,7 @@ class Bishop extends Piece {
 class Rook extends Piece {
   abbr: PieceName = 'R';
 
-  coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
+  coveringSquares(pos: Vector, boards: BoardMap): Vector[] {
     return this.rider(
       pos,
       [
@@ -197,7 +193,7 @@ class Rook extends Piece {
 class Queen extends Piece {
   abbr: PieceName = 'Q';
 
-  coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
+  coveringSquares(pos: Vector, boards: BoardMap): Vector[] {
     return this.rider(
       pos,
       [
@@ -218,8 +214,8 @@ class Queen extends Piece {
 class King extends Piece {
   abbr: PieceName = 'K';
 
-  coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
-    const dirList: [number, number][] = [
+  coveringSquares(pos: Vector, boards: BoardMap): Vector[] {
+    const dirList: Vector[] = [
       [1, 0],
       [1, -1],
       [0, -1],
@@ -231,15 +227,15 @@ class King extends Piece {
     ];
     return dirList
       .map((e) => new Vec(pos).add(e).val())
-      .filter((dest: [number, number]) => this.legal(dest, boards));
+      .filter((dest: Vector) => this.legal(dest, boards));
   }
 }
 
 class Pawn extends Piece {
   abbr: PieceName = 'P';
 
-  coveringSquares(pos: [number, number], boards: Map<string, string>): [number, number][] {
-    let answers: [number, number][] = [];
+  coveringSquares(pos: Vector, boards: BoardMap): Vector[] {
+    let answers: Vector[] = [];
     // 駒を取る動き
     var target = new Vec(pos).add([1, -1]).val();
     if (boards.get(`${this.side},` + String(target))?.[0] === game.opponent[this.color]) {
