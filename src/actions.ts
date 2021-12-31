@@ -87,6 +87,7 @@ export const handleEnterRoom = (info: {
             players: [info.name, ''],
             state: 'waiting',
             curTurn: 0,
+            checked: false,
             canCastle: [
               [true, true],
               [true, true],
@@ -241,6 +242,15 @@ export const handleMovePiece = (
       /** The destination position when the pawn has moved two steps. */
       const advanced2Pos = pieceName === 'P' && from[1] - to[1] === 2 ? [1 - boardId, ...to] : null;
 
+      // When the player is black
+      if (advanced2Pos !== null && playerTurn === 1) {
+        // Convert to the position seen from white
+        advanced2Pos[1] = 7 - advanced2Pos[1];
+        advanced2Pos[2] = 7 - advanced2Pos[2];
+      }
+
+      set(child(roomRef, 'advanced2Pos'), advanced2Pos).catch((err) => console.error(err));
+
       // Move the piece.
       const playerNewBoard = renewedBoard(boardId, from, to, playerBoard);
 
@@ -258,14 +268,21 @@ export const handleMovePiece = (
 
       // Judge check.
       /** Whether the current player is checked. */
-      const checked = isChecked(colors[playerTurn], opponentNewBoard);
+      const playerIsChecked = isChecked(colors[playerTurn], opponentNewBoard);
+      /** Whether the opponent player is checked. */
+      const opponentIsChecked = isChecked(colors[1 - playerTurn], playerNewBoard);
       /** Whether the current player cannot move any pieces. */
-      const freezed = cannotMove(colors[playerTurn], playerNewBoard, advanced2Pos, newCanCastle);
+      const playerIsFreezed = cannotMove(
+        colors[playerTurn],
+        playerNewBoard,
+        advanced2Pos,
+        newCanCastle
+      );
 
       // Judge the winner.
       let winner: Winner;
-      if (freezed) {
-        if (checked) {
+      if (playerIsFreezed) {
+        if (playerIsChecked) {
           // Checkmate. The opponent wins.
           winner = (1 - playerTurn) as Winner;
         } else {
@@ -284,6 +301,7 @@ export const handleMovePiece = (
       const updateValues: RoomInfo = {
         board: m2o(newBoard),
         curTurn: newTurn,
+        checked: playerIsChecked || opponentIsChecked,
         canCastle: newCanCastle,
       };
       update(roomRef, updateValues).catch((err) => console.error(err));

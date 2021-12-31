@@ -28,6 +28,10 @@ declare type RoomInfo = Partial<{
   /** The game board seen from the white player. */
   board: Board;
   curTurn: Turn;
+  /** Whether one of the players is checked. */
+  checked: boolean;
+  /** The destination position (seen from white) of the pawn that has moved two steps. */
+  advanced2Pos: number[];
   winner: Winner;
   canCastle: CastlingPotentials;
 }>;

@@ -229,7 +229,6 @@ export const showAudienceGameScreen = async (
   // Draw the game board.
   if (!doneInitCanvas) await initCanvas();
   drawBoard();
-  // 🚧 showHideButton.onclick = () => toggleShowHide(boardsMap, 'W');
 
   if (omitMessage) return;
 

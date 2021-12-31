@@ -59,7 +59,13 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
         roomRef,
         (snapshot: DataSnapshot) => {
           const info: RoomInfo = snapshot.val();
-          handleRoomBoardChange(isPlayer, info.curTurn, info.canCastle);
+          handleRoomBoardChange(
+            isPlayer,
+            info.curTurn,
+            info.checked,
+            info.advanced2Pos,
+            info.canCastle
+          );
           // const winner: PlayerId = info.winner;
           // if (winner !== undefined) {
           //   handleRoomWinnerChange(winner, info.boards, info.takenPieces);
@@ -164,13 +170,21 @@ const onAudienceNumberChange = (roomRef: DatabaseReference, isPlayer: boolean) =
  * Handles process when the game board are changed.
  * @param isPlayer Whether the user is joining as a player.
  * @param curTurn The current turn.
+ * @param checked Whether one of the players is checked.
+ * @param advanced2Pos The destination of the pawn that has moved two steps.
  * @param canCastle Lists that represent whether it is available to castle.
  */
-const handleRoomBoardChange = (isPlayer: boolean, curTurn: Turn, canCastle: CastlingPotentials) => {
+const handleRoomBoardChange = (
+  isPlayer: boolean,
+  curTurn: Turn,
+  checked: boolean,
+  advanced2Pos: number[] | null,
+  canCastle: CastlingPotentials
+) => {
   const playerTurn = playerTurnValue();
   if (isPlayer) {
-    handlePlayerGameScreen(curTurn === playerTurn, false, null, canCastle);
+    handlePlayerGameScreen(curTurn === playerTurn, checked, advanced2Pos, canCastle);
   } else {
-    showAudienceGameScreen(curTurn, false);
+    showAudienceGameScreen(curTurn, checked);
   }
 };
