@@ -21,6 +21,12 @@ declare type Winner = Turn | 2;
 /** [[White queen side, White king side], [Black king side, Black queen side]] */
 declare type CastlingPotentials = Pair<Pair<boolean>>;
 
+declare type ChatMessage = {
+  name: string;
+  isPlayer: boolean;
+  message: string;
+};
+
 declare type RoomInfo = Partial<{
   players: Pair<string>;
   audienceNumber: number;
@@ -32,8 +38,9 @@ declare type RoomInfo = Partial<{
   checked: boolean;
   /** The destination position (seen from white) of the pawn that has moved two steps. */
   advanced2Pos: number[];
-  winner: Winner;
   canCastle: CastlingPotentials;
+  winner: Winner;
+  chatMessages: ChatMessage[];
 }>;
 
 declare type Rooms = Record<string, RoomInfo>;

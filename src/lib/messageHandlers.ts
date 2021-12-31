@@ -42,3 +42,37 @@ export const showResult = (winner: Winner) => {
   }
   snd('win');
 };
+
+/**
+ * Add a new message to the chat list.
+ * @param message A chat message data that will be added to the chat list.
+ */
+export const addChatMessage = (message: ChatMessage) => {
+  const ul = document.getElementById('chat-messages');
+  const item = document.createElement('li');
+  const chat = document.getElementById('chat');
+  const chatCircle = document.getElementById('chat-new');
+  const nameSpan = document.createElement('span');
+  nameSpan.className = 'chat-name';
+  nameSpan.innerText = message.name;
+
+  if (message.isPlayer) {
+    const icon = document.createElement('img');
+    icon.className = 'chat-player-icon';
+    icon.src = '../static/svg/ghost-solid.svg';
+    icon.alt = 'player-icon';
+    icon.title = t('player');
+    nameSpan.appendChild(icon);
+  }
+
+  item.appendChild(nameSpan);
+
+  const msgSpan = document.createElement('span');
+  msgSpan.innerText = message.message;
+  item.appendChild(msgSpan);
+
+  ul.appendChild(item);
+  ul.scrollTop = ul.scrollHeight;
+
+  if (chat.className === 'closed') chatCircle.className = '';
+};
