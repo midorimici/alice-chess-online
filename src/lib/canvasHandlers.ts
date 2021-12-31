@@ -25,7 +25,7 @@ const gameMessage = document.getElementById('game-message');
  * Play audio if it is not muted.
  * @param file File name without extension.
  */
-const snd = (file: string) => {
+export const snd = (file: string) => {
   const isMuted = isMutedValue();
   if (isMuted) {
     return;

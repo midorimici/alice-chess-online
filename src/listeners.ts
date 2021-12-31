@@ -14,7 +14,7 @@ import {
 } from './lib/canvasHandlers';
 import { db } from './firebase';
 import { t } from './i18n';
-import { showAudienceNumber } from './lib/messageHandlers';
+import { showAudienceNumber, showResult } from './lib/messageHandlers';
 import { playerTurnValue, roomIdValue, setBoardMap, setPlayerNames } from './states';
 import { rotateBoard } from './game/game';
 
@@ -66,10 +66,11 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
             info.advanced2Pos,
             info.canCastle
           );
-          // const winner: PlayerId = info.winner;
-          // if (winner !== undefined) {
-          //   handleRoomWinnerChange(winner, info.boards, info.takenPieces);
-          // }
+          const winner: Winner = info.winner;
+          if (winner !== undefined) {
+            // Display the result of the game
+            showResult(winner);
+          }
         },
         { onlyOnce: true }
       );
