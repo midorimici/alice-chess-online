@@ -1,13 +1,20 @@
-import { child, DataSnapshot, get, ref, set } from 'firebase/database';
+import { child, DataSnapshot, get, onValue, ref, set, update } from 'firebase/database';
 import { db } from './firebase';
-import { initBoard, rotateBoard } from './game/game';
+import {
+  cannotMove,
+  enPassantReq,
+  initBoard,
+  isChecked,
+  renewedBoard,
+  rotateBoard,
+} from './game/game';
 import {
   showPrivateRoomEmptyMessage,
   showPublicRoomEmptyMessage,
   showRoomFullMessage,
 } from './lib/messageHandlers';
-import { listenPlayerDisconnection, listenRoomDataChange } from './listeners';
-import { setPlayerTurn, setRoomId, setUserName } from './states';
+import { getRoomRef, listenPlayerDisconnection, listenRoomDataChange } from './listeners';
+import { playerTurnValue, setPlayerTurn, setRoomId, setUserName } from './states';
 import { generatePublicRoomKey, m2o } from './utils';
 
 /**
@@ -78,9 +85,9 @@ export const handleEnterRoom = (info: {
           // Create a new room
           const roomInfo: RoomInfo = {
             players: [info.name, ''],
-            audienceNumber: 0,
             state: 'waiting',
             curTurn: 0,
+            checked: false,
             canCastle: [
               [true, true],
               [true, true],
@@ -117,10 +124,10 @@ export const handleEnterRoom = (info: {
             // Update the room state
             const roomState: RoomState = 'playing';
             set(child(roomRef, 'state'), roomState).catch((err) => console.error(err));
-            // Generate and set initial boards
+            // Generate and set initial board
             const boardMap: BoardMap = initBoard();
-            const boards: [Board, Board] = [m2o(boardMap), m2o(rotateBoard(boardMap))];
-            set(child(roomRef, 'boards'), boards).catch((err) => console.error(err));
+            const board: Board = m2o(boardMap);
+            set(child(roomRef, 'board'), board).catch((err) => console.error(err));
             // Set states
             setUserName(info.name);
             setPlayerTurn(1);
@@ -137,7 +144,7 @@ export const handleEnterRoom = (info: {
         // When the user is joining as audience
         else {
           // Update the audience number
-          set(child(roomRef, 'audienceNumber'), room.audienceNumber + 1).catch((err) =>
+          set(child(roomRef, 'audienceNumber'), (room.audienceNumber ?? 0) + 1).catch((err) =>
             console.error(err)
           );
           // Set the viewpoint
@@ -148,4 +155,157 @@ export const handleEnterRoom = (info: {
       }
     })
     .catch((err) => console.error(err));
+};
+
+/**
+ * Move the piece and update the game board.
+ * @param boardId Which side of board the piece was before the move.
+ * @param from The original position of the piece.
+ * @param to The destination position of the piece.
+ * @param promoteTo Which piece the piece will promote to. Only available when the piece is to promote.
+ */
+export const handleMovePiece = (
+  boardId: 0 | 1,
+  from: Vector,
+  to: Vector,
+  promoteTo?: PieceName
+) => {
+  const roomRef = getRoomRef();
+  const playerTurn = playerTurnValue();
+  const colors = ['W', 'B'] as const;
+
+  onValue(
+    roomRef,
+    (snapshot: DataSnapshot) => {
+      if (!snapshot.exists()) {
+        return;
+      }
+
+      const room: RoomInfo = snapshot.val();
+
+      if (room.curTurn !== playerTurn) {
+        console.warn(`curTurn and playerTurn do not match: ${room.curTurn}, ${playerTurn}`);
+      }
+
+      const board = room.board;
+      const canCastle: CastlingPotentials = room.canCastle;
+
+      const boardMap: BoardMap = new Map(Object.entries(board));
+      /** The game board seen from the current player. */
+      const playerBoard: BoardMap = playerTurn === 0 ? boardMap : rotateBoard(boardMap);
+      const newCanCastle: CastlingPotentials = [...canCastle];
+      const pieceName = playerBoard.get(`${boardId},${String(from)}`)?.[1] as PieceName;
+
+      // Castling
+      // When rook has moved
+      if (pieceName === 'R') {
+        // Queen side
+        if (String(from) === '0,7') {
+          newCanCastle[playerTurn][playerTurn] = false;
+        }
+        // King side
+        if (String(from) === '7,7') {
+          newCanCastle[playerTurn][1 - playerTurn] = false;
+        }
+      }
+      // When king has moved
+      if (pieceName === 'K') {
+        newCanCastle[playerTurn] = [false, false];
+        // When a castling has occured
+        if (Math.abs(to[0] - from[0]) === 2) {
+          // Move rook
+          let newX: number, oldX: number;
+          if (to[0] === 2) {
+            // White queen side
+            [newX, oldX] = [3, 0];
+          } else if (to[0] == 6) {
+            // White king side
+            [newX, oldX] = [5, 7];
+          } else if (to[0] == 5) {
+            // Black queen side
+            [newX, oldX] = [4, 7];
+          } else if (to[0] == 1) {
+            // Black king side
+            [newX, oldX] = [2, 0];
+          }
+          // Update the board
+          playerBoard.set(`${1 - boardId},${newX},7`, colors[playerTurn] + 'R');
+          playerBoard.delete(`${boardId},${oldX},7`);
+        }
+      }
+
+      // When en passant has occured
+      if (enPassantReq(from, to, pieceName, boardId, boardId, playerBoard)) {
+        // Remove the attacked pawn
+        playerBoard.delete(`${boardId},${to[0]},${to[1] + 1}`);
+      }
+      /** The destination position when the pawn has moved two steps. */
+      const advanced2Pos = pieceName === 'P' && from[1] - to[1] === 2 ? [1 - boardId, ...to] : null;
+
+      // When the player is black
+      if (advanced2Pos !== null && playerTurn === 1) {
+        // Convert to the position seen from white
+        advanced2Pos[1] = 7 - advanced2Pos[1];
+        advanced2Pos[2] = 7 - advanced2Pos[2];
+      }
+
+      set(child(roomRef, 'advanced2Pos'), advanced2Pos).catch((err) => console.error(err));
+
+      // Move the piece.
+      const playerNewBoard = renewedBoard(boardId, from, to, playerBoard);
+
+      // When it is a promotion
+      if (promoteTo) {
+        // Promote the pawn.
+        playerNewBoard.set(`${1 - boardId},${String(to)}`, colors[playerTurn] + promoteTo);
+      }
+
+      // Update the board from the opponent viewpoint.
+      const opponentNewBoard = rotateBoard(playerNewBoard);
+
+      // Switch the turn.
+      const newTurn: Turn = (1 - playerTurn) as Turn;
+
+      // Judge check.
+      /** Whether the current player is checked. */
+      const playerIsChecked = isChecked(colors[playerTurn], opponentNewBoard);
+      /** Whether the opponent player is checked. */
+      const opponentIsChecked = isChecked(colors[1 - playerTurn], playerNewBoard);
+      /** Whether the current player cannot move any pieces. */
+      const playerIsFreezed = cannotMove(
+        colors[playerTurn],
+        playerNewBoard,
+        advanced2Pos,
+        newCanCastle
+      );
+
+      // Judge the winner.
+      let winner: Winner;
+      if (playerIsFreezed) {
+        if (playerIsChecked) {
+          // Checkmate. The opponent wins.
+          winner = (1 - playerTurn) as Winner;
+        } else {
+          // Stale mate. It is draw.
+          winner = 2;
+        }
+        // Set the winner to the Database
+        set(child(roomRef, 'winner'), winner).catch((err) => console.error(err));
+        // TODO: Display the winner
+      }
+
+      /** The renewed game board seen from the white player. */
+      const newBoard: BoardMap = playerTurn === 0 ? playerNewBoard : opponentNewBoard;
+
+      // Update the Database
+      const updateValues: RoomInfo = {
+        board: m2o(newBoard),
+        curTurn: newTurn,
+        checked: playerIsChecked || opponentIsChecked,
+        canCastle: newCanCastle,
+      };
+      update(roomRef, updateValues).catch((err) => console.error(err));
+    },
+    { onlyOnce: true }
+  );
 };

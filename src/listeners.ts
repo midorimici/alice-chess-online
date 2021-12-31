@@ -16,6 +16,7 @@ import { db } from './firebase';
 import { t } from './i18n';
 import { showAudienceNumber } from './lib/messageHandlers';
 import { playerTurnValue, roomIdValue, setBoardMap, setPlayerNames } from './states';
+import { rotateBoard } from './game/game';
 
 /** Returns the `Reference` to the current room. */
 export const getRoomRef = () => {
@@ -31,7 +32,7 @@ export const listenPlayerDisconnection = () => {
 /**
  * Handles process when the room data is changed, such as a new player joins, chat messages and so on.
  * @param phase If this arg is `preparing`, it listens to the `state` field of the data.
- *              If this arg is `playing`, it listens to the `boards` and check for the winner.
+ *              If this arg is `playing`, it listens to the `board` and check for the winner.
  *              In both cases, it listens to the `audienceNumber` and `chatMessages`.
  * @param isPlayer Whether the user is joining as a player.
  */
@@ -50,14 +51,21 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
       true
     );
   } else if (phase === 'playing') {
-    handleRoomValueChange(roomRef, 'boards', (val) => {
-      const boards: [Board, Board] = val;
-      setBoardMap(new Map(Object.entries(boards[playerTurn])));
+    handleRoomValueChange(roomRef, 'board', (val) => {
+      const board: Board = val;
+      const boardMap: BoardMap = new Map(Object.entries(board));
+      setBoardMap(playerTurn === 0 ? boardMap : rotateBoard(boardMap));
       onValue(
         roomRef,
         (snapshot: DataSnapshot) => {
           const info: RoomInfo = snapshot.val();
-          handleRoomBoardsChange(isPlayer, info.curTurn, info.canCastle);
+          handleRoomBoardChange(
+            isPlayer,
+            info.curTurn,
+            info.checked,
+            info.advanced2Pos,
+            info.canCastle
+          );
           // const winner: PlayerId = info.winner;
           // if (winner !== undefined) {
           //   handleRoomWinnerChange(winner, info.boards, info.takenPieces);
@@ -128,7 +136,7 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
     // Set the room data to local states
     get(child(getRoomRef(), 'players')).then((snapshot: DataSnapshot) => {
       if (snapshot.exists()) {
-        const players: [string, string] = snapshot.val();
+        const players: Pair<string> = snapshot.val();
         setPlayerNames(players);
         listenRoomDataChange('playing', isPlayer);
       }
@@ -144,37 +152,45 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
 const onAudienceNumberChange = (roomRef: DatabaseReference, isPlayer: boolean) => {
   const audienceNumberRef = child(roomRef, 'audienceNumber');
   onValue(audienceNumberRef, (snapshot: DataSnapshot) => {
-    if (!snapshot.exists()) {
-      return;
-    }
-
-    const num: number = snapshot.val();
+    const num: number = snapshot.val() ?? 0;
     showAudienceNumber(num);
 
     if (!isPlayer) {
       // Update disconnection listener
       const onDisconnectRef = onDisconnect(audienceNumberRef);
-      onDisconnectRef.cancel();
-      onDisconnectRef.set(num - 1);
+      onDisconnectRef
+        .cancel()
+        .then(() => onDisconnectRef.set(num - 1 <= 0 ? null : num - 1))
+        .catch((err) => console.error(err));
     }
   });
 };
 
 /**
- * Handles process when the game boards are changed.
+ * Handles process when the game board are changed.
  * @param isPlayer Whether the user is joining as a player.
  * @param curTurn The current turn.
+ * @param checked Whether one of the players is checked.
+ * @param advanced2Pos The destination position (seen from white) of the pawn that has moved two steps.
  * @param canCastle Lists that represent whether it is available to castle.
  */
-const handleRoomBoardsChange = (
+const handleRoomBoardChange = (
   isPlayer: boolean,
   curTurn: Turn,
+  checked: boolean,
+  advanced2Pos: number[] | undefined,
   canCastle: CastlingPotentials
 ) => {
   const playerTurn = playerTurnValue();
   if (isPlayer) {
-    handlePlayerGameScreen(curTurn === playerTurn, false, null, canCastle);
+    // When the player is black
+    if (advanced2Pos !== undefined && playerTurn === 1) {
+      // Convert to the position seen from white
+      advanced2Pos[1] = 7 - advanced2Pos[1];
+      advanced2Pos[2] = 7 - advanced2Pos[2];
+    }
+    handlePlayerGameScreen(curTurn === playerTurn, checked, advanced2Pos, canCastle);
   } else {
-    showAudienceGameScreen(curTurn, false);
+    showAudienceGameScreen(curTurn, checked);
   }
 };

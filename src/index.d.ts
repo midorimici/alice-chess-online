@@ -1,4 +1,6 @@
-declare type Vector = [number, number];
+declare type Pair<T> = [T, T];
+
+declare type Vector = Pair<number>;
 
 declare type PieceColor = 'W' | 'B';
 
@@ -16,14 +18,20 @@ declare type Turn = 0 | 1;
 
 declare type Winner = Turn | 2;
 
-declare type CastlingPotentials = [[boolean, boolean], [boolean, boolean]];
+/** [[White queen side, White king side], [Black king side, Black queen side]] */
+declare type CastlingPotentials = Pair<Pair<boolean>>;
 
 declare type RoomInfo = Partial<{
-  players: [string, string];
+  players: Pair<string>;
   audienceNumber: number;
   state: RoomState;
-  boards: [Board, Board];
+  /** The game board seen from the white player. */
+  board: Board;
   curTurn: Turn;
+  /** Whether one of the players is checked. */
+  checked: boolean;
+  /** The destination position (seen from white) of the pawn that has moved two steps. */
+  advanced2Pos: number[];
   winner: Winner;
   canCastle: CastlingPotentials;
 }>;

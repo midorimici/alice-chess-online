@@ -106,7 +106,7 @@ abstract class Piece {
 
     // en passant
     if (advanced2Pos) {
-      const endPos: Vector = [7 - advanced2Pos[1], 7 - advanced2Pos[2] - 1];
+      const endPos: Vector = [advanced2Pos[1], advanced2Pos[2] - 1];
       if (game.enPassantReq(pos, endPos, this.abbr, this.side, advanced2Pos[0] as 0 | 1, boards)) {
         dests.push(endPos);
       }
@@ -126,9 +126,9 @@ abstract class Piece {
         if (game.isChecked(this.color, game.rotateBoard(tmpBoards2))) continue;
         // 向こうの盤面のその位置も敵の効きでない
       }
-      game.renewBoard(this.side, pos, dest, tmpBoards);
+      const newTmpBoards = game.renewedBoard(this.side, pos, dest, tmpBoards);
       // チェックにならないなら結果に追加
-      if (!game.isChecked(this.color, game.rotateBoard(tmpBoards))) {
+      if (!game.isChecked(this.color, game.rotateBoard(newTmpBoards))) {
         result.push(dest);
       }
     }

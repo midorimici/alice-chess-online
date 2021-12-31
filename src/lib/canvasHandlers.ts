@@ -1,3 +1,4 @@
+import { handleMovePiece } from '~/actions';
 import Draw from '~/game/draw';
 import Mouse from '~/game/mouse';
 import { abbrPieceDict } from '~/game/piece';
@@ -12,7 +13,7 @@ import {
 } from '~/states';
 
 let draw: Draw;
-let mouses: [Mouse, Mouse];
+let mouses: Pair<Mouse>;
 /** Whether `initCanvas` has executed. */
 let doneInitCanvas: boolean = false;
 /** `canvas` elements */
@@ -152,13 +153,13 @@ export const handlePlayerGameScreen = async (
               } else {
                 snd('move');
                 // Move the piece and apply that move to Database.
-                // socket.emit('move piece', index, originPos, destPos);
+                handleMovePiece(index as 0 | 1, originPos, destPos);
               }
             }
           }
 
-          // Redraw the game board.
-          // drawBoard();
+          // Redraw the game board to show a removal of a selection.
+          drawBoard();
 
           // When it is the time for promotion
           if (prom) {
@@ -168,14 +169,17 @@ export const handlePlayerGameScreen = async (
                 prom = false;
                 snd('move');
                 // Apply the promotion to Database.
-                // socket.emit('move piece', index, originPos, destPos, pieces[i - 2]);
+                handleMovePiece(index as 0 | 1, originPos, destPos, pieces[i - 2]);
               }
             }
             // When it is right after the selection of the destination
             if (String(sqPos) === String(destPos)) {
               // Display options of a promotion.
               draw.promotion(index as 0 | 1, playerColor);
-            } else {
+            }
+            // When the other area is clicked
+            else {
+              // Cancel displaying options.
               prom = false;
               originPos = null;
             }
@@ -228,7 +232,6 @@ export const showAudienceGameScreen = async (
   // Draw the game board.
   if (!doneInitCanvas) await initCanvas();
   drawBoard();
-  // 🚧 showHideButton.onclick = () => toggleShowHide(boardsMap, 'W');
 
   if (omitMessage) return;
 
