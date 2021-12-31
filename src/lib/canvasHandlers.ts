@@ -210,7 +210,8 @@ export const handlePlayerGameScreen = async (
  * Displays the game screen for audience.
  * @param turn The current turn.
  * @param checked Whether one of the players is checked.
- * @param omitMessage 🤔 手番やチェックのメッセージを省略するか
+ * @param omitMessage Whether to omit displaying messages.
+ *        It should be `true` when audience enter a room after a game is over
  */
 export const showAudienceGameScreen = async (
   turn: Turn,
@@ -223,11 +224,6 @@ export const showAudienceGameScreen = async (
   if (document.getElementById('user-names').innerText === '') {
     document.getElementById('user-names').innerText = `↑ ${playerNames[1]}\n↓ ${playerNames[0]}`;
   }
-
-  // 🚧 // Display if it is checked.
-  // if (checked) {
-  //   gameMessage.innerHTML = t('check') + '<br>' + gameMessage.innerText;
-  // }
 
   // Draw the game board.
   if (!doneInitCanvas) await initCanvas();
