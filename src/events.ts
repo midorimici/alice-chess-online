@@ -83,3 +83,15 @@ export const addShowHideButtonClickEventListener = () => {
     drawBoard();
   };
 };
+
+export const addLanguageButtonClickEventListener = () => {
+  const jaBtn = document.getElementById('ja-btn');
+  const enBtn = document.getElementById('en-btn');
+  jaBtn.onclick = () => overrideLanguageAndReload('ja');
+  enBtn.onclick = () => overrideLanguageAndReload('en');
+};
+
+const overrideLanguageAndReload = (language: 'ja' | 'en') => {
+  document.cookie = `firebase-language-override=${language}`;
+  location.reload();
+};
