@@ -176,7 +176,10 @@ export const handlePlayerGameScreen = async (
             if (String(sqPos) === String(destPos)) {
               // Display options of a promotion.
               draw.promotion(index as 0 | 1, playerColor);
-            } else {
+            }
+            // When the other area is clicked
+            else {
+              // Cancel displaying options.
               prom = false;
               originPos = null;
             }

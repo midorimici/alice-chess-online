@@ -171,18 +171,24 @@ const onAudienceNumberChange = (roomRef: DatabaseReference, isPlayer: boolean) =
  * @param isPlayer Whether the user is joining as a player.
  * @param curTurn The current turn.
  * @param checked Whether one of the players is checked.
- * @param advanced2Pos The destination of the pawn that has moved two steps.
+ * @param advanced2Pos The destination position (seen from white) of the pawn that has moved two steps.
  * @param canCastle Lists that represent whether it is available to castle.
  */
 const handleRoomBoardChange = (
   isPlayer: boolean,
   curTurn: Turn,
   checked: boolean,
-  advanced2Pos: number[] | null,
+  advanced2Pos: number[] | undefined,
   canCastle: CastlingPotentials
 ) => {
   const playerTurn = playerTurnValue();
   if (isPlayer) {
+    // When the player is black
+    if (advanced2Pos !== undefined && playerTurn === 1) {
+      // Convert to the position seen from white
+      advanced2Pos[1] = 7 - advanced2Pos[1];
+      advanced2Pos[2] = 7 - advanced2Pos[2];
+    }
     handlePlayerGameScreen(curTurn === playerTurn, checked, advanced2Pos, canCastle);
   } else {
     showAudienceGameScreen(curTurn, checked);

@@ -106,7 +106,7 @@ abstract class Piece {
 
     // en passant
     if (advanced2Pos) {
-      const endPos: Vector = [7 - advanced2Pos[1], 7 - advanced2Pos[2] - 1];
+      const endPos: Vector = [advanced2Pos[1], advanced2Pos[2] - 1];
       if (game.enPassantReq(pos, endPos, this.abbr, this.side, advanced2Pos[0] as 0 | 1, boards)) {
         dests.push(endPos);
       }
