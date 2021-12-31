@@ -1,7 +1,7 @@
 /** Whether the app makes a sound. */
 let isMuted: boolean = true;
 
-export const toggleIsMuted = () => {
+const toggleIsMuted = () => {
   isMuted = !isMuted;
 };
 
@@ -12,7 +12,7 @@ export const useIsMuted = () => ({ isMuted, toggleIsMuted });
 /** Whether pieces on the opposite board are displayed transparently. */
 let showOppositePieces: boolean = true;
 
-export const toggleShowOppositePieces = () => {
+const toggleShowOppositePieces = () => {
   showOppositePieces = !showOppositePieces;
 };
 

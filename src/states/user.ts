@@ -7,8 +7,6 @@ export const setUserRole = (state: Role) => {
 
 export const userRoleValue = () => userRole;
 
-export const useUserRole = () => ({ userRole, setUserRole });
-
 /** The name of the user. */
 let userName: string;
 
@@ -18,8 +16,6 @@ export const setUserName = (state: string) => {
 
 export const userNameValue = () => userName;
 
-export const useUserName = () => ({ userName, setUserName });
-
 /** The piece color of the player. */
 let playerTurn: Turn;
 
@@ -28,5 +24,3 @@ export const setPlayerTurn = (state: Turn) => {
 };
 
 export const playerTurnValue = () => playerTurn;
-
-export const usePlayerTurn = () => ({ playerTurn, setPlayerTurn });

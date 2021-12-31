@@ -7,8 +7,6 @@ export const setRoomId = (state: string) => {
 
 export const roomIdValue = () => roomId;
 
-export const useRoomId = () => ({ roomId, setRoomId });
-
 /** Names of players. */
 let playerNames: Pair<string>;
 
@@ -18,8 +16,6 @@ export const setPlayerNames = (state: Pair<string>) => {
 
 export const playerNamesValue = () => playerNames;
 
-export const usePlayerNames = () => ({ playerNames, setPlayerNames });
-
 /** A `Map` object that represents game board seen from the current user. */
 let boardMap: BoardMap = new Map();
 
@@ -28,5 +24,3 @@ export const setBoardMap = (state: BoardMap) => {
 };
 
 export const boardMapValue = () => boardMap;
-
-export const useBoardMap = () => ({ boardMap, setBoardMap });
