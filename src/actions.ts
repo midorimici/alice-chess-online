@@ -85,7 +85,6 @@ export const handleEnterRoom = (info: {
           // Create a new room
           const roomInfo: RoomInfo = {
             players: [info.name, ''],
-            audienceNumber: 0,
             state: 'waiting',
             curTurn: 0,
             canCastle: [
@@ -144,7 +143,7 @@ export const handleEnterRoom = (info: {
         // When the user is joining as audience
         else {
           // Update the audience number
-          set(child(roomRef, 'audienceNumber'), room.audienceNumber + 1).catch((err) =>
+          set(child(roomRef, 'audienceNumber'), (room.audienceNumber ?? 0) + 1).catch((err) =>
             console.error(err)
           );
           // Set the viewpoint

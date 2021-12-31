@@ -146,18 +146,16 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
 const onAudienceNumberChange = (roomRef: DatabaseReference, isPlayer: boolean) => {
   const audienceNumberRef = child(roomRef, 'audienceNumber');
   onValue(audienceNumberRef, (snapshot: DataSnapshot) => {
-    if (!snapshot.exists()) {
-      return;
-    }
-
-    const num: number = snapshot.val();
+    const num: number = snapshot.val() ?? 0;
     showAudienceNumber(num);
 
     if (!isPlayer) {
       // Update disconnection listener
       const onDisconnectRef = onDisconnect(audienceNumberRef);
-      onDisconnectRef.cancel();
-      onDisconnectRef.set(num - 1);
+      onDisconnectRef
+        .cancel()
+        .then(() => onDisconnectRef.set(num - 1 <= 0 ? null : num - 1))
+        .catch((err) => console.error(err));
     }
   });
 };
