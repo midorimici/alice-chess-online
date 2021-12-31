@@ -158,8 +158,8 @@ export const handlePlayerGameScreen = async (
             }
           }
 
-          // Redraw the game board.
-          // drawBoard();
+          // Redraw the game board to show a removal of a selection.
+          drawBoard();
 
           // When it is the time for promotion
           if (prom) {
