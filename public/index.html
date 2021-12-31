@@ -1,89 +1,142 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
-
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/9.6.1/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/9.6.1/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/9.6.1/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/9.6.1/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/9.6.1/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/9.6.1/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/9.6.1/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/9.6.1/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/9.6.1/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/9.6.1/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
-
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1, user-scalable=no"
+    />
+    <title>Alice Chess Online ♟️</title>
+    <meta name="description" content="Play Alice Chess Online" />
+    <link rel="icon" href="./static/logo/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./static/logo/apple-touch-icon.png" />
+    <link rel="manifest" href="./static/site.webmanifest" />
+    <link rel="stylesheet" href="./static/style.css" />
+    <!-- Font Awesome Free 5.15.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) -->
   </head>
   <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+    <section id="container">
+      <div id="settings">
+        <ul id="lang">
+          <li><a href="./ja">JA</a></li>
+          <li><a href="./en">EN</a></li>
+        </ul>
+        <p>Select the room key and the way to join in.</p>
+        <form id="form">
+          <label class="form-label">
+            Room visibility
+            <div>
+              <label title="Anyone can enter this room as player or audience">
+                <input type="radio" name="visibility" required value="public" />
+                Public
+              </label>
+              <label title="Only those who know the key can enter this room">
+                <input type="radio" name="visibility" value="private" />
+                Private
+              </label>
+            </div>
+          </label>
+          <label class="form-label" id="room-key">
+            Room Key
+            <input
+              id="room-input"
+              type="text"
+              name="room"
+              required
+              pattern="^[^\s]+$"
+              placeholder="whitespace unavailable"
+            />
+          </label>
+          <label class="form-label">
+            Join as
+            <div>
+              <label><input type="radio" name="role" required value="play" />Player</label>
+              <label><input type="radio" name="role" value="watch" />Audience</label>
+            </div>
+          </label>
+          <label class="form-label">
+            User Name (optional)
+            <input id="name-input" type="text" name="username" />
+          </label>
+          <input id="submit-btn" type="submit" value="GO" />
+        </form>
+        <p id="message"></p>
+      </div>
+    </section>
+    <section id="game-container">
+      <div id="settings-and-messages">
+        <img
+          id="mute-icon"
+          src="./static/svg/volume-mute-solid.svg"
+          alt="mute-button"
+          title="Unmute"
+        />
+        <img
+          id="eye-icon"
+          src="./static/svg/eye-regular.svg"
+          alt="show-hide-button"
+          title="Hide pieces in opposite board"
+        />
+        <p id="user-names"></p>
+        <p id="game-message"></p>
+      </div>
+      <canvas class="canvas"></canvas>
+      <canvas class="canvas"></canvas>
+      <p id="watchers"><span id="watcher-number">0</span> audience(s)..</p>
+      <div id="chat-btn">
+        <img id="chat-icon" src="./static/svg/comments-regular.svg" alt="chat-icon" title="Chat" />
+        <span id="chat-new" class="hidden"></span>
+      </div>
+      <div id="chat" class="closed">
+        <ul id="chat-messages"></ul>
+        <form id="chat-form">
+          <input id="chat-input" />
+          <img
+            id="chat-send-icon"
+            src="./static/svg/paper-plane-solid.svg"
+            alt="chat-send-button"
+            title="Submit"
+          />
+        </form>
+      </div>
+    </section>
+    <img id="logo" src="./static/logo/logo.png" width="160" alt="logo" />
+    <footer>
+      <a
+        href="https://github.com/midorimici/alice-chess-online"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Code
+      </a>
+      <br />
+      © 2021 Midori Mici
+    </footer>
+    <img
+      id="info-icon"
+      src="./static/svg/question-circle-regular.svg"
+      alt="info"
+      title="About this app"
+    />
+    <div id="info-overlay">
+      <div id="info-mask"></div>
+      <div id="info-description">
+        <img id="close-icon" src="./static/svg/times-solid.svg" alt="close" title="Close" />
+        <p>You can play Alice Chess online in this app.</p>
+        <strong>[Play]</strong>
+        <p>After making a room, wait for your opponent.</p>
+        <p>If the opponent is already in the room, the game starts at once.</p>
+        <strong>[Watch]</strong>
+        <p>You can watch the game after entering the room.</p>
+        <strong>[Room Visibility]</strong>
+        <p>Anyone can enter public rooms as player or audience,</p>
+        <p>but only those who know the room key can enter private rooms.</p>
+        <p>Please tell the key to your opponent or audiences after making a private room.</p>
+        <strong>[ATTENTION]</strong>
+        <p>The chat system is also available and anyone in the room can see it.</p>
+        <p>Beware that you do not write private information.</p>
+      </div>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
-    </script>
+    <script src="./bundle.js"></script>
   </body>
 </html>
