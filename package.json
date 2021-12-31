@@ -3,14 +3,9 @@
   "version": "1.0.0",
   "description": "Socket.IO による Alice Chess",
   "dependencies": {
-    "express": "^4.17.1",
-    "firebase": "^9.6.1",
-    "socket.io": "^3.0.4"
+    "firebase": "^9.6.1"
   },
   "devDependencies": {
-    "@types/express": "^4.17.9",
-    "@types/socket.io": "^2.1.12",
-    "@types/socket.io-client": "^1.4.34",
     "dotenv-webpack": "^7.0.3",
     "node-sass": "^6.0.1",
     "ts-loader": "^8.0.12",
