@@ -1,6 +1,6 @@
 # [Alice Chess Online](https://alice-chess-online.netlify.app)
 
-Socket.IO + Canvas API による Alice Chess オンライン対戦アプリです。
+Firebase Realtime Database + Canvas API による Alice Chess オンライン対戦アプリです。
 
 <br>
 

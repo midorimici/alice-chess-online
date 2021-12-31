@@ -1,6 +1,6 @@
 # [Alice Chess Online](https://alice-chess-online.netlify.app)
 
-Web app with Socket.IO + Canvas API, which let you play Alice chess online.
+Web app with Firebase Realtime Database + Canvas API, which let you play Alice chess online.
 
 <br>
 
