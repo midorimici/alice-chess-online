@@ -3,7 +3,6 @@ import {
   DatabaseReference,
   DataSnapshot,
   get,
-  off,
   onDisconnect,
   onValue,
   ref,
@@ -37,10 +36,15 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
   const playerTurn: Turn = playerTurnValue();
 
   if (phase === 'preparing') {
-    handleRoomValueChange(roomRef, 'state', (val) => {
-      const state: RoomState = val;
-      handleRoomStateChange(state, isPlayer);
-    });
+    handleRoomValueChange(
+      roomRef,
+      'state',
+      (val) => {
+        const state: RoomState = val;
+        handleRoomStateChange(state, isPlayer);
+      },
+      true
+    );
   } else if (phase === 'playing') {
     handleRoomValueChange(roomRef, 'boards', (val) => {
       const boards: [Board, Board] = val;
@@ -60,7 +64,7 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
     });
   }
 
-  onAudienceNumberChange(roomRef);
+  onAudienceNumberChange(roomRef, isPlayer);
 
   // const { chatInitialized, setChatInitialized } = useChatInitialized();
 
@@ -85,17 +89,18 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
  * @param ref Database reference to the room.
  * @param path Path to the data from the reference.
  * @param callback A callback that fires when the data in the specified path exists. Receives snapshot value as a parameter.
+ * @param reloadWhenEmpty Whether the page should be reloaded when the snapshot does not exist.
  */
 const handleRoomValueChange = (
   ref: DatabaseReference,
   path: keyof RoomInfo,
-  callback: (val: any) => void
+  callback: (val: any) => void,
+  reloadWhenEmpty: boolean = false
 ) => {
-  off(ref);
   onValue(child(ref, path), (snapshot: DataSnapshot) => {
     if (snapshot.exists()) {
       callback(snapshot.val());
-    } else {
+    } else if (reloadWhenEmpty) {
       // Reload the page when one of the player is disconnected.
       alert(t('disconnected'));
       location.reload();
@@ -116,6 +121,7 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
   }
   // When two players are in the room and the game is ongoing
   else {
+    // Set the room data to local states
     get(child(getRoomRef(), 'players')).then((snapshot: DataSnapshot) => {
       if (snapshot.exists()) {
         const players: [string, string] = snapshot.val();
@@ -129,8 +135,9 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
 /**
  * Listens for the number of audience in the room and update display of the number when it is changed.
  * @param roomRef Database reference to the room.
+ * @param isPlayer Whether the user is joining as a player.
  */
-const onAudienceNumberChange = (roomRef: DatabaseReference) => {
+const onAudienceNumberChange = (roomRef: DatabaseReference, isPlayer: boolean) => {
   const audienceNumberRef = child(roomRef, 'audienceNumber');
   onValue(audienceNumberRef, (snapshot: DataSnapshot) => {
     if (!snapshot.exists()) {
@@ -140,10 +147,12 @@ const onAudienceNumberChange = (roomRef: DatabaseReference) => {
     const num: number = snapshot.val();
     showAudienceNumber(num);
 
-    // Update disconnection listener
-    const onDisconnectRef = onDisconnect(audienceNumberRef);
-    onDisconnectRef.cancel();
-    onDisconnectRef.set(num - 1);
+    if (!isPlayer) {
+      // Update disconnection listener
+      const onDisconnectRef = onDisconnect(audienceNumberRef);
+      onDisconnectRef.cancel();
+      onDisconnectRef.set(num - 1);
+    }
   });
 };
 

@@ -121,6 +121,8 @@ export const handleEnterRoom = (info: {
           set(child(roomRef, 'audienceNumber'), room.audienceNumber + 1).catch((err) =>
             console.error(err)
           );
+          // Set the viewpoint
+          setPlayerTurn(0);
           // Setup room state change event listener
           listenRoomDataChange('preparing', false);
         }
