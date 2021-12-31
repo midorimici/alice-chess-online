@@ -294,7 +294,7 @@ io.on('connection', (socket: customSocket) => {
       const advanced2Pos = pieceName === 'P' && from[1] - to[1] === 2 ? [1 - boardId, ...to] : null;
 
       // 駒の移動
-      game.renewBoard(boardId, from, to, newBoard);
+      // game.renewBoard(boardId, from, to, newBoard);
       if (promoteTo) {
         // プロモーション
         newBoard.set(`${1 - boardId},` + String(to), colors[curTurn] + promoteTo);
@@ -306,15 +306,15 @@ io.on('connection', (socket: customSocket) => {
       curTurn = room.curTurn;
       // チェック判定
       const checked = game.isChecked(colors[curTurn], boards[1 - curTurn]);
-      const freezed = game.cannotMove(colors[curTurn], boards[curTurn], advanced2Pos, canCastle);
-      // 勝敗判定
-      if (freezed) {
-        if (checked) {
-          room.winner = (1 - curTurn) as 0 | 1;
-        } else {
-          room.winner = 2;
-        }
-      }
+      // const freezed = game.cannotMove(colors[curTurn], boards[curTurn], advanced2Pos, canCastle);
+      // // 勝敗判定
+      // if (freezed) {
+      //   if (checked) {
+      //     room.winner = (1 - curTurn) as 0 | 1;
+      //   } else {
+      //     room.winner = 2;
+      //   }
+      // }
       // 盤面データをクライアントへ
       io.to(roomId).emit('watch', [...boards[0]], ...players.map((e) => e.name), curTurn, checked);
       io.to(players[0].id).emit(
