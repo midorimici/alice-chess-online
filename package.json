@@ -1,7 +1,7 @@
 {
   "name": "alice-chess-online",
   "version": "1.0.0",
-  "description": "Socket.IO による Alice Chess",
+  "description": "Alice Chess web app",
   "dependencies": {
     "firebase": "^9.6.1"
   },
