@@ -7,7 +7,7 @@ import {
   showRoomFullMessage,
 } from './lib/messageHandlers';
 import { listenPlayerDisconnection, listenRoomDataChange } from './listeners';
-import { setBoardMap, setPlayerTurn, setRoomId, setUserName } from './states';
+import { setPlayerTurn, setRoomId, setUserName } from './states';
 import { generatePublicRoomKey, m2o } from './utils';
 
 /**
@@ -28,26 +28,45 @@ export const handleEnterRoom = (info: {
       const rooms: Rooms = snapshot.val();
       // When the room is private
       if (info.private) {
-        roomId = info.roomId;
+        roomId = info.roomId.trim();
       }
       // When the room is public
       else {
         // Search for an existing room.
         // If it does not exist, make a new room.
-        // const keys = Object.keys(rooms);
-        // const pubRooms = keys.filter((k: string) => k[0] === ' ');
-        // const waitingPubRooms = pubRooms.filter((k: string) => rooms.get(k).state === 'waiting');
-        // const playingPubRooms = pubRooms.filter((k: string) => rooms.get(k).state === 'playing');
-        // const targetRooms =
-        //   info.role === 'play'
-        //     ? waitingPubRooms
-        //     : playingPubRooms.length
-        //     ? playingPubRooms
-        //     : waitingPubRooms;
-        // const roomId = info.private
-        //   ? info.roomId
-        //   : targetRooms[Math.floor(Math.random() * targetRooms.length)] ?? generatePublicRoomKey();
-        // const room = rooms.get(roomId);
+        // When there is no room of any kind
+        if (rooms === null) {
+          roomId = generatePublicRoomKey([]);
+        }
+        // When there is at least one room
+        else {
+          const keys = Object.keys(rooms);
+          const pubRooms = keys.filter((k: string) => k[0] === ' ');
+          let roomCandidates: string[];
+          const waitingPubRooms = pubRooms.filter((k: string) => rooms[k].state === 'waiting');
+          // When the user is joining as a player
+          if (isJoiningAsPlayer) {
+            // Enter a room that is waiting for another player
+            roomCandidates = waitingPubRooms;
+          }
+          // When the user is joining as audience
+          else {
+            const playingPubRooms = pubRooms.filter((k: string) => rooms[k].state === 'playing');
+            // When there is any room that a game is ongoing
+            if (playingPubRooms.length > 0) {
+              // Enter a room that two players are playing
+              roomCandidates = playingPubRooms;
+            }
+            // When there is no room that a game is ongoing
+            else {
+              // Enter a room that is waiting for another player
+              roomCandidates = waitingPubRooms;
+            }
+          }
+          roomId =
+            roomCandidates[Math.floor(Math.random() * roomCandidates.length)] ??
+            generatePublicRoomKey(keys);
+        }
       }
 
       const room: RoomInfo = rooms ? rooms[roomId] : undefined;
