@@ -33,7 +33,7 @@ import {
   userNameValue,
   userRoleValue,
 } from './states';
-import { generatePublicRoomKey, m2o } from './utils';
+import { getRoomKey, m2o } from './utils';
 
 /**
  * Make the user enter the specified room.
@@ -51,48 +51,7 @@ export const handleEnterRoom = (info: {
   get(roomsRef)
     .then((snapshot: DataSnapshot) => {
       const rooms: Rooms = snapshot.val();
-      // When the room is private
-      if (info.private) {
-        roomId = info.roomId.trim();
-      }
-      // When the room is public
-      else {
-        // Search for an existing room.
-        // If it does not exist, make a new room.
-        // When there is no room of any kind
-        if (rooms === null) {
-          roomId = generatePublicRoomKey([]);
-        }
-        // When there is at least one room
-        else {
-          const keys = Object.keys(rooms);
-          const pubRooms = keys.filter((k: string) => k[0] === ' ');
-          let roomCandidates: string[];
-          const waitingPubRooms = pubRooms.filter((k: string) => rooms[k].state === 'waiting');
-          // When the user is joining as a player
-          if (isJoiningAsPlayer) {
-            // Enter a room that is waiting for another player
-            roomCandidates = waitingPubRooms;
-          }
-          // When the user is joining as audience
-          else {
-            const playingPubRooms = pubRooms.filter((k: string) => rooms[k].state === 'playing');
-            // When there is any room that a game is ongoing
-            if (playingPubRooms.length > 0) {
-              // Enter a room that two players are playing
-              roomCandidates = playingPubRooms;
-            }
-            // When there is no room that a game is ongoing
-            else {
-              // Enter a room that is waiting for another player
-              roomCandidates = waitingPubRooms;
-            }
-          }
-          roomId =
-            roomCandidates[Math.floor(Math.random() * roomCandidates.length)] ??
-            generatePublicRoomKey(keys);
-        }
-      }
+      roomId = getRoomKey(info.private, info.roomId, rooms, isJoiningAsPlayer);
 
       const room: RoomInfo = rooms ? rooms[roomId] : undefined;
       setRoomId(roomId);
