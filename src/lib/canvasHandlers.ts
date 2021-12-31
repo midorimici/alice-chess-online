@@ -12,7 +12,7 @@ import {
 } from '~/states';
 
 let draw: Draw;
-let mouses: [Mouse, Mouse];
+let mouses: Pair<Mouse>;
 /** Whether `initCanvas` has executed. */
 let doneInitCanvas: boolean = false;
 /** `canvas` elements */

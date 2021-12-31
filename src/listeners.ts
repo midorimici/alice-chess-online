@@ -51,7 +51,7 @@ export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: b
     );
   } else if (phase === 'playing') {
     handleRoomValueChange(roomRef, 'boards', (val) => {
-      const boards: [Board, Board] = val;
+      const boards: Pair<Board> = val;
       setBoardMap(new Map(Object.entries(boards[playerTurn])));
       onValue(
         roomRef,
@@ -128,7 +128,7 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
     // Set the room data to local states
     get(child(getRoomRef(), 'players')).then((snapshot: DataSnapshot) => {
       if (snapshot.exists()) {
-        const players: [string, string] = snapshot.val();
+        const players: Pair<string> = snapshot.val();
         setPlayerNames(players);
         listenRoomDataChange('playing', isPlayer);
       }

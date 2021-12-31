@@ -10,9 +10,9 @@ export const roomIdValue = () => roomId;
 export const useRoomId = () => ({ roomId, setRoomId });
 
 /** Names of players. */
-let playerNames: [string, string];
+let playerNames: Pair<string>;
 
-export const setPlayerNames = (state: [string, string]) => {
+export const setPlayerNames = (state: Pair<string>) => {
   playerNames = state;
 };
 

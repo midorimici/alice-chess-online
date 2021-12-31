@@ -119,7 +119,7 @@ export const handleEnterRoom = (info: {
             set(child(roomRef, 'state'), roomState).catch((err) => console.error(err));
             // Generate and set initial boards
             const boardMap: BoardMap = initBoard();
-            const boards: [Board, Board] = [m2o(boardMap), m2o(rotateBoard(boardMap))];
+            const boards: Pair<Board> = [m2o(boardMap), m2o(rotateBoard(boardMap))];
             set(child(roomRef, 'boards'), boards).catch((err) => console.error(err));
             // Set states
             setUserName(info.name);

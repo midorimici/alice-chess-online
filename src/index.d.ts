@@ -1,4 +1,6 @@
-declare type Vector = [number, number];
+declare type Pair<T> = [T, T];
+
+declare type Vector = Pair<number>;
 
 declare type PieceColor = 'W' | 'B';
 
@@ -16,13 +18,13 @@ declare type Turn = 0 | 1;
 
 declare type Winner = Turn | 2;
 
-declare type CastlingPotentials = [[boolean, boolean], [boolean, boolean]];
+declare type CastlingPotentials = Pair<Pair<boolean>>;
 
 declare type RoomInfo = Partial<{
-  players: [string, string];
+  players: Pair<string>;
   audienceNumber: number;
   state: RoomState;
-  boards: [Board, Board];
+  boards: Pair<Board>;
   curTurn: Turn;
   winner: Winner;
   canCastle: CastlingPotentials;
