@@ -2,6 +2,7 @@ import { addChatEventListener } from './chat';
 import {
   addFormEventListener,
   addInfoButtonClickEventListener,
+  addLanguageButtonClickEventListener,
   addMuteButtonClickEventListener,
   addShowHideButtonClickEventListener,
   addVisibilityButtonsClickEventListener,
@@ -18,3 +19,5 @@ addMuteButtonClickEventListener();
 addShowHideButtonClickEventListener();
 
 addChatEventListener();
+
+addLanguageButtonClickEventListener();

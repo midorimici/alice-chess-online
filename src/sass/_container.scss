@@ -1,65 +1,65 @@
 #container {
-    margin-top: 3rem;
-    width: 24rem;
+  margin-top: 3rem;
+  width: 24rem;
 }
 
 #lang {
-    list-style: none;
-    padding-left: 0;
-    width: max-content;
-    display: flex;
-    border: solid 2px #333333;
-    border-radius: .4rem;
-    & > li {
-        border-radius: .4rem;
-        transition: background-color .5s;
-        will-change: background-color;
-        &:hover {
-            background-color: #dddddd;
-        }
-        & > a {
-            text-decoration: none;
-            font-weight: bold;
-            color: #333333;
-            display: block;
-            width: 2rem;
-            height: 2rem;
-            text-align: center;
-            line-height: 2rem;
-            &:visited {
-                color: #333333;
-            }
-        }
+  list-style: none;
+  padding-left: 0;
+  width: max-content;
+  display: flex;
+  border: solid 2px #333333;
+  border-radius: 0.4rem;
+  & > li {
+    border-radius: 0.4rem;
+    transition: background-color 0.5s;
+    will-change: background-color;
+    &:hover {
+      background-color: #dddddd;
     }
+    & > button {
+      border: none;
+      background: none;
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: bold;
+      color: #333333;
+      line-height: 2rem;
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
 }
 
-#room-input, #name-input {
-    margin: .4rem;
-    padding: .4rem;
-    border-radius: .4rem;
+#room-input,
+#name-input {
+  margin: 0.4rem;
+  padding: 0.4rem;
+  border-radius: 0.4rem;
 }
 
 #form {
-    height: 12rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+  height: 12rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .form-label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 #submit-btn {
-    padding: .4rem 1rem;
-    border-radius: .4rem;
-    background-color: white;
-    border: solid 2px #333333;
-    cursor: pointer;
-    transition: .5s;
-    &:hover {
-        background-color: #dddddd;
-    }
+  padding: 0.4rem 1rem;
+  border-radius: 0.4rem;
+  background-color: white;
+  border: solid 2px #333333;
+  cursor: pointer;
+  transition: 0.5s;
+  &:hover {
+    background-color: #dddddd;
+  }
 }
