@@ -1,8 +1,7 @@
 import { handleEnterRoom } from './actions';
 import { t } from './i18n';
-import { drawBoard } from './lib/canvasHandlers';
-import { handleToggleMute } from './lib/gameEventHandlers';
-import { setUserName, setUserRole, useShowOppositePieces } from './states';
+import { handleShowHide, handleToggleMute } from './lib/gameEventHandlers';
+import { setUserName, setUserRole } from './states';
 
 export const addInfoButtonClickEventListener = () => {
   const infoBtn = document.getElementById('info-icon');
@@ -67,15 +66,7 @@ export const addMuteButtonClickEventListener = () => {
 
 export const addShowHideButtonClickEventListener = () => {
   const showHideButton = document.getElementById('eye-icon') as HTMLImageElement;
-  showHideButton.onclick = () => {
-    const { showOppositePieces, toggleShowOppositePieces } = useShowOppositePieces();
-    showHideButton.src = showOppositePieces
-      ? '../static/svg/eye-slash-regular.svg'
-      : '../static/svg/eye-regular.svg';
-    showHideButton.title = showOppositePieces ? t('showOppositePieces') : t('hideOppositePieces');
-    toggleShowOppositePieces();
-    drawBoard();
-  };
+  showHideButton.onclick = handleShowHide;
 };
 
 export const addLanguageButtonClickEventListener = () => {
