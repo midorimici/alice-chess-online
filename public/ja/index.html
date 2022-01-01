@@ -1,110 +1,147 @@
 <!DOCTYPE html>
-<html lang='ja'>
-    <head>
-        <meta charset='UTF-8'>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1, user-scalable=no'>
-        <title>Alice Chess Online ♟️</title>
-        <meta name='description' content='アリスチェスオンライン対戦'>
-        <link rel='icon' href='../static/logo/favicon.ico'>
-        <link rel='apple-touch-icon' sizes='180x180' href='../static/logo/apple-touch-icon.png'>
-        <link rel='manifest' href='../static/site.webmanifest'>
-        <link rel='stylesheet' href='../static/style.css'>
-        <!-- Font Awesome Free 5.15.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) -->
-    </head>
-    <body>
-        <section id='container'>
-            <div id='settings'>
-                <ul id='lang'>
-                    <li><a href='../ja'>JA</a></li>
-                    <li><a href='../en'>EN</a></li>
-                </ul>
-                <p>ルームのキーと参加方法を指定してください。</p>
-                <form id='form'>
-                    <label class='form-label'>
-                        ルーム
-                        <div>
-                            <label title='誰でも対戦や観戦ができる部屋です'>
-                                <input type='radio' name='visibility' required value='public'>
-                                パブリック
-                            </label>
-                            <label title='キーを知る人しか対戦や観戦ができない部屋です'>
-                                <input type='radio' name='visibility' value='private'>
-                                プライベート
-                            </label>
-                        </div>
-                    </label>
-                    <label class='form-label' id='room-key'>
-                        ルームキー
-                        <input id='room-input' type='text' name='room'
-                            required pattern='^[^\s]+$' placeholder='空白文字は使用不可'>
-                    </label>
-                    <label class='form-label'>
-                        参加方法
-                        <div>
-                            <label><input type='radio' name='role' required value='play'>対戦する</label>
-                            <label><input type='radio' name='role' value='watch'>観戦する</label>
-                        </div>
-                    </label>
-                    <label class='form-label'>
-                        ユーザー名（任意）
-                        <input id='name-input' type='text' name='username'>
-                    </label>
-                    <input id='submit-btn' type='submit' value='GO'>
-                </form>
-                <p id='message'></p>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1, user-scalable=no"
+    />
+    <title>Alice Chess Online ♟️</title>
+    <meta name="description" content="アリスチェスオンライン対戦" />
+    <link rel="icon" href="../static/logo/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../static/logo/apple-touch-icon.png" />
+    <link rel="manifest" href="../static/site.webmanifest" />
+    <link rel="stylesheet" href="../static/style.css" />
+    <!-- Font Awesome Free 5.15.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) -->
+  </head>
+  <body>
+    <section id="container">
+      <div id="settings">
+        <ul id="lang">
+          <li><button id="ja-btn">JA</button></li>
+          <li><button id="en-btn">EN</button></li>
+        </ul>
+        <p>ルームのキーと参加方法を指定してください。</p>
+        <form id="form">
+          <label class="form-label">
+            ルーム
+            <div>
+              <label title="誰でも対戦や観戦ができる部屋です">
+                <input type="radio" name="visibility" required value="public" />
+                パブリック
+              </label>
+              <label title="キーを知る人しか対戦や観戦ができない部屋です">
+                <input type="radio" name="visibility" value="private" />
+                プライベート
+              </label>
             </div>
-        </section>
-        <section id='game-container'>
-            <div id='settings-and-messages'>
-                <img id='mute-icon' src='../static/svg/volume-mute-solid.svg' alt='mute-button' title='ミュート解除'>
-                <img id='eye-icon' src='../static/svg/eye-regular.svg' alt='show-hide-button' title='反対側の盤面の駒を隠す'>
-                <p id='user-names'></p>
-                <p id='game-message'></p>
+          </label>
+          <label class="form-label" id="room-key">
+            ルームキー
+            <input
+              id="room-input"
+              type="text"
+              name="room"
+              required
+              pattern="^[^\s]+$"
+              placeholder="空白文字は使用不可"
+            />
+          </label>
+          <label class="form-label">
+            参加方法
+            <div>
+              <label><input type="radio" name="role" required value="play" />対戦する</label>
+              <label><input type="radio" name="role" value="watch" />観戦する</label>
             </div>
-            <canvas class='canvas'></canvas>
-            <canvas class='canvas'></canvas>
-            <p id='watchers'><span id='watcher-number'>0</span>人が観戦中…</p>
-            <div id='chat-btn'>
-                <img id='chat-icon' src='../static/svg/comments-regular.svg' alt='chat-icon' title='チャット'>
-                <span id='chat-new' class='hidden'></span>
-            </div>
-            <div id='chat' class='closed'>
-                <ul id='chat-messages'></ul>
-                <form id='chat-form'>
-                    <input id='chat-input'>
-                    <img id='chat-send-icon' src='../static/svg/paper-plane-solid.svg' alt='chat-send-button' title='送信'>
-                </form>
-            </div>
-        </section>
-        <img id='logo' src='../static/logo/logo.png' width='160' alt='logo'>
-        <footer>
-            <a href='https://github.com/midorimici/alice-chess-online' target='_blank' rel='noopener noreferrer'>
-                ソースコード
-            </a>
-            <br>
-            © 2021 みどりみち
-        </footer>
-        <img id='info-icon' src='../static/svg/question-circle-regular.svg' alt='info' title='このアプリについて'>
-        <div id='info-overlay'>
-            <div id='info-mask'></div>
-            <div id='info-description'>
-                <img id='close-icon' src='../static/svg/times-solid.svg' alt='close' title='閉じる'>
-                <p>このアプリはオンラインでアリスチェスの対戦ができるものです。</p>
-                <strong>【対戦する】</strong>
-                <p>部屋をつくって対戦者を待ちます。</p>
-                <p>すでに対戦者がいる場合はすぐに試合が始まります。</p>
-                <strong>【観戦する】</strong>
-                <p>部屋に入るとゲームを観戦することができます。</p>
-                <strong>【パブリック/プライベートルーム】</strong>
-                <p>パブリックルームは誰でも対戦や観戦ができますが、</p>
-                <p>プライベートルームはルームキーを知る人しか入れません。</p>
-                <p>部屋の作成者はルームキーを対戦者や観戦者に伝えてあげてください。</p>
-                <strong>【注意】</strong>
-                <p>チャット機能もありますが、部屋にいる人は誰でも見ることができるので、</p>
-                <p>プライベートな情報を書き込まないようにしてください。</p>
-            </div>
-        </div>
-        <script src='https://alice-chess-online.herokuapp.com/socket.io/socket.io.js'></script>
-        <script src='../bundle.js'></script>
-    </body>
+          </label>
+          <label class="form-label">
+            ユーザー名（任意）
+            <input id="name-input" type="text" name="username" />
+          </label>
+          <input id="submit-btn" type="submit" value="GO" />
+        </form>
+        <p id="message"></p>
+      </div>
+    </section>
+    <section id="game-container">
+      <div id="settings-and-messages">
+        <img
+          id="mute-icon"
+          src="../static/svg/volume-mute-solid.svg"
+          alt="mute-button"
+          title="ミュート解除"
+        />
+        <img
+          id="eye-icon"
+          src="../static/svg/eye-regular.svg"
+          alt="show-hide-button"
+          title="反対側の盤面の駒を隠す"
+        />
+        <p id="user-names"></p>
+        <p id="game-message"></p>
+      </div>
+      <canvas class="canvas"></canvas>
+      <canvas class="canvas"></canvas>
+      <p id="watchers"><span id="watcher-number">0</span>人が観戦中…</p>
+      <div id="chat-btn">
+        <img
+          id="chat-icon"
+          src="../static/svg/comments-regular.svg"
+          alt="chat-icon"
+          title="チャット"
+        />
+        <span id="chat-new" class="hidden"></span>
+      </div>
+      <div id="chat" class="closed">
+        <ul id="chat-messages"></ul>
+        <form id="chat-form">
+          <input id="chat-input" />
+          <img
+            id="chat-send-icon"
+            src="../static/svg/paper-plane-solid.svg"
+            alt="chat-send-button"
+            title="送信"
+          />
+        </form>
+      </div>
+    </section>
+    <img id="logo" src="../static/logo/logo.png" width="160" alt="logo" />
+    <footer>
+      <a
+        href="https://github.com/midorimici/alice-chess-online"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        ソースコード
+      </a>
+      <br />
+      © 2021 みどりみち
+    </footer>
+    <img
+      id="info-icon"
+      src="../static/svg/question-circle-regular.svg"
+      alt="info"
+      title="このアプリについて"
+    />
+    <div id="info-overlay">
+      <div id="info-mask"></div>
+      <div id="info-description">
+        <img id="close-icon" src="../static/svg/times-solid.svg" alt="close" title="閉じる" />
+        <p>このアプリはオンラインでアリスチェスの対戦ができるものです。</p>
+        <strong>【対戦する】</strong>
+        <p>部屋をつくって対戦者を待ちます。</p>
+        <p>すでに対戦者がいる場合はすぐに試合が始まります。</p>
+        <strong>【観戦する】</strong>
+        <p>部屋に入るとゲームを観戦することができます。</p>
+        <strong>【パブリック/プライベートルーム】</strong>
+        <p>パブリックルームは誰でも対戦や観戦ができますが、</p>
+        <p>プライベートルームはルームキーを知る人しか入れません。</p>
+        <p>部屋の作成者はルームキーを対戦者や観戦者に伝えてあげてください。</p>
+        <strong>【注意】</strong>
+        <p>チャット機能もありますが、部屋にいる人は誰でも見ることができるので、</p>
+        <p>プライベートな情報を書き込まないようにしてください。</p>
+      </div>
+    </div>
+    <script src="../bundle.js"></script>
+  </body>
 </html>

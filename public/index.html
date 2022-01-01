@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1, user-scalable=no"
+    />
+    <title>Alice Chess Online ♟️</title>
+    <meta name="description" content="Play Alice Chess Online" />
+    <link rel="icon" href="./static/logo/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./static/logo/apple-touch-icon.png" />
+    <link rel="manifest" href="./static/site.webmanifest" />
+    <link rel="stylesheet" href="./static/style.css" />
+    <!-- Font Awesome Free 5.15.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) -->
+  </head>
+  <body>
+    <section id="container">
+      <div id="settings">
+        <ul id="lang">
+          <li><button id="ja-btn">JA</button></li>
+          <li><button id="en-btn">EN</button></li>
+        </ul>
+        <p>Select the room key and the way to join in.</p>
+        <form id="form">
+          <label class="form-label">
+            Room visibility
+            <div>
+              <label title="Anyone can enter this room as player or audience">
+                <input type="radio" name="visibility" required value="public" />
+                Public
+              </label>
+              <label title="Only those who know the key can enter this room">
+                <input type="radio" name="visibility" value="private" />
+                Private
+              </label>
+            </div>
+          </label>
+          <label class="form-label" id="room-key">
+            Room Key
+            <input
+              id="room-input"
+              type="text"
+              name="room"
+              required
+              pattern="^[^\s]+$"
+              placeholder="whitespace unavailable"
+            />
+          </label>
+          <label class="form-label">
+            Join as
+            <div>
+              <label><input type="radio" name="role" required value="play" />Player</label>
+              <label><input type="radio" name="role" value="watch" />Audience</label>
+            </div>
+          </label>
+          <label class="form-label">
+            User Name (optional)
+            <input id="name-input" type="text" name="username" />
+          </label>
+          <input id="submit-btn" type="submit" value="GO" />
+        </form>
+        <p id="message"></p>
+      </div>
+    </section>
+    <section id="game-container">
+      <div id="settings-and-messages">
+        <img
+          id="mute-icon"
+          src="./static/svg/volume-mute-solid.svg"
+          alt="mute-button"
+          title="Unmute"
+        />
+        <img
+          id="eye-icon"
+          src="./static/svg/eye-regular.svg"
+          alt="show-hide-button"
+          title="Hide pieces in opposite board"
+        />
+        <p id="user-names"></p>
+        <p id="game-message"></p>
+      </div>
+      <canvas class="canvas"></canvas>
+      <canvas class="canvas"></canvas>
+      <p id="watchers"><span id="watcher-number">0</span> audience...</p>
+      <div id="chat-btn">
+        <img id="chat-icon" src="./static/svg/comments-regular.svg" alt="chat-icon" title="Chat" />
+        <span id="chat-new" class="hidden"></span>
+      </div>
+      <div id="chat" class="closed">
+        <ul id="chat-messages"></ul>
+        <form id="chat-form">
+          <input id="chat-input" />
+          <img
+            id="chat-send-icon"
+            src="./static/svg/paper-plane-solid.svg"
+            alt="chat-send-button"
+            title="Submit"
+          />
+        </form>
+      </div>
+    </section>
+    <img id="logo" src="./static/logo/logo.png" width="160" alt="logo" />
+    <footer>
+      <a
+        href="https://github.com/midorimici/alice-chess-online"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Code
+      </a>
+      <br />
+      © 2021 Midori Mici
+    </footer>
+    <img
+      id="info-icon"
+      src="./static/svg/question-circle-regular.svg"
+      alt="info"
+      title="About this app"
+    />
+    <div id="info-overlay">
+      <div id="info-mask"></div>
+      <div id="info-description">
+        <img id="close-icon" src="./static/svg/times-solid.svg" alt="close" title="Close" />
+        <p>You can play Alice Chess online in this app.</p>
+        <strong>[Play]</strong>
+        <p>After making a room, wait for your opponent.</p>
+        <p>If the opponent is already in the room, the game starts at once.</p>
+        <strong>[Watch]</strong>
+        <p>You can watch the game after entering the room.</p>
+        <strong>[Room Visibility]</strong>
+        <p>Anyone can enter public rooms as player or audience,</p>
+        <p>but only those who know the room key can enter private rooms.</p>
+        <p>Please tell the key to your opponent or audiences after making a private room.</p>
+        <strong>[ATTENTION]</strong>
+        <p>The chat system is also available and anyone in the room can see it.</p>
+        <p>Beware that you do not write private information.</p>
+      </div>
+    </div>
+    <script src="./bundle.js"></script>
+  </body>
+</html>

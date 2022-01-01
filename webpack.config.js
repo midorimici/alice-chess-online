@@ -1,44 +1,27 @@
 const path = require('path');
-const nodeExternals = require('webpack-node-externals');
+const Dotenv = require('dotenv-webpack');
 
-const clientConfig = {
-    mode: 'development',
-    entry: './src/client.ts',
-    output: {
-        path: path.join(__dirname, 'public'),
-        filename: 'bundle.js'
+module.exports = {
+  mode: 'development',
+  entry: './src/client.ts',
+  output: {
+    path: path.join(__dirname, 'public'),
+    filename: 'bundle.js',
+  },
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  resolve: {
+    extensions: ['.ts', '.js'],
+    alias: {
+      '~': path.join(__dirname, 'src'),
     },
-    module: {
-        rules: [{
-            test: /\.ts$/,
-            use: 'ts-loader',
-            exclude: /node_modules/,
-        }]
-    },
-    resolve: {
-        extensions: ['.ts', '.js']
-    },
+  },
+  plugins: [new Dotenv()],
 };
-
-const serverConfig = {
-    mode: 'development',
-    entry: './svr/server.ts',
-    target: 'node',
-    node: {
-        __dirname: false,
-        __filename: false,
-    },
-    externals: [nodeExternals()],
-    module: {
-        rules: [{
-            test: /\.ts$/,
-            use: 'ts-loader',
-            exclude: /node_modules/,
-        }]
-    },
-    resolve: {
-        extensions: ['.ts', '.js']
-    },
-}
-
-module.exports = [clientConfig, serverConfig];
