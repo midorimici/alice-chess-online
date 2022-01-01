@@ -2,14 +2,15 @@ import { handleShowHide, handleToggleChatList, handleToggleMute } from './gameEv
 
 export const addKeyboardShortcutListener = () => {
   addEventListener('keydown', (e: KeyboardEvent) => {
+    const code = e.code;
     if (document.activeElement.tagName !== 'INPUT') {
-      if (e.code === 'KeyM') {
-        handleToggleMute();
-      } else if (e.code === 'KeyN') {
-        handleShowHide();
-      } else if (e.code === 'KeyC') {
-        handleToggleChatList();
-      }
+      registerKeyboardShortcut(code, 'KeyM', handleToggleMute);
+      registerKeyboardShortcut(code, 'KeyN', handleShowHide);
+      registerKeyboardShortcut(code, 'KeyC', handleToggleChatList);
     }
   });
+};
+
+const registerKeyboardShortcut = (code: string, key: string, callback: () => void) => {
+  if (code === key) callback();
 };
