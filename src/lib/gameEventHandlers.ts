@@ -41,3 +41,10 @@ export const handleToggleChatList = () => {
     clearTimeout(timeoutId);
   }
 };
+
+export const handleHideChatList = () => {
+  chatInput.blur();
+  if (chat.classList.value === '') {
+    chat.classList.add('closed');
+  }
+};
