@@ -24,3 +24,20 @@ export const handleShowHide = () => {
   toggleShowOppositePieces();
   drawBoard();
 };
+
+const chat = document.getElementById('chat');
+const chatCircle = document.getElementById('chat-new');
+const chatInput = document.getElementById('chat-input') as HTMLInputElement;
+let timeoutId: NodeJS.Timeout;
+
+export const handleToggleChatList = () => {
+  chatCircle.className = 'hidden';
+  chat.classList.toggle('closed');
+  // When the list is opened
+  if (chat.classList.value === '') {
+    // Focus to the input after the slide in animation.
+    timeoutId = setTimeout(() => chatInput.focus({ preventScroll: true }), 400);
+  } else {
+    clearTimeout(timeoutId);
+  }
+};

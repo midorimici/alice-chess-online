@@ -1,7 +1,5 @@
 import { handleChatSend } from './actions';
-
-const chat = document.getElementById('chat');
-const chatCircle = document.getElementById('chat-new');
+import { handleToggleChatList } from './lib/gameEventHandlers';
 
 export const addChatEventListener = () => {
   const chatForm = document.getElementById('chat-form') as HTMLFormElement;
@@ -17,10 +15,7 @@ export const addChatEventListener = () => {
 
   // Slide in/out chat list.
   const chatBtn = document.getElementById('chat-btn');
-  chatBtn.onclick = () => {
-    chatCircle.className = 'hidden';
-    chat.classList.toggle('closed');
-  };
+  chatBtn.onclick = handleToggleChatList;
 };
 
 const sendMessage = () => {

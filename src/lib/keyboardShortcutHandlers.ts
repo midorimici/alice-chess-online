@@ -1,4 +1,4 @@
-import { handleShowHide, handleToggleMute } from './gameEventHandlers';
+import { handleShowHide, handleToggleChatList, handleToggleMute } from './gameEventHandlers';
 
 export const addKeyboardShortcutListener = () => {
   addEventListener('keydown', (e: KeyboardEvent) => {
@@ -7,6 +7,8 @@ export const addKeyboardShortcutListener = () => {
         handleToggleMute();
       } else if (e.code === 'KeyN') {
         handleShowHide();
+      } else if (e.code === 'KeyC') {
+        handleToggleChatList();
       }
     }
   });
