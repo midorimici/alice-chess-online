@@ -1,4 +1,4 @@
-# [Alice Chess Online](https://alice-chess-online.netlify.app)
+# [Alice Chess Online](https://alice-chess-online.web.app)
 
 Firebase Realtime Database + Canvas API による Alice Chess オンライン対戦アプリです。
 
