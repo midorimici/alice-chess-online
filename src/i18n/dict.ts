@@ -8,12 +8,12 @@ export default {
     ja: '名無し',
   },
   mute: {
-    en: 'Mute',
-    ja: 'ミュート',
+    en: 'Mute (M)',
+    ja: 'ミュート (M)',
   },
   unmute: {
-    en: 'Unmute',
-    ja: 'ミュート解除',
+    en: 'Unmute (M)',
+    ja: 'ミュート解除 (M)',
   },
   showOppositePieces: {
     en: 'Show pieces in opposite board',
