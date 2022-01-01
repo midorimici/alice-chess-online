@@ -24,6 +24,7 @@ import {
   showPublicRoomEmptyMessage,
   showRoomFullMessage,
 } from './lib/messageHandlers';
+import { addKeyboardShortcutListener } from './lib/keyboardShortcutHandlers';
 import { getRoomRef, listenPlayerDisconnection, listenRoomDataChange } from './listeners';
 import {
   playerTurnValue,
@@ -75,6 +76,8 @@ export const handleEnterRoom = (info: {
           // Set states
           setUserName(info.name);
           setPlayerTurn(0);
+          // Setup keyboard shortcuts
+          addKeyboardShortcutListener();
           // Setup disconnection event listener
           listenPlayerDisconnection();
           // Setup room state change event listener
@@ -108,6 +111,8 @@ export const handleEnterRoom = (info: {
             // Set states
             setUserName(info.name);
             setPlayerTurn(1);
+            // Setup keyboard shortcuts
+            addKeyboardShortcutListener();
             // Setup disconnection event listener
             listenPlayerDisconnection();
             // Setup room state change event listener
@@ -126,6 +131,8 @@ export const handleEnterRoom = (info: {
           );
           // Set the viewpoint
           setPlayerTurn(0);
+          // Setup keyboard shortcuts
+          addKeyboardShortcutListener();
           // Setup room state change event listener
           listenRoomDataChange('preparing', false);
         }

@@ -1,135 +1,134 @@
 #game-container {
-    display: none;
-    width: 96%;
-    height: 90%;
-    align-items: center;
-    justify-content: space-around;
+  display: none;
+  width: 96%;
+  height: 90%;
+  align-items: center;
+  justify-content: space-around;
 }
 
 #settings-and-messages {
-    height: 100%;
+  height: 100%;
 }
 
-#mute-icon, #eye-icon {
-    margin-right: 1rem;
-    cursor: pointer;
-    width: 2rem;
-    height: 2rem;
-    transition: transform .3s;
-    will-change: transform;
-    &:hover {
-        transform: scale(1.2);
-    }
+#mute-icon,
+#eye-icon {
+  margin-right: 1rem;
+  cursor: pointer;
+  width: 2rem;
+  height: 2rem;
+  transition: transform 0.3s;
+  will-change: transform;
+  &:hover {
+    transform: scale(1.2);
+  }
 }
 
 #user-names {
-    font-size: 150%;
+  font-size: 150%;
 }
 
 #game-message {
-    font-size: larger;
-    width: 12rem;
-    flex-shrink: 0;
+  font-size: larger;
+  width: 12rem;
+  flex-shrink: 0;
 }
 
 .canvas {
-    height: max-content;
+  height: max-content;
 }
 
 #watchers {
-    position: absolute;
-    top: 2rem;
-    z-index: 1;
+  position: absolute;
+  top: 2rem;
+  z-index: 1;
 }
 
-
-
 #chat {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 5rem 2rem;
-    width: 30%;
-    height: calc(100% - 10rem);
-    background-color: ivory;
-    transition: right .4s;
-    will-change: right;
-    &.closed {
-        right: -40%;
-    }
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 5rem 2rem;
+  width: 30%;
+  height: calc(100% - 10rem);
+  background-color: ivory;
+  transition: transform 0.4s;
+  will-change: transform;
+  &.closed {
+    transform: translateX(100%);
+  }
 }
 
 #chat-btn {
-    cursor: pointer;
+  cursor: pointer;
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  z-index: 1;
+  & > #chat-icon {
+    width: 2rem;
+    height: 2rem;
+  }
+  & > #chat-new {
     position: absolute;
-    top: 2rem;
-    right: 2rem;
-    z-index: 1;
-    & > #chat-icon {
-        width: 2rem;
-        height: 2rem;
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 100%;
+    background-color: red;
+    &.hidden {
+      visibility: hidden;
     }
-    & > #chat-new {
-        position: absolute;
-        display: inline-block;
-        width: 1rem;
-        height: 1rem;
-        border-radius: 100%;
-        background-color: red;
-        &.hidden {
-            visibility: hidden;
-        }
-    }
+  }
 }
 
 #chat-messages {
-    height: 86%;
-    list-style: none;
-    padding: 0;
-    overflow: auto;
-    & > li {
-        display: flex;
-        padding: .4rem;
-        &:nth-child(odd) {
-            background-color: antiquewhite;
-        }
+  height: 86%;
+  list-style: none;
+  padding: 0;
+  overflow: auto;
+  & > li {
+    display: flex;
+    padding: 0.4rem;
+    &:nth-child(odd) {
+      background-color: antiquewhite;
     }
+  }
 }
 
 .chat-name {
-    display: inline-block;
-    min-width: 8rem;
-    margin-right: 1rem;
+  display: inline-block;
+  min-width: 8rem;
+  margin-right: 1rem;
 }
 
 .chat-player-icon {
-    width: 1rem;
-    height: 1rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 #chat-form {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 #chat-input {
-    margin: .4rem;
-    padding: .4rem;
-    border-radius: .4rem;
-    width: 100%;
+  margin: 0.4rem;
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  width: 100%;
 }
 
 #chat-send-icon {
-    cursor: pointer;
-    background-color: thistle;
-    width: 1.4rem;
-    height: 1.4rem;
-    padding: .4rem;
-    border-radius: .4rem;
-    border: solid 2px #333333;
-    transition: background-color .3s;
-    will-change: background-color;
-    &:hover {
-        background-color: wheat;
-    }
+  cursor: pointer;
+  background-color: thistle;
+  width: 1.4rem;
+  height: 1.4rem;
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  border: solid 2px #333333;
+  transition: background-color 0.3s;
+  will-change: background-color;
+  &:hover {
+    background-color: wheat;
+  }
 }
