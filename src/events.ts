@@ -92,6 +92,6 @@ export const addLanguageButtonClickEventListener = () => {
 };
 
 const overrideLanguageAndReload = (language: 'ja' | 'en') => {
-  document.cookie = `firebase-language-override=${language}`;
+  document.cookie = `firebase-language-override=${language}; samesite=lax`;
   location.reload();
 };
