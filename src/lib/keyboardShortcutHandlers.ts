@@ -6,7 +6,7 @@ import {
 } from './gameEventHandlers';
 
 export const addKeyboardShortcutListener = () => {
-  addEventListener('keydown', (e: KeyboardEvent) => {
+  addEventListener('keyup', (e: KeyboardEvent) => {
     const code = e.code;
     const activeEl = document.activeElement;
     // When the focus is not on any input
