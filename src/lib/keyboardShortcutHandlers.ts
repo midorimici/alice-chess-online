@@ -12,7 +12,7 @@ export const addKeyboardShortcutListener = () => {
     // When the focus is not on any input
     if (activeEl.tagName !== 'INPUT') {
       registerKeyboardShortcut(code, 'KeyM', handleToggleMute);
-      registerKeyboardShortcut(code, 'KeyN', handleShowHide);
+      registerKeyboardShortcut(code, 'Comma', handleShowHide);
       registerKeyboardShortcut(code, 'KeyC', handleToggleChatList);
     }
     // When the focus is on the chat input
