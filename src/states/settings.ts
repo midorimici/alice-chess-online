@@ -1,5 +1,3 @@
-import Draw from '~/game/draw';
-
 /** Whether the app makes a sound. */
 let isMuted: boolean = true;
 
@@ -21,12 +19,3 @@ const toggleShowOppositePieces = () => {
 export const showOppositePiecesValue = () => showOppositePieces;
 
 export const useShowOppositePieces = () => ({ showOppositePieces, toggleShowOppositePieces });
-
-/** `Draw` instance. */
-let draw: Draw;
-
-export const drawValue = () => draw;
-
-export const setDraw = (state: Draw) => {
-  draw = state;
-};
