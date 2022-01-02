@@ -24,5 +24,6 @@ export {
   selectingPositionValue,
   setSelectingPosition,
   activeBoardValue,
+  switchActiveBoard,
   setActiveBoard,
 } from './game';

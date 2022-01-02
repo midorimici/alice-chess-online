@@ -34,4 +34,8 @@ export const setActiveBoard = (state: BoardId) => {
   activeBoard = state;
 };
 
+export const switchActiveBoard = () => {
+  activeBoard = (1 - activeBoard) as BoardId;
+};
+
 export const activeBoardValue = () => activeBoard;

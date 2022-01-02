@@ -4,6 +4,7 @@ import {
   handleToggleChatList,
   handleToggleMute,
 } from './gameEventHandlers';
+import { handleSwitchActiveBoard } from './gameKeyboardHandlers';
 
 export const addKeyboardShortcutListener = () => {
   addEventListener('keyup', (e: KeyboardEvent) => {
@@ -21,6 +22,18 @@ export const addKeyboardShortcutListener = () => {
     }
   });
 };
+
+export const setGameKeyboardShortcutListener = () => {
+  document.onkeydown = (e: KeyboardEvent) => {
+    const code = e.code;
+    // When the focus is not on any input
+    if (document.activeElement.tagName !== 'INPUT') {
+      registerKeyboardShortcut(code, 'Semicolon', handleSwitchActiveBoard);
+    }
+  };
+};
+
+export const cancelGameKeyboardShortcutListener = () => (document.onkeydown = () => {});
 
 const registerKeyboardShortcut = (code: string, key: string, callback: () => void) => {
   if (code === key) callback();

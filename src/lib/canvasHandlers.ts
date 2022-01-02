@@ -11,6 +11,10 @@ import {
   userNameValue,
 } from '~/states';
 import { drawBoard, handleBoardSelection, snd } from './gameHandlers';
+import {
+  cancelGameKeyboardShortcutListener,
+  setGameKeyboardShortcutListener,
+} from './keyboardShortcutHandlers';
 
 let mouses: Pair<Mouse>;
 /** Whether `initCanvas` has executed. */
@@ -112,6 +116,9 @@ export const handlePlayerGameScreen = async (
         ));
       };
     }
+
+    // Keyboard event
+    setGameKeyboardShortcutListener();
   }
   // When it is opponent's turn
   else {
@@ -126,6 +133,8 @@ export const handlePlayerGameScreen = async (
     for (const canvas of canvass) {
       canvas.onclick = () => {};
     }
+
+    cancelGameKeyboardShortcutListener();
   }
 
   // Display if it is checked.
