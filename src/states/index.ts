@@ -3,6 +3,8 @@ export {
   useIsMuted,
   showOppositePiecesValue,
   useShowOppositePieces,
+  drawValue,
+  setDraw,
 } from './settings';
 export {
   userNameValue,
