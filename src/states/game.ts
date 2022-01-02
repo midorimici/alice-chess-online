@@ -17,3 +17,21 @@ export const setBoardMap = (state: BoardMap) => {
 };
 
 export const boardMapValue = () => boardMap;
+
+/** The selecting square position. */
+let selectingPosition: Vector = null;
+
+export const setSelectingPosition = (state: Vector) => {
+  selectingPosition = state;
+};
+
+export const selectingPositionValue = () => selectingPosition;
+
+/** The active board in the two. */
+let activeBoard: BoardId = 0;
+
+export const setActiveBoard = (state: BoardId) => {
+  activeBoard = state;
+};
+
+export const activeBoardValue = () => activeBoard;

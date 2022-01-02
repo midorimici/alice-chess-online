@@ -2,6 +2,8 @@ import { colors, scales } from '~/config';
 import { Vec } from './vec';
 import { Piece } from './piece';
 
+const ALPHA = 0.3;
+
 export default class Draw {
   private readonly canvass: HTMLCanvasElement[];
   private readonly ctxs: CanvasRenderingContext2D[];
@@ -217,5 +219,21 @@ export default class Draw {
     this.drawImg(ctx, this.imgs.get(color + 'B'), [3, 3.5]);
     this.drawImg(ctx, this.imgs.get(color + 'R'), [4, 3.5]);
     this.drawImg(ctx, this.imgs.get(color + 'Q'), [5, 3.5]);
+  }
+
+  /**
+   * 選択中のマスに色を付ける
+   * @param boardId どちらの盤面か
+   * @param pos 選択中のマス
+   */
+  selectedSquare(boardId: BoardId, pos: Vector) {
+    const ctx = this.ctxs[boardId];
+    const squareSize: number = this.squareSize;
+    const coord: Vector = [this.margin, this.margin];
+    ctx.save();
+    ctx.fillStyle = colors.safe;
+    ctx.globalAlpha = ALPHA;
+    ctx.fillRect(...new Vec(pos).mul(squareSize).add(coord).val(), squareSize, squareSize);
+    ctx.restore();
   }
 }

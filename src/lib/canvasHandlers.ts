@@ -1,7 +1,15 @@
 import Draw from '~/game/draw';
 import Mouse from '~/game/mouse';
 import { t } from '~/i18n';
-import { boardMapValue, playerNamesValue, playerTurnValue, setDraw, userNameValue } from '~/states';
+import {
+  boardMapValue,
+  playerNamesValue,
+  playerTurnValue,
+  setActiveBoard,
+  setDraw,
+  setSelectingPosition,
+  userNameValue,
+} from '~/states';
 import { drawBoard, handleBoardSelection, snd } from './gameHandlers';
 
 let mouses: Pair<Mouse>;
@@ -75,12 +83,14 @@ export const handlePlayerGameScreen = async (
   }
   // Draw the game board.
   if (!doneInitCanvas) await initCanvas();
-  drawBoard();
   // When it is the current user's turn
   if (isMyTurn) {
     // Show player's turn.
     gameMessage.innerText = t('isYourTurn');
     snd('move');
+
+    // Draw board.
+    drawBoard();
 
     // Mouse event
     for (const [index, canvas] of canvass.entries()) {
@@ -89,12 +99,12 @@ export const handlePlayerGameScreen = async (
       canvas.onclick = (e: MouseEvent) => {
         /** The square position that has clicked. */
         const sqPos = mouse.getCoord(e);
+        setActiveBoard(index as BoardId);
+        setSelectingPosition(sqPos);
         ({ originPos, destPos, prom } = handleBoardSelection(
           originPos,
           destPos,
           prom,
-          sqPos,
-          index as 0 | 1,
           boardMap,
           playerColor,
           advanced2Pos,
@@ -105,8 +115,14 @@ export const handlePlayerGameScreen = async (
   }
   // When it is opponent's turn
   else {
+    // Show player's turn.
     gameMessage.innerText = t('isOpponentTurn');
 
+    // Draw board.
+    setSelectingPosition(null);
+    drawBoard();
+
+    // Cancel event listeners.
     for (const canvas of canvass) {
       canvas.onclick = () => {};
     }

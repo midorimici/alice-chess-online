@@ -16,4 +16,13 @@ export {
 
 export { roomIdValue, setRoomId, playerNamesValue, setPlayerNames } from './room';
 
-export { drawValue, setDraw, boardMapValue, setBoardMap } from './game';
+export {
+  drawValue,
+  setDraw,
+  boardMapValue,
+  setBoardMap,
+  selectingPositionValue,
+  setSelectingPosition,
+  activeBoardValue,
+  setActiveBoard,
+} from './game';

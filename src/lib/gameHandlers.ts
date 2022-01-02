@@ -1,10 +1,12 @@
 import { handleMovePiece } from '~/actions';
 import { abbrPieceDict } from '~/game/piece';
 import {
+  activeBoardValue,
   boardMapValue,
   drawValue,
   isMutedValue,
   playerTurnValue,
+  selectingPositionValue,
   showOppositePiecesValue,
 } from '~/states';
 
@@ -27,7 +29,12 @@ export const drawBoard = () => {
   const playerTurn: Turn = playerTurnValue();
   const playerColor: PieceColor = (['W', 'B'] as const)[playerTurn];
   const showOppositePieces = showOppositePiecesValue();
+  const activeBoard = activeBoardValue();
+  const selectingPosition = selectingPositionValue();
   draw.board(boardMap, playerColor, showOppositePieces);
+  if (selectingPosition !== null) {
+    draw.selectedSquare(activeBoard, selectingPosition);
+  }
 };
 
 /**
@@ -35,8 +42,6 @@ export const drawBoard = () => {
  * @param originPos The position of the piece that is selected.
  * @param destPos The destination position of the piece.
  * @param prom Whether it is available to promote.
- * @param sqPos The square position that has clicked.
- * @param index The board id.
  * @param boardMap The current game board.
  * @param playerColor The color of the current player.
  * @param advanced2Pos The destination of the pawn that has moved two steps.
@@ -47,21 +52,21 @@ export const handleBoardSelection = (
   originPos: Vector,
   destPos: Vector,
   prom: boolean,
-  sqPos: Vector,
-  index: 0 | 1,
   boardMap: BoardMap,
   playerColor: PieceColor,
   advanced2Pos: number[] | null,
   canCastle: CastlingPotentials
 ) => {
   const draw = drawValue();
+  const sqPos = selectingPositionValue();
+  const boardId = activeBoardValue();
 
   // When one of the user's own pieces has clicked
-  if (boardMap.get(`${index},${String(sqPos)}`)?.[0] === playerColor) {
+  if (boardMap.get(`${boardId},${String(sqPos)}`)?.[0] === playerColor) {
     originPos = sqPos;
     // Generate a class of the clicked piece.
-    const PieceClass = abbrPieceDict[boardMap.get(`${index},${String(sqPos)}`)[1] as PieceName];
-    const piece = new PieceClass(playerColor, index as 0 | 1);
+    const PieceClass = abbrPieceDict[boardMap.get(`${boardId},${String(sqPos)}`)[1] as PieceName];
+    const piece = new PieceClass(playerColor, boardId);
     // Draw the destination positions.
     drawBoard();
     draw.dest(piece, originPos, boardMap, advanced2Pos, canCastle);
@@ -71,12 +76,12 @@ export const handleBoardSelection = (
   else {
     // When it is not the time for promotion
     // and the selected position is that some piece is present
-    if (!prom && boardMap.has(`${index},${String(originPos)}`)) {
+    if (!prom && boardMap.has(`${boardId},${String(originPos)}`)) {
       destPos = sqPos;
       // Generate a class of the selected piece.
       const PieceClass =
-        abbrPieceDict[boardMap.get(`${index},${String(originPos)}`)[1] as PieceName];
-      const piece = new PieceClass(playerColor, index as 0 | 1);
+        abbrPieceDict[boardMap.get(`${boardId},${String(originPos)}`)[1] as PieceName];
+      const piece = new PieceClass(playerColor, boardId);
       // When the destination position is clicked
       if (
         piece
@@ -90,12 +95,12 @@ export const handleBoardSelection = (
         } else {
           snd('move');
           // Move the piece and apply that move to Database.
-          handleMovePiece(index as 0 | 1, originPos, destPos);
+          handleMovePiece(boardId, originPos, destPos);
         }
       }
     }
 
-    // Redraw the game board to show a removal of a selection.
+    // Redraw the game board to remove destination options.
     drawBoard();
 
     // When it is the time for promotion
@@ -106,13 +111,13 @@ export const handleBoardSelection = (
           prom = false;
           snd('move');
           // Apply the promotion to Database.
-          handleMovePiece(index as 0 | 1, originPos, destPos, pieces[i - 2]);
+          handleMovePiece(boardId, originPos, destPos, pieces[i - 2]);
         }
       }
       // When it is right after the selection of the destination
       if (String(sqPos) === String(destPos)) {
         // Display options of a promotion.
-        draw.promotion(index as 0 | 1, playerColor);
+        draw.promotion(boardId, playerColor);
       }
       // When the other area is clicked
       else {
