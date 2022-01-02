@@ -16,12 +16,12 @@ export default {
     ja: 'ミュート解除 (M)',
   },
   showOppositePieces: {
-    en: 'Show pieces in opposite board (N)',
-    ja: '反対側の盤面の駒を表示する (N)',
+    en: 'Show pieces in opposite board (,)',
+    ja: '反対側の盤面の駒を表示する (,)',
   },
   hideOppositePieces: {
-    en: 'Hide pieces in opposite board (N)',
-    ja: '反対側の盤面の駒を隠す (N)',
+    en: 'Hide pieces in opposite board (,)',
+    ja: '反対側の盤面の駒を隠す (,)',
   },
   roomIsFull: {
     en: `The room $1$ is full. You cannot join in as a player.`,
