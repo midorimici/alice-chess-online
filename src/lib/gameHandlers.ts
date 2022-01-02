@@ -6,7 +6,7 @@ import {
   drawValue,
   isMutedValue,
   playerTurnValue,
-  selectingPositionValue,
+  focusedPositionValue,
   showOppositePiecesValue,
 } from '~/states';
 
@@ -30,10 +30,10 @@ export const drawBoard = () => {
   const playerColor: PieceColor = (['W', 'B'] as const)[playerTurn];
   const showOppositePieces = showOppositePiecesValue();
   const activeBoard = activeBoardValue();
-  const selectingPosition = selectingPositionValue();
+  const focusedPosition = focusedPositionValue();
   draw.board(boardMap, playerColor, showOppositePieces);
-  if (selectingPosition !== null) {
-    draw.selectedSquare(activeBoard, selectingPosition);
+  if (focusedPosition !== null) {
+    draw.selectedSquare(activeBoard, focusedPosition);
   }
 };
 
@@ -58,7 +58,7 @@ export const handleBoardSelection = (
   canCastle: CastlingPotentials
 ) => {
   const draw = drawValue();
-  const sqPos = selectingPositionValue();
+  const sqPos = focusedPositionValue();
   const boardId = activeBoardValue();
 
   // When one of the user's own pieces has clicked

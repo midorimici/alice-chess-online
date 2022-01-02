@@ -18,15 +18,6 @@ export const setBoardMap = (state: BoardMap) => {
 
 export const boardMapValue = () => boardMap;
 
-/** The selecting square position. */
-let selectingPosition: Vector = null;
-
-export const setSelectingPosition = (state: Vector) => {
-  selectingPosition = state;
-};
-
-export const selectingPositionValue = () => selectingPosition;
-
 /** The active board in the two. */
 let activeBoard: BoardId = 0;
 
@@ -39,3 +30,14 @@ export const switchActiveBoard = () => {
 };
 
 export const activeBoardValue = () => activeBoard;
+
+/** The focused square position. */
+let focusedPosition: Vector = null;
+
+export const setFocusedPosition = (state: Vector) => {
+  focusedPosition = state;
+};
+
+export const focusedPositionValue = () => focusedPosition;
+
+export const useFocusedPosition = () => ({ focusedPosition, setFocusedPosition });

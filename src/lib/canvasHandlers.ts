@@ -7,7 +7,7 @@ import {
   playerTurnValue,
   setActiveBoard,
   setDraw,
-  setSelectingPosition,
+  setFocusedPosition,
   userNameValue,
 } from '~/states';
 import { drawBoard, handleBoardSelection, snd } from './gameHandlers';
@@ -80,6 +80,8 @@ export const handlePlayerGameScreen = async (
   let originPos: Vector;
   /** The destination position of the piece. */
   let destPos: Vector;
+  /** Whether it is available to promote. */
+  let prom = false;
   // Display the opponent name.
   if (document.getElementById('user-names').innerText === '') {
     const opponent = playerNames[1 - playerTurn];
@@ -98,13 +100,13 @@ export const handlePlayerGameScreen = async (
 
     // Mouse event
     for (const [index, canvas] of canvass.entries()) {
-      let prom = false;
+      prom = false;
       const mouse = mouses[index];
       canvas.onclick = (e: MouseEvent) => {
         /** The square position that has clicked. */
         const sqPos = mouse.getCoord(e);
         setActiveBoard(index as BoardId);
-        setSelectingPosition(sqPos);
+        setFocusedPosition(sqPos);
         ({ originPos, destPos, prom } = handleBoardSelection(
           originPos,
           destPos,
@@ -126,7 +128,7 @@ export const handlePlayerGameScreen = async (
     gameMessage.innerText = t('isOpponentTurn');
 
     // Draw board.
-    setSelectingPosition(null);
+    setFocusedPosition(null);
     drawBoard();
 
     // Cancel event listeners.

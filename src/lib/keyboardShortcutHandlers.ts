@@ -4,7 +4,17 @@ import {
   handleToggleChatList,
   handleToggleMute,
 } from './gameEventHandlers';
-import { handleSwitchActiveBoard } from './gameKeyboardHandlers';
+import {
+  handleMoveDown,
+  handleMoveLeft,
+  handleMoveLeftDown,
+  handleMoveLeftUp,
+  handleMoveRight,
+  handleMoveRightDown,
+  handleMoveRightUp,
+  handleMoveUp,
+  handleSwitchActiveBoard,
+} from './gameKeyboardHandlers';
 
 export const addKeyboardShortcutListener = () => {
   addEventListener('keyup', (e: KeyboardEvent) => {
@@ -29,6 +39,14 @@ export const setGameKeyboardShortcutListener = () => {
     // When the focus is not on any input
     if (document.activeElement.tagName !== 'INPUT') {
       registerKeyboardShortcut(code, 'Semicolon', handleSwitchActiveBoard);
+      registerKeyboardShortcut(code, 'KeyH', handleMoveLeft);
+      registerKeyboardShortcut(code, 'KeyL', handleMoveRight);
+      registerKeyboardShortcut(code, 'KeyK', handleMoveUp);
+      registerKeyboardShortcut(code, 'KeyJ', handleMoveDown);
+      registerKeyboardShortcut(code, 'KeyE', handleMoveLeftUp);
+      registerKeyboardShortcut(code, 'KeyD', handleMoveLeftDown);
+      registerKeyboardShortcut(code, 'KeyR', handleMoveRightUp);
+      registerKeyboardShortcut(code, 'KeyF', handleMoveRightDown);
     }
   };
 };
