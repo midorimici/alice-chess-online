@@ -32,4 +32,6 @@ export {
   useSelectedPieceBoard,
   pieceDestsValue,
   setPieceDests,
+  isPromotingValue,
+  setIsPromoting,
 } from './game';

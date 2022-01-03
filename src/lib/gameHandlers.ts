@@ -12,6 +12,8 @@ import {
   setPieceDests,
   setSelectedPieceBoard,
   showOppositePiecesValue,
+  setIsPromoting,
+  isPromotingValue,
 } from '~/states';
 
 /**
@@ -37,6 +39,7 @@ export const drawBoard = () => {
   const focusedPosition = focusedPositionValue();
   const selectedPieceBoard = selectedPieceBoardValue();
   const dests = pieceDestsValue();
+  const isPromoting = isPromotingValue();
   draw.board(boardMap, playerColor, showOppositePieces);
   if (focusedPosition !== null) {
     draw.selectedSquare(activeBoard, focusedPosition);
@@ -44,13 +47,16 @@ export const drawBoard = () => {
   if (selectedPieceBoard !== null && dests.length > 0) {
     draw.dest(selectedPieceBoard, dests);
   }
+  if (isPromoting) {
+    // Display options of a promotion.
+    draw.promotion(selectedPieceBoard, playerColor);
+  }
 };
 
 /**
  * Handles operations when an area in the board has selected and returns updated arguments.
  * @param originPos The position of the piece that is selected.
  * @param destPos The destination position of the piece.
- * @param prom Whether it is available to promote.
  * @param boardMap The current game board.
  * @param playerColor The color of the current player.
  * @param advanced2Pos The destination of the pawn that has moved two steps.
@@ -60,15 +66,14 @@ export const drawBoard = () => {
 export const handleBoardSelection = (
   originPos: Vector | null,
   destPos: Vector | null,
-  prom: boolean,
   boardMap: BoardMap,
   playerColor: PieceColor,
   advanced2Pos: number[] | null,
   canCastle: CastlingPotentials
 ) => {
-  const draw = drawValue();
   const sqPos = focusedPositionValue();
   const boardId = activeBoardValue();
+  const isPromoting = isPromotingValue();
 
   // When one of the user's own pieces has selected
   if (boardMap.get(`${boardId},${String(sqPos)}`)?.[0] === playerColor) {
@@ -76,18 +81,36 @@ export const handleBoardSelection = (
     // Generate a class of the selected piece.
     const PieceClass = abbrPieceDict[boardMap.get(`${boardId},${String(sqPos)}`)[1] as PieceName];
     const piece = new PieceClass(playerColor, boardId);
+    // The available destinations of the piece.
     const dests = piece.validMoves(originPos, boardMap, advanced2Pos, canCastle);
     setPieceDests(dests);
     setSelectedPieceBoard(boardId);
-    // Draw the destination positions.
+    setIsPromoting(false);
+    // Redraw the board.
     drawBoard();
-    prom = false;
   }
   // When the position other than pieces has selected
   else {
+    // When it is the time for promotion
+    if (isPromoting) {
+      const pieces: PieceName[] = ['N', 'B', 'R', 'Q'];
+      for (let i = 2; i <= 5; i++) {
+        if (sqPos[0] === i && (sqPos[1] === 3 || sqPos[1] === 4)) {
+          snd('move');
+          // Cancel displaying destinations.
+          setSelectedPieceBoard(null);
+          setPieceDests([]);
+          // Apply the promotion to Database.
+          handleMovePiece(boardId, originPos, destPos, pieces[i - 2]);
+        }
+      }
+      // Cancel displaying options.
+      setIsPromoting(false);
+      originPos = null;
+    }
     // When it is not the time for promotion
     // and the selected position is that some piece is present
-    if (!prom && boardMap.has(`${boardId},${String(originPos)}`)) {
+    else if (boardMap.has(`${boardId},${String(originPos)}`)) {
       destPos = sqPos;
       // Generate a class of the selected piece.
       const PieceClass =
@@ -99,49 +122,26 @@ export const handleBoardSelection = (
           .validMoves(originPos, boardMap, advanced2Pos, canCastle)
           .some((e) => String(e) === String(destPos))
       ) {
-        // When the clicked piece is pawn and it is at the last rank
+        // When the selected piece is pawn and it is at the last rank
         if (piece.abbr === 'P' && destPos[1] === 0) {
           // It should be a move for promotion.
-          prom = true;
+          setIsPromoting(true);
+          setPieceDests([]);
         } else {
           snd('move');
           // Move the piece and apply that move to Database.
           handleMovePiece(boardId, originPos, destPos);
+          // Cancel selection.
+          setSelectedPieceBoard(null);
+          setPieceDests([]);
+          originPos = null;
         }
       }
     }
 
-    // Redraw the game board to remove destination options.
-    setSelectedPieceBoard(null);
-    setPieceDests([]);
+    // Redraw the game board.
     drawBoard();
-
-    // When it is the time for promotion
-    if (prom) {
-      const pieces: PieceName[] = ['N', 'B', 'R', 'Q'];
-      for (let i = 2; i <= 5; i++) {
-        if (sqPos[0] === i && (sqPos[1] === 3 || sqPos[1] === 4)) {
-          prom = false;
-          snd('move');
-          // Apply the promotion to Database.
-          handleMovePiece(boardId, originPos, destPos, pieces[i - 2]);
-        }
-      }
-      // When it is right after the selection of the destination
-      if (String(sqPos) === String(destPos)) {
-        // Display options of a promotion.
-        draw.promotion(boardId, playerColor);
-      }
-      // When the other area is selected
-      else {
-        // Cancel displaying options.
-        prom = false;
-        originPos = null;
-      }
-    } else {
-      originPos = null;
-    }
   }
 
-  return { originPos, destPos, prom };
+  return { originPos, destPos };
 };

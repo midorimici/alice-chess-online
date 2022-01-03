@@ -40,7 +40,6 @@ export const addKeyboardShortcutListener = () => {
  * @param code The key inputted.
  * @param originPos The position of the piece that is selected.
  * @param destPos The destination position of the piece.
- * @param prom Whether it is available to promote.
  * @param boardMap The current game board.
  * @param playerColor The color of the current player.
  * @param advanced2Pos The destination of the pawn that has moved two steps.
@@ -51,7 +50,6 @@ export const setGameKeyboardShortcut = (
   code: string,
   originPos: Vector,
   destPos: Vector,
-  prom: boolean,
   boardMap: BoardMap,
   playerColor: PieceColor,
   advanced2Pos: number[] | null,
@@ -72,7 +70,6 @@ export const setGameKeyboardShortcut = (
       return handleBoardSelection(
         originPos,
         destPos,
-        prom,
         boardMap,
         playerColor,
         advanced2Pos,

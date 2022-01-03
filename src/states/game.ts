@@ -61,3 +61,12 @@ export const setPieceDests = (state: Vector[]) => {
 };
 
 export const pieceDestsValue = () => pieceDests;
+
+/** Whether the dialog to promote is showing up. */
+let isPromoting: boolean = false;
+
+export const setIsPromoting = (state: boolean) => {
+  isPromoting = state;
+};
+
+export const isPromotingValue = () => isPromoting;

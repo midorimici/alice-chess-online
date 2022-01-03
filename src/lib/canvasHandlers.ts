@@ -8,6 +8,7 @@ import {
   setActiveBoard,
   setDraw,
   setFocusedPosition,
+  setIsPromoting,
   userNameValue,
 } from '~/states';
 import { drawBoard, handleBoardSelection, snd } from './gameHandlers';
@@ -77,8 +78,6 @@ export const handlePlayerGameScreen = async (
   let originPos: Vector = null;
   /** The destination position of the piece. */
   let destPos: Vector = null;
-  /** Whether it is available to promote. */
-  let prom = false;
   // Display the opponent name.
   if (document.getElementById('user-names').innerText === '') {
     const opponent = playerNames[1 - playerTurn];
@@ -97,17 +96,15 @@ export const handlePlayerGameScreen = async (
 
     // Mouse event
     for (const [index, canvas] of canvass.entries()) {
-      prom = false;
       const mouse = mouses[index];
       canvas.onclick = (e: MouseEvent) => {
         /** The square position that has clicked. */
         const sqPos = mouse.getCoord(e);
         setActiveBoard(index as BoardId);
         setFocusedPosition(sqPos);
-        ({ originPos, destPos, prom } = handleBoardSelection(
+        ({ originPos, destPos } = handleBoardSelection(
           originPos,
           destPos,
-          prom,
           boardMap,
           playerColor,
           advanced2Pos,
@@ -123,14 +120,13 @@ export const handlePlayerGameScreen = async (
         code,
         originPos,
         destPos,
-        prom,
         boardMap,
         playerColor,
         advanced2Pos,
         canCastle
       );
       if (res !== undefined) {
-        ({ originPos, destPos, prom } = res);
+        ({ originPos, destPos } = res);
       }
     };
   }
