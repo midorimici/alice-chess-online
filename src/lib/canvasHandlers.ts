@@ -74,9 +74,9 @@ export const handlePlayerGameScreen = async (
   const playerColor: PieceColor = (['W', 'B'] as const)[playerTurn];
 
   /** The position of the piece that is selected. */
-  let originPos: Vector;
+  let originPos: Vector = null;
   /** The destination position of the piece. */
-  let destPos: Vector;
+  let destPos: Vector = null;
   /** Whether it is available to promote. */
   let prom = false;
   // Display the opponent name.
@@ -119,7 +119,7 @@ export const handlePlayerGameScreen = async (
     // Keyboard event
     document.onkeydown = (e: KeyboardEvent) => {
       const code = e.code;
-      ({ originPos, destPos, prom } = setGameKeyboardShortcut(
+      const res = setGameKeyboardShortcut(
         code,
         originPos,
         destPos,
@@ -128,7 +128,10 @@ export const handlePlayerGameScreen = async (
         playerColor,
         advanced2Pos,
         canCastle
-      ));
+      );
+      if (res !== undefined) {
+        ({ originPos, destPos, prom } = res);
+      }
     };
   }
   // When it is opponent's turn

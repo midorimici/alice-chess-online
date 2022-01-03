@@ -58,8 +58,8 @@ export const drawBoard = () => {
  * @returns `originPos`, `destPos`, `prom`
  */
 export const handleBoardSelection = (
-  originPos: Vector,
-  destPos: Vector,
+  originPos: Vector | null,
+  destPos: Vector | null,
   prom: boolean,
   boardMap: BoardMap,
   playerColor: PieceColor,

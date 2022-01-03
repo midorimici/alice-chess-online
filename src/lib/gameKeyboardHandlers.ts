@@ -1,4 +1,4 @@
-import { switchActiveBoard, useFocusedPosition } from '~/states';
+import { boardMapValue, setActiveBoard, switchActiveBoard, useFocusedPosition } from '~/states';
 import { drawBoard } from './gameHandlers';
 
 const BOARD_MAX_INDEX = 7;
@@ -7,112 +7,129 @@ const ulim = (val: number) => Math.min(val, BOARD_MAX_INDEX);
 
 const llim = (val: number) => Math.max(val, 0);
 
-/** Move the focused square to the opposite board. */
+/**
+ * Returns a position of the previously moved piece.
+ * @returns `board`: A board id.
+ *          `x`, `y`: A position.
+ */
+const previouslyMovedPiecePosition = (): { board: BoardId; x: number; y: number } => {
+  const boardMap = boardMapValue();
+  const lastPosition = Array.from(boardMap.keys()).slice(-1)[0];
+  const [board, x, y] = lastPosition.split(',').map((str) => +str);
+  return { board: board as BoardId, x, y };
+};
+
+const handleNavigation = (
+  action: (x: number, y: number, setFocusedPosition: (state: Vector) => void) => void
+) => {
+  const { focusedPosition, setFocusedPosition } = useFocusedPosition();
+  if (focusedPosition === null) {
+    const { board, x, y } = previouslyMovedPiecePosition();
+    setActiveBoard(board);
+    setFocusedPosition([x, y]);
+  } else {
+    action(...focusedPosition, setFocusedPosition);
+  }
+  drawBoard();
+};
+
+/** Moves the focused square to the opposite board. */
 export const handleSwitchActiveBoard = () => {
-  switchActiveBoard();
-  drawBoard();
+  handleNavigation(() => switchActiveBoard());
 };
 
-/** Navigate the focused square left. */
+/** Navigates the focused square left. */
 export const handleMoveLeft = () => {
-  const { focusedPosition, setFocusedPosition } = useFocusedPosition();
-  const [x, y] = focusedPosition;
-  if (x <= 0) {
-    return;
-  }
+  handleNavigation((x, y, setFocusedPosition) => {
+    if (x <= 0) {
+      return;
+    }
 
-  const newPosition: Vector = [x - 1, y];
-  setFocusedPosition(newPosition);
-  drawBoard();
+    const newPosition: Vector = [x - 1, y];
+    setFocusedPosition(newPosition);
+  });
 };
 
-/** Navigate the focused square right. */
+/** Navigates the focused square right. */
 export const handleMoveRight = () => {
-  const { focusedPosition, setFocusedPosition } = useFocusedPosition();
-  const [x, y] = focusedPosition;
-  if (x >= BOARD_MAX_INDEX) {
-    return;
-  }
+  handleNavigation((x, y, setFocusedPosition) => {
+    if (x >= BOARD_MAX_INDEX) {
+      return;
+    }
 
-  const newPosition: Vector = [x + 1, y];
-  setFocusedPosition(newPosition);
-  drawBoard();
+    const newPosition: Vector = [x + 1, y];
+    setFocusedPosition(newPosition);
+  });
 };
 
-/** Navigate the focused square up. */
+/** Navigates the focused square up. */
 export const handleMoveUp = () => {
-  const { focusedPosition, setFocusedPosition } = useFocusedPosition();
-  const [x, y] = focusedPosition;
-  if (y <= 0) {
-    return;
-  }
+  handleNavigation((x, y, setFocusedPosition) => {
+    if (y <= 0) {
+      return;
+    }
 
-  const newPosition: Vector = [x, y - 1];
-  setFocusedPosition(newPosition);
-  drawBoard();
+    const newPosition: Vector = [x, y - 1];
+    setFocusedPosition(newPosition);
+  });
 };
 
-/** Navigate the focused square down. */
+/** Navigates the focused square down. */
 export const handleMoveDown = () => {
-  const { focusedPosition, setFocusedPosition } = useFocusedPosition();
-  const [x, y] = focusedPosition;
-  if (y >= BOARD_MAX_INDEX) {
-    return;
-  }
+  handleNavigation((x, y, setFocusedPosition) => {
+    if (y >= BOARD_MAX_INDEX) {
+      return;
+    }
 
-  const newPosition: Vector = [x, y + 1];
-  setFocusedPosition(newPosition);
-  drawBoard();
+    const newPosition: Vector = [x, y + 1];
+    setFocusedPosition(newPosition);
+  });
 };
 
-/** Navigate the focused square left-up. */
+/** Navigates the focused square left-up. */
 export const handleMoveLeftUp = () => {
-  const { focusedPosition, setFocusedPosition } = useFocusedPosition();
-  const [x, y] = focusedPosition;
-  if (x <= 0 && y <= 0) {
-    return;
-  }
+  handleNavigation((x, y, setFocusedPosition) => {
+    if (x <= 0 && y <= 0) {
+      return;
+    }
 
-  const newPosition: Vector = [llim(x - 1), llim(y - 1)];
-  setFocusedPosition(newPosition);
-  drawBoard();
+    const newPosition: Vector = [llim(x - 1), llim(y - 1)];
+    setFocusedPosition(newPosition);
+  });
 };
 
-/** Navigate the focused square left-down. */
+/** Navigates the focused square left-down. */
 export const handleMoveLeftDown = () => {
-  const { focusedPosition, setFocusedPosition } = useFocusedPosition();
-  const [x, y] = focusedPosition;
-  if (x <= 0 && y >= BOARD_MAX_INDEX) {
-    return;
-  }
+  handleNavigation((x, y, setFocusedPosition) => {
+    if (x <= 0 && y >= BOARD_MAX_INDEX) {
+      return;
+    }
 
-  const newPosition: Vector = [llim(x - 1), ulim(y + 1)];
-  setFocusedPosition(newPosition);
-  drawBoard();
+    const newPosition: Vector = [llim(x - 1), ulim(y + 1)];
+    setFocusedPosition(newPosition);
+  });
 };
 
-/** Navigate the focused square right-up. */
+/** Navigates the focused square right-up. */
 export const handleMoveRightUp = () => {
-  const { focusedPosition, setFocusedPosition } = useFocusedPosition();
-  const [x, y] = focusedPosition;
-  if (x >= BOARD_MAX_INDEX && y <= 0) {
-    return;
-  }
+  handleNavigation((x, y, setFocusedPosition) => {
+    if (x >= BOARD_MAX_INDEX && y <= 0) {
+      return;
+    }
 
-  const newPosition: Vector = [ulim(x + 1), llim(y - 1)];
-  setFocusedPosition(newPosition);
-  drawBoard();
+    const newPosition: Vector = [ulim(x + 1), llim(y - 1)];
+    setFocusedPosition(newPosition);
+  });
 };
 
-/** Navigate the focused square right-down. */
+/** Navigates the focused square right-down. */
 export const handleMoveRightDown = () => {
-  const { focusedPosition, setFocusedPosition } = useFocusedPosition();
-  const [x, y] = focusedPosition;
-  if (x >= BOARD_MAX_INDEX && y >= BOARD_MAX_INDEX) {
-    return;
-  }
+  handleNavigation((x, y, setFocusedPosition) => {
+    if (x >= BOARD_MAX_INDEX && y >= BOARD_MAX_INDEX) {
+      return;
+    }
 
-  const newPosition: Vector = [ulim(x + 1), ulim(y + 1)];
-  setFocusedPosition(newPosition);
-  drawBoard();
+    const newPosition: Vector = [ulim(x + 1), ulim(y + 1)];
+    setFocusedPosition(newPosition);
+  });
 };
