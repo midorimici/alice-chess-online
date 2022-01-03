@@ -1,3 +1,4 @@
+import { BOARD_MAX_INDEX } from '~/config';
 import Draw from '~/game/draw';
 
 /** `Draw` instance. */
@@ -35,6 +36,11 @@ export const activeBoardValue = () => activeBoard;
 let focusedPosition: Vector = null;
 
 export const setFocusedPosition = (state: Vector) => {
+  const [x, y] = state;
+  if (x < 0 || x > BOARD_MAX_INDEX || y < 0 || y > BOARD_MAX_INDEX) {
+    return;
+  }
+
   focusedPosition = state;
 };
 

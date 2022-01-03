@@ -1,7 +1,6 @@
+import { BOARD_MAX_INDEX } from '~/config';
 import { boardMapValue, setActiveBoard, switchActiveBoard, useFocusedPosition } from '~/states';
 import { drawBoard } from './gameHandlers';
-
-const BOARD_MAX_INDEX = 7;
 
 const ulim = (val: number) => Math.min(val, BOARD_MAX_INDEX);
 
