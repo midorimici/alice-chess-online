@@ -1,6 +1,6 @@
 import { t } from '~/i18n';
 import { playerNamesValue, roomIdValue } from '~/states';
-import { snd } from './canvasHandlers';
+import { snd } from './gameHandlers';
 
 const p: HTMLElement = document.getElementById('message');
 const gameMessage = document.getElementById('game-message');

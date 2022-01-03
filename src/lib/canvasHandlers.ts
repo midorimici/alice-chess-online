@@ -1,18 +1,18 @@
-import { handleMovePiece } from '~/actions';
 import Draw from '~/game/draw';
 import Mouse from '~/game/mouse';
-import { abbrPieceDict } from '~/game/piece';
 import { t } from '~/i18n';
 import {
   boardMapValue,
-  isMutedValue,
   playerNamesValue,
   playerTurnValue,
-  showOppositePiecesValue,
+  setActiveBoard,
+  setDraw,
+  setFocusedPosition,
   userNameValue,
 } from '~/states';
+import { drawBoard, handleBoardSelection, snd } from './gameHandlers';
+import { setGameKeyboardShortcut } from './keyboardShortcutHandlers';
 
-let draw: Draw;
 let mouses: Pair<Mouse>;
 /** Whether `initCanvas` has executed. */
 let doneInitCanvas: boolean = false;
@@ -20,18 +20,6 @@ let doneInitCanvas: boolean = false;
 const canvass = Array.from(document.getElementsByClassName('canvas')) as HTMLCanvasElement[];
 /** A message element beside `canvas` */
 const gameMessage = document.getElementById('game-message');
-
-/**
- * Play audio if it is not muted.
- * @param file File name without extension.
- */
-export const snd = (file: string) => {
-  const isMuted = isMutedValue();
-  if (isMuted) {
-    return;
-  }
-  new Audio(`../static/sounds/${file}.wav`).play();
-};
 
 /** Hides input forms and shows game container including canvas. */
 const initCanvas = async () => {
@@ -56,7 +44,7 @@ const initCanvas = async () => {
     canvas.setAttribute('height', cvsize);
   }
 
-  draw = await Draw.init(canvass);
+  setDraw(await Draw.init(canvass));
   mouses = [new Mouse(canvass[0]), new Mouse(canvass[1])];
   doneInitCanvas = true;
 };
@@ -64,14 +52,6 @@ const initCanvas = async () => {
 export const showWaitingPlayerScreen = () => {
   if (!doneInitCanvas) initCanvas();
   gameMessage.innerText = t('waitingOpponent');
-};
-
-export const drawBoard = () => {
-  const boardMap: BoardMap = boardMapValue();
-  const playerTurn: Turn = playerTurnValue();
-  const playerColor: PieceColor = (['W', 'B'] as const)[playerTurn];
-  const showOppositePieces = showOppositePiecesValue();
-  draw.board(boardMap, playerColor, showOppositePieces);
 };
 
 /**
@@ -94,9 +74,9 @@ export const handlePlayerGameScreen = async (
   const playerColor: PieceColor = (['W', 'B'] as const)[playerTurn];
 
   /** The position of the piece that is selected. */
-  let originPos: Vector;
+  let originPos: Vector = null;
   /** The destination position of the piece. */
-  let destPos: Vector;
+  let destPos: Vector = null;
   // Display the opponent name.
   if (document.getElementById('user-names').innerText === '') {
     const opponent = playerNames[1 - playerTurn];
@@ -104,99 +84,66 @@ export const handlePlayerGameScreen = async (
   }
   // Draw the game board.
   if (!doneInitCanvas) await initCanvas();
-  drawBoard();
   // When it is the current user's turn
   if (isMyTurn) {
     // Show player's turn.
     gameMessage.innerText = t('isYourTurn');
     snd('move');
 
+    // Draw board.
+    drawBoard();
+
     // Mouse event
     for (const [index, canvas] of canvass.entries()) {
-      let prom = false;
       const mouse = mouses[index];
       canvas.onclick = (e: MouseEvent) => {
         /** The square position that has clicked. */
         const sqPos = mouse.getCoord(e);
-        // When one of the user's own pieces has selected
-        if (boardMap.get(`${index},${String(sqPos)}`)?.[0] === playerColor) {
-          originPos = sqPos;
-          // Generate a class of the clicked piece.
-          const PieceClass =
-            abbrPieceDict[boardMap.get(`${index},${String(sqPos)}`)[1] as PieceName];
-          const piece = new PieceClass(playerColor, index as 0 | 1);
-          // Draw the destination positions.
-          drawBoard();
-          draw.dest(piece, originPos, boardMap, advanced2Pos, canCastle);
-          prom = false;
-        }
-        // When the position other than pieces has clicked
-        else {
-          // When it is not the time for promotion
-          // and the selected position is that some piece is present
-          if (!prom && boardMap.has(`${index},${String(originPos)}`)) {
-            destPos = sqPos;
-            // Generate a class of the selected piece.
-            const PieceClass =
-              abbrPieceDict[boardMap.get(`${index},${String(originPos)}`)[1] as PieceName];
-            const piece = new PieceClass(playerColor, index as 0 | 1);
-            // When the destination position is clicked
-            if (
-              piece
-                .validMoves(originPos, boardMap, advanced2Pos, canCastle)
-                .some((e) => String(e) === String(destPos))
-            ) {
-              // When the clicked piece is pawn and it is at the last rank
-              if (piece.abbr === 'P' && destPos[1] === 0) {
-                // It should be a move for promotion.
-                prom = true;
-              } else {
-                snd('move');
-                // Move the piece and apply that move to Database.
-                handleMovePiece(index as 0 | 1, originPos, destPos);
-              }
-            }
-          }
-
-          // Redraw the game board to show a removal of a selection.
-          drawBoard();
-
-          // When it is the time for promotion
-          if (prom) {
-            const pieces: PieceName[] = ['N', 'B', 'R', 'Q'];
-            for (let i = 2; i <= 5; i++) {
-              if (sqPos[0] === i && (sqPos[1] === 3 || sqPos[1] === 4)) {
-                prom = false;
-                snd('move');
-                // Apply the promotion to Database.
-                handleMovePiece(index as 0 | 1, originPos, destPos, pieces[i - 2]);
-              }
-            }
-            // When it is right after the selection of the destination
-            if (String(sqPos) === String(destPos)) {
-              // Display options of a promotion.
-              draw.promotion(index as 0 | 1, playerColor);
-            }
-            // When the other area is clicked
-            else {
-              // Cancel displaying options.
-              prom = false;
-              originPos = null;
-            }
-          } else {
-            originPos = null;
-          }
-        }
+        setActiveBoard(index as BoardId);
+        setFocusedPosition(sqPos);
+        ({ originPos, destPos } = handleBoardSelection(
+          originPos,
+          destPos,
+          boardMap,
+          playerColor,
+          advanced2Pos,
+          canCastle
+        ));
       };
     }
+
+    // Keyboard event
+    document.onkeydown = (e: KeyboardEvent) => {
+      const code = e.code;
+      const res = setGameKeyboardShortcut(
+        code,
+        originPos,
+        destPos,
+        boardMap,
+        playerColor,
+        advanced2Pos,
+        canCastle
+      );
+      if (res !== undefined) {
+        ({ originPos, destPos } = res);
+      }
+    };
   }
   // When it is opponent's turn
   else {
+    // Show player's turn.
     gameMessage.innerText = t('isOpponentTurn');
 
+    // Draw board.
+    setFocusedPosition(null);
+    drawBoard();
+
+    // Cancel event listeners.
     for (const canvas of canvass) {
       canvas.onclick = () => {};
     }
+
+    document.onkeydown = () => {};
   }
 
   // Display if it is checked.

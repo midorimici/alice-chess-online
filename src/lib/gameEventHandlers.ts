@@ -1,6 +1,6 @@
 import { t } from '~/i18n';
 import { useIsMuted, useShowOppositePieces } from '~/states';
-import { drawBoard } from './canvasHandlers';
+import { drawBoard } from './gameHandlers';
 
 const muteButton = document.getElementById('mute-icon') as HTMLImageElement;
 

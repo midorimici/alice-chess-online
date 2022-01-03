@@ -4,6 +4,7 @@ export {
   showOppositePiecesValue,
   useShowOppositePieces,
 } from './settings';
+
 export {
   userNameValue,
   setUserName,
@@ -12,11 +13,29 @@ export {
   playerTurnValue,
   setPlayerTurn,
 } from './user';
+
+export { roomIdValue, setRoomId, playerNamesValue, setPlayerNames } from './room';
+
 export {
-  roomIdValue,
-  setRoomId,
-  playerNamesValue,
-  setPlayerNames,
+  drawValue,
+  setDraw,
   boardMapValue,
   setBoardMap,
-} from './room';
+  activeBoardValue,
+  switchActiveBoard,
+  setActiveBoard,
+  focusedPositionValue,
+  setFocusedPosition,
+  useFocusedPosition,
+  selectedPieceBoardValue,
+  setSelectedPieceBoard,
+  useSelectedPieceBoard,
+  pieceDestsValue,
+  setPieceDests,
+  lastMovedPiecePositionValue,
+  setLastMovedPiecePosition,
+  isPromotingValue,
+  setIsPromoting,
+  promotionCandidateIndexValue,
+  setPromotionCandidateIndex,
+} from './game';

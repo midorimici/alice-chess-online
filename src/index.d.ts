@@ -14,6 +14,8 @@ declare type Board = Record<string, string>;
 
 declare type BoardMap = Map<keyof Board, Board[keyof Board]>;
 
+declare type BoardId = 0 | 1;
+
 declare type Turn = 0 | 1;
 
 declare type Winner = Turn | 2;
