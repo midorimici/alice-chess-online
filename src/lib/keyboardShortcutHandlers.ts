@@ -59,9 +59,13 @@ export const setGameKeyboardShortcut = (
   if (document.activeElement.tagName !== 'INPUT') {
     registerKeyboardShortcut(code, 'Semicolon', handleSwitchActiveBoard);
     registerKeyboardShortcut(code, 'KeyH', handleMoveLeft);
+    registerKeyboardShortcut(code, 'ArrowLeft', handleMoveLeft);
     registerKeyboardShortcut(code, 'KeyL', handleMoveRight);
+    registerKeyboardShortcut(code, 'ArrowRight', handleMoveRight);
     registerKeyboardShortcut(code, 'KeyK', handleMoveUp);
+    registerKeyboardShortcut(code, 'ArrowUp', handleMoveUp);
     registerKeyboardShortcut(code, 'KeyJ', handleMoveDown);
+    registerKeyboardShortcut(code, 'ArrowDown', handleMoveDown);
     registerKeyboardShortcut(code, 'KeyE', handleMoveLeftUp);
     registerKeyboardShortcut(code, 'KeyD', handleMoveLeftDown);
     registerKeyboardShortcut(code, 'KeyR', handleMoveRightUp);

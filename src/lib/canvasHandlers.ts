@@ -8,7 +8,6 @@ import {
   setActiveBoard,
   setDraw,
   setFocusedPosition,
-  setIsPromoting,
   userNameValue,
 } from '~/states';
 import { drawBoard, handleBoardSelection, snd } from './gameHandlers';
