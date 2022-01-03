@@ -36,9 +36,11 @@ export const activeBoardValue = () => activeBoard;
 let focusedPosition: Vector = null;
 
 export const setFocusedPosition = (state: Vector) => {
-  const [x, y] = state;
-  if (x < 0 || x > BOARD_MAX_INDEX || y < 0 || y > BOARD_MAX_INDEX) {
-    return;
+  if (state !== null) {
+    const [x, y] = state;
+    if (x < 0 || x > BOARD_MAX_INDEX || y < 0 || y > BOARD_MAX_INDEX) {
+      return;
+    }
   }
 
   focusedPosition = state;
@@ -67,6 +69,15 @@ export const setPieceDests = (state: Vector[]) => {
 };
 
 export const pieceDestsValue = () => pieceDests;
+
+/** The piece position that has moved the last. */
+let lastMovedPiecePosition: { board: BoardId; x: number; y: number } = null;
+
+export const setLastMovedPiecePosition = (state: typeof lastMovedPiecePosition) => {
+  lastMovedPiecePosition = state;
+};
+
+export const lastMovedPiecePositionValue = () => lastMovedPiecePosition;
 
 /** Whether the dialog to promote is showing up. */
 let isPromoting: boolean = false;

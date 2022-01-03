@@ -32,6 +32,8 @@ export {
   useSelectedPieceBoard,
   pieceDestsValue,
   setPieceDests,
+  lastMovedPiecePositionValue,
+  setLastMovedPiecePosition,
   isPromotingValue,
   setIsPromoting,
 } from './game';

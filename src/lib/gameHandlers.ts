@@ -14,6 +14,7 @@ import {
   showOppositePiecesValue,
   setIsPromoting,
   isPromotingValue,
+  setLastMovedPiecePosition,
 } from '~/states';
 
 /**
@@ -97,11 +98,17 @@ export const handleBoardSelection = (
       for (let i = 2; i <= 5; i++) {
         if (sqPos[0] === i && (sqPos[1] === 3 || sqPos[1] === 4)) {
           snd('move');
+          // Apply the promotion to Database.
+          handleMovePiece(boardId, originPos, destPos, pieces[i - 2]);
+          // Save the latest position.
+          setLastMovedPiecePosition({
+            board: (1 - boardId) as BoardId,
+            x: destPos[0],
+            y: destPos[1],
+          });
           // Cancel displaying destinations.
           setSelectedPieceBoard(null);
           setPieceDests([]);
-          // Apply the promotion to Database.
-          handleMovePiece(boardId, originPos, destPos, pieces[i - 2]);
         }
       }
       // Cancel displaying options.
@@ -131,6 +138,12 @@ export const handleBoardSelection = (
           snd('move');
           // Move the piece and apply that move to Database.
           handleMovePiece(boardId, originPos, destPos);
+          // Save the latest position.
+          setLastMovedPiecePosition({
+            board: (1 - boardId) as BoardId,
+            x: destPos[0],
+            y: destPos[1],
+          });
           // Cancel selection.
           setSelectedPieceBoard(null);
           setPieceDests([]);

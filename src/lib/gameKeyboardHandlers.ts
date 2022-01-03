@@ -1,29 +1,25 @@
 import { BOARD_MAX_INDEX } from '~/config';
-import { boardMapValue, setActiveBoard, switchActiveBoard, useFocusedPosition } from '~/states';
+import {
+  lastMovedPiecePositionValue,
+  setActiveBoard,
+  switchActiveBoard,
+  useFocusedPosition,
+} from '~/states';
 import { drawBoard } from './gameHandlers';
 
 const ulim = (val: number) => Math.min(val, BOARD_MAX_INDEX);
 
 const llim = (val: number) => Math.max(val, 0);
 
-/**
- * Returns a position of the previously moved piece.
- * @returns `board`: A board id.
- *          `x`, `y`: A position.
- */
-const previouslyMovedPiecePosition = (): { board: BoardId; x: number; y: number } => {
-  const boardMap = boardMapValue();
-  const lastPosition = Array.from(boardMap.keys()).slice(-1)[0];
-  const [board, x, y] = lastPosition.split(',').map((str) => +str);
-  return { board: board as BoardId, x, y };
-};
+const center = () => Math.floor(BOARD_MAX_INDEX / 2);
 
 const handleNavigation = (
   action: (x: number, y: number, setFocusedPosition: (state: Vector) => void) => void
 ) => {
   const { focusedPosition, setFocusedPosition } = useFocusedPosition();
   if (focusedPosition === null) {
-    const { board, x, y } = previouslyMovedPiecePosition();
+    const lastMovedPiecePosition = lastMovedPiecePositionValue();
+    const { board, x, y } = lastMovedPiecePosition ?? { board: 0, x: center(), y: center() };
     setActiveBoard(board);
     setFocusedPosition([x, y]);
   } else {
