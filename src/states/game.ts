@@ -87,3 +87,12 @@ export const setIsPromoting = (state: boolean) => {
 };
 
 export const isPromotingValue = () => isPromoting;
+
+/** The piece index which the pawn promotes to. */
+let promotionCandidateIndex: 0 | 1 | 2 | 3 = 3;
+
+export const setPromotionCandidateIndex = (state: typeof promotionCandidateIndex) => {
+  promotionCandidateIndex = state;
+};
+
+export const promotionCandidateIndexValue = () => promotionCandidateIndex;

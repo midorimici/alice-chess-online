@@ -1,8 +1,9 @@
 import { colors, scales } from '~/config';
 import { Vec } from './vec';
-import { Piece } from './piece';
 
 const ALPHA = 0.3;
+
+const promotionCandidates: PieceName[] = ['N', 'B', 'R', 'Q'];
 
 export default class Draw {
   private readonly canvass: HTMLCanvasElement[];
@@ -206,18 +207,17 @@ export default class Draw {
     const sqSize = this.squareSize;
     ctx.fillStyle = colors.grey;
     ctx.fillRect(margin + (sqSize * 3) / 2, margin + sqSize * 3, sqSize * 5, sqSize * 2);
-    this.drawImg(ctx, this.imgs.get(color + 'N'), [2, 3.5]);
-    this.drawImg(ctx, this.imgs.get(color + 'B'), [3, 3.5]);
-    this.drawImg(ctx, this.imgs.get(color + 'R'), [4, 3.5]);
-    this.drawImg(ctx, this.imgs.get(color + 'Q'), [5, 3.5]);
+    for (let i = 0; i < promotionCandidates.length; i++) {
+      this.drawImg(ctx, this.imgs.get(color + promotionCandidates[i]), [2 + i, 3.5]);
+    }
   }
 
   /**
-   * 選択中のマスに色を付ける
+   * 半透明の正方形を描画する
    * @param boardId どちらの盤面か
-   * @param pos 選択中のマス
+   * @param pos 描画する座標
    */
-  selectedSquare(boardId: BoardId, pos: Vector) {
+  private transparentSquare(boardId: BoardId, pos: Vector) {
     const ctx = this.ctxs[boardId];
     const squareSize: number = this.squareSize;
     const coord: Vector = [this.margin, this.margin];
@@ -226,5 +226,24 @@ export default class Draw {
     ctx.globalAlpha = ALPHA;
     ctx.fillRect(...new Vec(pos).mul(squareSize).add(coord).val(), squareSize, squareSize);
     ctx.restore();
+  }
+
+  /**
+   * 選択中のマスに色を付ける
+   * @param boardId どちらの盤面か
+   * @param pos 選択中のマス
+   */
+  selectedSquare(boardId: BoardId, pos: Vector) {
+    this.transparentSquare(boardId, pos);
+  }
+
+  /**
+   * 選択中のプロモーション先に色を付ける
+   * @param boardId どちらの盤面か
+   * @param index プロモーション先が左から何番目に並んでいるか
+   */
+  selectedPromotionCandidate(boardId: BoardId, index: 0 | 1 | 2 | 3) {
+    const pos: Vector = [index + 2, 3.5];
+    this.transparentSquare(boardId, pos);
   }
 }

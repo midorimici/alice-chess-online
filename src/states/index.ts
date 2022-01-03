@@ -36,4 +36,6 @@ export {
   setLastMovedPiecePosition,
   isPromotingValue,
   setIsPromoting,
+  promotionCandidateIndexValue,
+  setPromotionCandidateIndex,
 } from './game';

@@ -15,6 +15,7 @@ import {
   setIsPromoting,
   isPromotingValue,
   setLastMovedPiecePosition,
+  promotionCandidateIndexValue,
 } from '~/states';
 
 /**
@@ -41,17 +42,42 @@ export const drawBoard = () => {
   const selectedPieceBoard = selectedPieceBoardValue();
   const dests = pieceDestsValue();
   const isPromoting = isPromotingValue();
+  const promotionCandidateIndex = promotionCandidateIndexValue();
   draw.board(boardMap, playerColor, showOppositePieces);
-  if (focusedPosition !== null) {
-    draw.selectedSquare(activeBoard, focusedPosition);
-  }
-  if (selectedPieceBoard !== null && dests.length > 0) {
-    draw.dest(selectedPieceBoard, dests);
-  }
   if (isPromoting) {
     // Display options of a promotion.
     draw.promotion(selectedPieceBoard, playerColor);
+    draw.selectedPromotionCandidate(selectedPieceBoard, promotionCandidateIndex);
+  } else {
+    if (focusedPosition !== null) {
+      draw.selectedSquare(activeBoard, focusedPosition);
+    }
+    if (selectedPieceBoard !== null && dests.length > 0) {
+      draw.dest(selectedPieceBoard, dests);
+    }
   }
+};
+
+/**
+ * Promotes the pawn.
+ * @param originPos The original position of the pawn.
+ * @param destPos The destination position of the pawn.
+ * @param piece The piece which the pawn promotes to.
+ */
+export const promote = (originPos: Vector, destPos: Vector, piece: PieceName) => {
+  const boardId = activeBoardValue();
+  snd('move');
+  // Apply the promotion to Database.
+  handleMovePiece(boardId, originPos, destPos, piece);
+  // Save the latest position.
+  setLastMovedPiecePosition({
+    board: (1 - boardId) as BoardId,
+    x: destPos[0],
+    y: destPos[1],
+  });
+  // Cancel displaying destinations.
+  setSelectedPieceBoard(null);
+  setPieceDests([]);
 };
 
 /**
@@ -62,7 +88,7 @@ export const drawBoard = () => {
  * @param playerColor The color of the current player.
  * @param advanced2Pos The destination of the pawn that has moved two steps.
  * @param canCastle Lists that represent whether it is available to castle.
- * @returns `originPos`, `destPos`, `prom`
+ * @returns `originPos`, `destPos`
  */
 export const handleBoardSelection = (
   originPos: Vector | null,
@@ -71,7 +97,7 @@ export const handleBoardSelection = (
   playerColor: PieceColor,
   advanced2Pos: number[] | null,
   canCastle: CastlingPotentials
-) => {
+): { originPos: Vector | null; destPos: Vector | null } => {
   const sqPos = focusedPositionValue();
   const boardId = activeBoardValue();
   const isPromoting = isPromotingValue();
@@ -97,18 +123,7 @@ export const handleBoardSelection = (
       const pieces: PieceName[] = ['N', 'B', 'R', 'Q'];
       for (let i = 2; i <= 5; i++) {
         if (sqPos[0] === i && (sqPos[1] === 3 || sqPos[1] === 4)) {
-          snd('move');
-          // Apply the promotion to Database.
-          handleMovePiece(boardId, originPos, destPos, pieces[i - 2]);
-          // Save the latest position.
-          setLastMovedPiecePosition({
-            board: (1 - boardId) as BoardId,
-            x: destPos[0],
-            y: destPos[1],
-          });
-          // Cancel displaying destinations.
-          setSelectedPieceBoard(null);
-          setPieceDests([]);
+          promote(originPos, destPos, pieces[i - 2]);
         }
       }
       // Cancel displaying options.

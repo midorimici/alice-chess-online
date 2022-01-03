@@ -1,7 +1,9 @@
 import { BOARD_MAX_INDEX } from '~/config';
 import {
   lastMovedPiecePositionValue,
+  promotionCandidateIndexValue,
   setActiveBoard,
+  setPromotionCandidateIndex,
   switchActiveBoard,
   useFocusedPosition,
 } from '~/states';
@@ -127,4 +129,13 @@ export const handleMoveRightDown = () => {
     const newPosition: Vector = [ulim(x + 1), ulim(y + 1)];
     setFocusedPosition(newPosition);
   });
+};
+
+export const handleSelectPromotionCandidate = (dir: 'left' | 'right') => {
+  const index = promotionCandidateIndexValue();
+  const len = 4;
+  const diff = dir === 'left' ? -1 : 1;
+  const newIndex = ((index + len + diff) % len) as 0 | 1 | 2 | 3;
+  setPromotionCandidateIndex(newIndex);
+  drawBoard();
 };
