@@ -5,7 +5,7 @@ import {
   handleToggleChatList,
   handleToggleMute,
 } from './gameEventHandlers';
-import { handleBoardSelection, promote } from './gameHandlers';
+import { drawBoard, handleBoardSelection, promote } from './gameHandlers';
 import {
   handleMoveDown,
   handleMoveLeft,
@@ -71,6 +71,11 @@ export const setGameKeyboardShortcut = (
         const promoteTo = promotionCandidateIndexValue();
         promote(originPos, destPos, pieces[promoteTo]);
         setIsPromoting(false);
+        return { originPos: null, destPos };
+      });
+      registerKeyboardShortcut(code, 'Escape', () => {
+        setIsPromoting(false);
+        drawBoard();
         return { originPos: null, destPos };
       });
     } else {
