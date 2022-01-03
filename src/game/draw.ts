@@ -178,21 +178,12 @@ export default class Draw {
 
   /**
    * 駒の行先を円で表示する
-   * @param piece 駒インスタンス
-   * @param pos 位置。ゲーム内座標
-   * @param boardmap 盤面データ
-   * @param advanced2Pos ポーンが 2 歩進んだときの移動先
-   * @param canCastle キャスリングのポテンシャルが残っているか
+   * @param boardId 駒のある盤面がどちらか
+   * @param dests 行先の配列
    */
-  dest(
-    piece: Piece,
-    pos: Vector,
-    boardsMap: BoardMap,
-    advanced2Pos: number[] | null,
-    canCastle: CastlingPotentials
-  ) {
-    const ctx = this.ctxs[piece.side];
-    for (const dest of piece.validMoves(pos, boardsMap, advanced2Pos, canCastle)) {
+  dest(boardId: BoardId, dests: Vector[]) {
+    const ctx = this.ctxs[boardId];
+    for (const dest of dests) {
       const coord = new Vec(dest)
         .mul(this.squareSize)
         .add(this.margin + this.squareSize / 2)

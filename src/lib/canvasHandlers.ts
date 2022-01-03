@@ -11,10 +11,7 @@ import {
   userNameValue,
 } from '~/states';
 import { drawBoard, handleBoardSelection, snd } from './gameHandlers';
-import {
-  cancelGameKeyboardShortcutListener,
-  setGameKeyboardShortcutListener,
-} from './keyboardShortcutHandlers';
+import { setGameKeyboardShortcut } from './keyboardShortcutHandlers';
 
 let mouses: Pair<Mouse>;
 /** Whether `initCanvas` has executed. */
@@ -120,7 +117,19 @@ export const handlePlayerGameScreen = async (
     }
 
     // Keyboard event
-    setGameKeyboardShortcutListener();
+    document.onkeydown = (e: KeyboardEvent) => {
+      const code = e.code;
+      ({ originPos, destPos, prom } = setGameKeyboardShortcut(
+        code,
+        originPos,
+        destPos,
+        prom,
+        boardMap,
+        playerColor,
+        advanced2Pos,
+        canCastle
+      ));
+    };
   }
   // When it is opponent's turn
   else {
@@ -136,7 +145,7 @@ export const handlePlayerGameScreen = async (
       canvas.onclick = () => {};
     }
 
-    cancelGameKeyboardShortcutListener();
+    document.onkeydown = () => {};
   }
 
   // Display if it is checked.

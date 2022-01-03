@@ -7,6 +7,10 @@ import {
   isMutedValue,
   playerTurnValue,
   focusedPositionValue,
+  pieceDestsValue,
+  selectedPieceBoardValue,
+  setPieceDests,
+  setSelectedPieceBoard,
   showOppositePiecesValue,
 } from '~/states';
 
@@ -31,9 +35,14 @@ export const drawBoard = () => {
   const showOppositePieces = showOppositePiecesValue();
   const activeBoard = activeBoardValue();
   const focusedPosition = focusedPositionValue();
+  const selectedPieceBoard = selectedPieceBoardValue();
+  const dests = pieceDestsValue();
   draw.board(boardMap, playerColor, showOppositePieces);
   if (focusedPosition !== null) {
     draw.selectedSquare(activeBoard, focusedPosition);
+  }
+  if (selectedPieceBoard !== null && dests.length > 0) {
+    draw.dest(selectedPieceBoard, dests);
   }
 };
 
@@ -61,18 +70,20 @@ export const handleBoardSelection = (
   const sqPos = focusedPositionValue();
   const boardId = activeBoardValue();
 
-  // When one of the user's own pieces has clicked
+  // When one of the user's own pieces has selected
   if (boardMap.get(`${boardId},${String(sqPos)}`)?.[0] === playerColor) {
     originPos = sqPos;
-    // Generate a class of the clicked piece.
+    // Generate a class of the selected piece.
     const PieceClass = abbrPieceDict[boardMap.get(`${boardId},${String(sqPos)}`)[1] as PieceName];
     const piece = new PieceClass(playerColor, boardId);
+    const dests = piece.validMoves(originPos, boardMap, advanced2Pos, canCastle);
+    setPieceDests(dests);
+    setSelectedPieceBoard(boardId);
     // Draw the destination positions.
     drawBoard();
-    draw.dest(piece, originPos, boardMap, advanced2Pos, canCastle);
     prom = false;
   }
-  // When the position other than pieces has clicked
+  // When the position other than pieces has selected
   else {
     // When it is not the time for promotion
     // and the selected position is that some piece is present
@@ -82,7 +93,7 @@ export const handleBoardSelection = (
       const PieceClass =
         abbrPieceDict[boardMap.get(`${boardId},${String(originPos)}`)[1] as PieceName];
       const piece = new PieceClass(playerColor, boardId);
-      // When the destination position is clicked
+      // When the destination position is selected
       if (
         piece
           .validMoves(originPos, boardMap, advanced2Pos, canCastle)
@@ -101,6 +112,8 @@ export const handleBoardSelection = (
     }
 
     // Redraw the game board to remove destination options.
+    setSelectedPieceBoard(null);
+    setPieceDests([]);
     drawBoard();
 
     // When it is the time for promotion
@@ -119,7 +132,7 @@ export const handleBoardSelection = (
         // Display options of a promotion.
         draw.promotion(boardId, playerColor);
       }
-      // When the other area is clicked
+      // When the other area is selected
       else {
         // Cancel displaying options.
         prom = false;

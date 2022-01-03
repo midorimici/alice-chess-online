@@ -41,3 +41,23 @@ export const setFocusedPosition = (state: Vector) => {
 export const focusedPositionValue = () => focusedPosition;
 
 export const useFocusedPosition = () => ({ focusedPosition, setFocusedPosition });
+
+/** On which board the selected piece is. */
+let selectedPieceBoard: BoardId = null;
+
+export const setSelectedPieceBoard = (state: BoardId) => {
+  selectedPieceBoard = state;
+};
+
+export const selectedPieceBoardValue = () => selectedPieceBoard;
+
+export const useSelectedPieceBoard = () => ({ selectedPieceBoard, setSelectedPieceBoard });
+
+/** Available destination positions of the selected piece. */
+let pieceDests: Vector[] = [];
+
+export const setPieceDests = (state: Vector[]) => {
+  pieceDests = state;
+};
+
+export const pieceDestsValue = () => pieceDests;
