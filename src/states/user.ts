@@ -1,26 +1,10 @@
+import { s } from './stateManager';
+
 /** Whether the user is a player or a audience. */
-let userRole: Role;
-
-export const setUserRole = (state: Role) => {
-  userRole = state;
-};
-
-export const userRoleValue = () => userRole;
+export const userRoleState = s<Role>();
 
 /** The name of the user. */
-let userName: string;
-
-export const setUserName = (state: string) => {
-  userName = state;
-};
-
-export const userNameValue = () => userName;
+export const userNameState = s<string>();
 
 /** The piece color of the player. */
-let playerTurn: Turn;
-
-export const setPlayerTurn = (state: Turn) => {
-  playerTurn = state;
-};
-
-export const playerTurnValue = () => playerTurn;
+export const playerTurnState = s<Turn>();

@@ -5,14 +5,7 @@ export {
   useShowOppositePieces,
 } from './settings';
 
-export {
-  userNameValue,
-  setUserName,
-  userRoleValue,
-  setUserRole,
-  playerTurnValue,
-  setPlayerTurn,
-} from './user';
+export { userRoleState, userNameState, playerTurnState } from './user';
 
 export { roomIdValue, setRoomId, playerNamesValue, setPlayerNames } from './room';
 

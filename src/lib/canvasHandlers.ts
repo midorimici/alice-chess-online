@@ -4,12 +4,13 @@ import { t } from '~/i18n';
 import {
   boardMapValue,
   playerNamesValue,
-  playerTurnValue,
+  playerTurnState,
   setActiveBoard,
   setDraw,
   setFocusedPosition,
-  userNameValue,
+  userNameState,
 } from '~/states';
+import { useValue } from '~/states/stateManager';
 import { drawBoard, handleBoardSelection, snd } from './gameHandlers';
 import { setGameKeyboardShortcut } from './keyboardShortcutHandlers';
 
@@ -67,8 +68,8 @@ export const handlePlayerGameScreen = async (
   advanced2Pos: number[] | null,
   canCastle: CastlingPotentials
 ) => {
-  const userName = userNameValue();
-  const playerTurn = playerTurnValue();
+  const userName = useValue(userNameState);
+  const playerTurn = useValue(playerTurnState);
   const playerNames = playerNamesValue();
   const boardMap = boardMapValue();
   const playerColor: PieceColor = (['W', 'B'] as const)[playerTurn];

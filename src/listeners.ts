@@ -18,8 +18,9 @@ import {
 import { db } from './firebase';
 import { t } from './i18n';
 import { addChatMessage, showAudienceNumber, showResult } from './lib/messageHandlers';
-import { playerTurnValue, roomIdValue, setBoardMap, setPlayerNames } from './states';
+import { playerTurnState, roomIdValue, setBoardMap, setPlayerNames } from './states';
 import { rotateBoard } from './game/game';
+import { useValue } from './states/stateManager';
 
 /** Returns the `Reference` to the current room. */
 export const getRoomRef = () => {
@@ -41,7 +42,7 @@ export const listenPlayerDisconnection = () => {
  */
 export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: boolean) => {
   const roomRef = getRoomRef();
-  const playerTurn: Turn = playerTurnValue();
+  const playerTurn: Turn = useValue(playerTurnState);
 
   if (phase === 'preparing') {
     handleRoomValueChange(
@@ -185,7 +186,7 @@ const handleRoomBoardChange = (
   canCastle: CastlingPotentials,
   gameIsOver: boolean
 ) => {
-  const playerTurn = playerTurnValue();
+  const playerTurn = useValue(playerTurnState);
   if (isPlayer) {
     // When the player is black
     if (advanced2Pos !== undefined && playerTurn === 1) {

@@ -5,7 +5,6 @@ import {
   boardMapValue,
   drawValue,
   isMutedValue,
-  playerTurnValue,
   focusedPositionValue,
   pieceDestsValue,
   selectedPieceBoardValue,
@@ -16,7 +15,9 @@ import {
   isPromotingValue,
   setLastMovedPiecePosition,
   promotionCandidateIndexValue,
+  playerTurnState,
 } from '~/states';
+import { useValue } from '~/states/stateManager';
 
 /**
  * Play audio if it is not muted.
@@ -34,7 +35,7 @@ export const snd = (file: string) => {
 export const drawBoard = () => {
   const draw = drawValue();
   const boardMap: BoardMap = boardMapValue();
-  const playerTurn: Turn = playerTurnValue();
+  const playerTurn: Turn = useValue(playerTurnState);
   const playerColor: PieceColor = (['W', 'B'] as const)[playerTurn];
   const showOppositePieces = showOppositePiecesValue();
   const activeBoard = activeBoardValue();
