@@ -1,5 +1,5 @@
-import { isPromotingState, promotionCandidateIndexState } from '~/states';
-import { useState, useValue } from '~/states/stateManager';
+import { digitRegisterState, isPromotingState, promotionCandidateIndexState } from '~/states';
+import { useSetState, useState, useValue } from '~/states/stateManager';
 import {
   handleHideChatList,
   handleShowHide,
@@ -9,6 +9,7 @@ import {
 } from './gameEventHandlers';
 import { drawBoard, handleBoardSelection, promote } from './gameHandlers';
 import {
+  handleDigitKeyInput,
   handleMoveDown,
   handleMoveLeft,
   handleMoveLeftDown,
@@ -97,7 +98,17 @@ export const setGameKeyboardShortcut = (
       registerKeyboardShortcut(code, 'KeyD', handleMoveLeftDown);
       registerKeyboardShortcut(code, 'KeyR', handleMoveRightUp);
       registerKeyboardShortcut(code, 'KeyF', handleMoveRightDown);
+      registerKeyboardShortcut(code, 'Digit1', () => handleDigitKeyInput(1));
+      registerKeyboardShortcut(code, 'Digit2', () => handleDigitKeyInput(2));
+      registerKeyboardShortcut(code, 'Digit3', () => handleDigitKeyInput(3));
+      registerKeyboardShortcut(code, 'Digit4', () => handleDigitKeyInput(4));
+      registerKeyboardShortcut(code, 'Digit5', () => handleDigitKeyInput(5));
+      registerKeyboardShortcut(code, 'Digit6', () => handleDigitKeyInput(6));
+      registerKeyboardShortcut(code, 'Digit7', () => handleDigitKeyInput(7));
+      registerKeyboardShortcut(code, 'Digit8', () => handleDigitKeyInput(8));
       if (code === 'Enter') {
+        const setDigitRegister = useSetState(digitRegisterState);
+        setDigitRegister(null);
         return handleBoardSelection(
           originPos,
           destPos,

@@ -1,5 +1,7 @@
-import { colors, scales } from '~/config';
+import { BOARD_MAX_INDEX, colors, scales } from '~/config';
 import { Vec } from './vec';
+
+const BOARD_SIZE = BOARD_MAX_INDEX + 1;
 
 const ALPHA = 0.3;
 
@@ -114,8 +116,8 @@ export default class Draw {
 
     // マス目を描く
     ctx.fillStyle = colors.buff;
-    for (let i = 0; i < 8; i++) {
-      for (let j = 0; j < 8; j++) {
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      for (let j = 0; j < BOARD_SIZE; j++) {
         if ((i + j) % 2) {
           ctx.fillRect(...new Vec([i, j]).mul(squareSize).add(coord).val(), squareSize, squareSize);
         }
@@ -126,13 +128,13 @@ export default class Draw {
     ctx.strokeStyle = colors.dark;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    for (let i: number = 0; i <= 8; i++) {
+    for (let i: number = 0; i <= BOARD_SIZE; i++) {
       ctx.moveTo(...new Vec(coord).add([0, squareSize * i]).val());
-      ctx.lineTo(...new Vec(coord).add([squareSize * 8, squareSize * i]).val());
+      ctx.lineTo(...new Vec(coord).add([squareSize * BOARD_SIZE, squareSize * i]).val());
     }
-    for (let i: number = 0; i <= 8; i++) {
+    for (let i: number = 0; i <= BOARD_SIZE; i++) {
       ctx.moveTo(...new Vec(coord).add([squareSize * i, 0]).val());
-      ctx.lineTo(...new Vec(coord).add([squareSize * i, squareSize * 8]).val());
+      ctx.lineTo(...new Vec(coord).add([squareSize * i, squareSize * BOARD_SIZE]).val());
     }
     ctx.closePath();
     ctx.stroke();
@@ -157,16 +159,16 @@ export default class Draw {
       ctx.font = `${textSize}px Meiryo`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < BOARD_SIZE; i++) {
         ctx.fillText(
           String.fromCodePoint(i + 97),
-          (color === 'W' ? i + 1 : 8 - i) * this.squareSize,
+          (color === 'W' ? i + 1 : BOARD_SIZE - i) * this.squareSize,
           this.canvass[0].height - this.margin / 2
         );
         ctx.fillText(
-          `${8 - i}`,
+          `${BOARD_SIZE - i}`,
           this.margin / 2,
-          (color === 'W' ? i + 1 : 8 - i) * this.squareSize
+          (color === 'W' ? i + 1 : BOARD_SIZE - i) * this.squareSize
         );
       }
     }
@@ -245,5 +247,25 @@ export default class Draw {
   selectedPromotionCandidate(boardId: BoardId, index: 0 | 1 | 2 | 3) {
     const pos: Vector = [index + 2, 3.5];
     this.transparentSquare(boardId, pos);
+  }
+
+  /**
+   * 選択中の列に色を付ける
+   * @param boardId どちらの盤面か
+   * @param file 選択した列
+   */
+  selectedFile(boardId: BoardId, file: number) {
+    const ctx = this.ctxs[boardId];
+    for (let rank = 0; rank <= BOARD_MAX_INDEX; rank++) {
+      this.transparentSquare(boardId, [file, rank]);
+      ctx.save();
+      ctx.fillStyle = colors.red;
+      ctx.fillText(
+        `${BOARD_SIZE - rank}`,
+        (file + 1) * this.squareSize,
+        (rank + 1) * this.squareSize
+      );
+      ctx.restore();
+    }
   }
 }

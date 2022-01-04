@@ -13,6 +13,7 @@ import {
   isPromotingState,
   promotionCandidateIndexState,
   lastMovedPiecePositionState,
+  digitRegisterState,
 } from '~/states';
 import { useSetState, useState, useValue } from '~/states/stateManager';
 
@@ -41,6 +42,7 @@ export const drawBoard = () => {
   const dests = useValue(pieceDestsState);
   const isPromoting = useValue(isPromotingState);
   const promotionCandidateIndex = useValue(promotionCandidateIndexState);
+  const digitRegister = useValue(digitRegisterState);
   draw.board(boardMap, playerColor, showOppositePieces);
   if (isPromoting) {
     // Display options of a promotion.
@@ -52,6 +54,9 @@ export const drawBoard = () => {
     }
     if (selectedPieceBoard !== null && dests.length > 0) {
       draw.dest(selectedPieceBoard, dests);
+    }
+    if (digitRegister !== null) {
+      draw.selectedFile(activeBoard, digitRegister - 1);
     }
   }
 };

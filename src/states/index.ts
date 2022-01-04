@@ -14,4 +14,5 @@ export {
   lastMovedPiecePositionState,
   isPromotingState,
   promotionCandidateIndexState,
+  digitRegisterState,
 } from './game';
