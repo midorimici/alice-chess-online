@@ -15,9 +15,7 @@ export const activeBoardState = s<BoardId>(0);
 export const focusedPositionState = s<Vector>(null, (state) => {
   if (state !== null) {
     const [x, y] = state;
-    if (x < 0 || x > BOARD_MAX_INDEX || y < 0 || y > BOARD_MAX_INDEX) {
-      return true;
-    }
+    return x < 0 || x > BOARD_MAX_INDEX || y < 0 || y > BOARD_MAX_INDEX;
   }
 });
 
@@ -35,3 +33,9 @@ export const isPromotingState = s<boolean>(false);
 
 /** The piece index which the pawn promotes to. */
 export const promotionCandidateIndexState = s<0 | 1 | 2 | 3>(3);
+
+/** The digit key that has inputted. */
+export const digitRegisterState = s<number>(
+  null,
+  (state) => state !== null && (!Number.isInteger(state) || state <= 0 || state >= 9)
+);

@@ -1,6 +1,7 @@
 import { BOARD_MAX_INDEX } from '~/config';
 import {
   activeBoardState,
+  digitRegisterState,
   focusedPositionState,
   lastMovedPiecePositionState,
   promotionCandidateIndexState,
@@ -19,6 +20,7 @@ const handleNavigation = (
 ) => {
   const { value: focusedPosition, setState: setFocusedPosition } = useState(focusedPositionState);
   const setActiveBoard = useSetState(activeBoardState);
+  const setDigitRegister = useSetState(digitRegisterState);
   if (focusedPosition === null) {
     const lastMovedPiecePosition = useValue(lastMovedPiecePositionState);
     const { board, x, y } = lastMovedPiecePosition ?? { board: 0, x: center(), y: center() };
@@ -27,6 +29,7 @@ const handleNavigation = (
   } else {
     action(...focusedPosition, setFocusedPosition);
   }
+  setDigitRegister(null);
   drawBoard();
 };
 
@@ -143,19 +146,14 @@ export const handleSelectPromotionCandidate = (dir: 'left' | 'right') => {
   drawBoard();
 };
 
-let digitRegister: number = null;
-
 export const handleDigitKeyInput = (digit: number) => {
-  if (digit <= 0 || digit >= 9) {
-    return;
-  }
-
   const setFocusedPosition = useSetState(focusedPositionState);
+  const { value: digitRegister, setState: setDigitRegister } = useState(digitRegisterState);
 
   // When the register is empty
   if (digitRegister === null) {
     // Store the inputted digit to the register
-    digitRegister = digit;
+    setDigitRegister(digit);
   }
   // When the register has a digit
   else {
@@ -163,7 +161,7 @@ export const handleDigitKeyInput = (digit: number) => {
     const rank = digit - 1;
     // Set selection to the specified position.
     setFocusedPosition([file, BOARD_MAX_INDEX - rank]);
-    digitRegister = null;
-    drawBoard();
+    setDigitRegister(null);
   }
+  drawBoard();
 };
