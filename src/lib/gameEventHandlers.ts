@@ -35,18 +35,26 @@ let timeoutId: NodeJS.Timeout;
 export const handleToggleChatList = () => {
   chatCircle.className = 'hidden';
   chat.classList.toggle('closed');
+  clearTimeout(timeoutId);
   // When the list is opened
   if (chat.classList.value === '') {
+    // Show chat list.
+    chat.style.visibility = 'visible';
     // Focus to the input after the slide in animation.
     timeoutId = setTimeout(() => chatInput.focus({ preventScroll: true }), 400);
-  } else {
-    clearTimeout(timeoutId);
+  }
+  // When the list is closed
+  else {
+    // Hide chat list.
+    timeoutId = setTimeout(() => (chat.style.visibility = 'hidden'), 400);
   }
 };
 
 export const handleHideChatList = () => {
   chatInput.blur();
   if (chat.classList.value === '') {
+    // Hide the chat list.
     chat.classList.add('closed');
+    timeoutId = setTimeout(() => (chat.style.visibility = 'hidden'), 400);
   }
 };
