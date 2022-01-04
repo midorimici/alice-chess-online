@@ -11,7 +11,7 @@ export const addInfoButtonClickEventListener = () => {
     document.getElementById('info-overlay').style.display = 'flex';
   };
 
-  const infoCloseBtn = document.getElementById('close-icon');
+  const infoCloseBtn = document.getElementById('info-close-icon');
   infoCloseBtn.onclick = () => {
     document.getElementById('info-overlay').style.display = 'none';
   };

@@ -1,89 +1,108 @@
 body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    font-family: 'Cica', 'Meiryo';
-    overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  font-family: 'Cica', 'Meiryo';
+  overflow-x: hidden;
 }
 
 #logo {
-    position: absolute;
-    left: 0;
-    bottom: 0;
+  position: absolute;
+  left: 0;
+  bottom: 0;
 }
 
 footer {
-    position: absolute;
-    bottom: 1rem;
-    left: 10rem;
-    font-family: 'system-ui';
+  position: absolute;
+  bottom: 1rem;
+  left: 10rem;
+  font-family: 'system-ui';
 }
 
 #info-icon {
-    position: absolute;
-    right: 2rem;
-    bottom: 2rem;
-    cursor: pointer;
-    width: 2rem;
-    height: 2rem;
-    transition: transform .3s;
-    will-change: transform;
-    &:hover {
-        transform: scale(1.2);
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+  cursor: pointer;
+  width: 2rem;
+  height: 2rem;
+  transition: transform 0.3s;
+  will-change: transform;
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+
+.overlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.overlay-mask {
+  position: absolute;
+  background-color: gray;
+  width: 100%;
+  height: 100%;
+  opacity: 0.3;
+}
+
+.overlay-description {
+  position: absolute;
+  padding: 1rem;
+  border-radius: 0.6rem;
+  background-color: white;
+}
+
+.close-icon {
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  position: absolute;
+  right: 1rem;
+}
+
+#key-help-description > ul {
+  margin: 0;
+  padding-left: 0;
+  & > li {
+    display: flex;
+    gap: 2rem;
+    padding-bottom: 1rem;
+    & > div:first-child {
+      flex-grow: 1;
     }
+    kbd {
+      background-color: #eee;
+      padding: 0.2rem;
+      border-radius: 0.2rem;
+      border: solid 1px #ccc;
+      border-bottom: solid 2px #ccc;
+      font-family: inherit;
+    }
+  }
 }
-
-#info-overlay {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    justify-content: center;
-    align-items: center;
-}
-
-#info-mask {
-    position: absolute;
-    background-color: gray;
-    width: 100%;
-    height: 100%;
-    opacity: .3;
-}
-
-#info-description {
-    position: absolute;
-    padding: 1rem;
-    border-radius: .6rem;
-    background-color: white;
-}
-
-#close-icon {
-    width: 2rem;
-    height: 2rem;
-    cursor: pointer;
-    position: absolute;
-    right: 1rem;
-}
-
-
 
 #back-to-home {
-    text-decoration: none;
-    font-weight: bold;
-    font-size: larger;
-    color: #333333;
-    border: solid 2px #333333;
-    border-radius: .4rem;
-    padding: .6rem;
-    transition: background-color .5s;
-    will-change: background-color;
-    &:hover {
-        background-color: #dddddd;
-    }
+  text-decoration: none;
+  font-weight: bold;
+  font-size: larger;
+  color: #333333;
+  border: solid 2px #333333;
+  border-radius: 0.4rem;
+  padding: 0.6rem;
+  transition: background-color 0.5s;
+  will-change: background-color;
+  &:hover {
+    background-color: #dddddd;
+  }
 }
 
 @import 'container';
