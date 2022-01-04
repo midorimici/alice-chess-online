@@ -260,7 +260,7 @@ export default class Draw {
     for (let rank = 0; rank <= BOARD_MAX_INDEX; rank++) {
       this.transparentSquare(boardId, [file, rank]);
       ctx.save();
-      ctx.fillStyle = colors.red;
+      ctx.fillStyle = colors.fuchsia;
       ctx.fillText(
         `${BOARD_SIZE - rank}`,
         (file + 1) * this.squareSize,
