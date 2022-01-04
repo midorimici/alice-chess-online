@@ -2,7 +2,7 @@ export { isMutedState, showOppositePiecesState } from './settings';
 
 export { userRoleState, userNameState, playerTurnState } from './user';
 
-export { roomIdValue, setRoomId, playerNamesValue, setPlayerNames } from './room';
+export { roomIdState, playerNamesState } from './room';
 
 export {
   drawValue,

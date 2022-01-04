@@ -1,17 +1,7 @@
+import { s } from './stateManager';
+
 /** Room id. */
-let roomId: string;
-
-export const setRoomId = (state: string) => {
-  roomId = state;
-};
-
-export const roomIdValue = () => roomId;
+export const roomIdState = s<string>();
 
 /** Names of players. */
-let playerNames: Pair<string>;
-
-export const setPlayerNames = (state: Pair<string>) => {
-  playerNames = state;
-};
-
-export const playerNamesValue = () => playerNames;
+export const playerNamesState = s<Pair<string>>();

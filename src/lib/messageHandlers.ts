@@ -1,5 +1,6 @@
 import { t } from '~/i18n';
-import { playerNamesValue, roomIdValue } from '~/states';
+import { playerNamesState, roomIdState } from '~/states';
+import { useValue } from '~/states/stateManager';
 import { snd } from './gameHandlers';
 
 const p: HTMLElement = document.getElementById('message');
@@ -7,13 +8,13 @@ const gameMessage = document.getElementById('game-message');
 
 /** Show message that tells the user that the room is full and does not receive new players. */
 export const showRoomFullMessage = () => {
-  const roomId = roomIdValue();
+  const roomId = useValue(roomIdState);
   p.innerText = t('roomIsFull', roomId);
 };
 
 /** Show message that tells the audience that the room specified is empty. */
 export const showPrivateRoomEmptyMessage = () => {
-  const roomId = roomIdValue();
+  const roomId = useValue(roomIdState);
   p.innerText = t('roomIsEmpty', roomId);
 };
 
@@ -37,7 +38,7 @@ export const showResult = (winner: Winner) => {
   if (winner === 2) {
     gameMessage.innerText = t('draw');
   } else {
-    const players = playerNamesValue();
+    const players = useValue(playerNamesState);
     gameMessage.innerHTML = t('checkmate') + '<br>' + t('winner', players[winner]);
   }
   snd('win');

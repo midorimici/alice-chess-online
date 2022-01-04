@@ -18,13 +18,13 @@ import {
 import { db } from './firebase';
 import { t } from './i18n';
 import { addChatMessage, showAudienceNumber, showResult } from './lib/messageHandlers';
-import { playerTurnState, roomIdValue, setBoardMap, setPlayerNames } from './states';
+import { playerNamesState, playerTurnState, roomIdState, setBoardMap } from './states';
 import { rotateBoard } from './game/game';
-import { useValue } from './states/stateManager';
+import { useSetState, useValue } from './states/stateManager';
 
 /** Returns the `Reference` to the current room. */
 export const getRoomRef = () => {
-  const roomId = roomIdValue();
+  const roomId = useValue(roomIdState);
   return ref(db, `rooms/${roomId}`);
 };
 
@@ -136,6 +136,7 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
   }
   // When two players are in the room and the game is ongoing
   else {
+    const setPlayerNames = useSetState(playerNamesState);
     // Set the room data to local states
     get(child(getRoomRef(), 'players')).then((snapshot: DataSnapshot) => {
       if (snapshot.exists()) {

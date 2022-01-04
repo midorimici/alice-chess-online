@@ -3,7 +3,7 @@ import Mouse from '~/game/mouse';
 import { t } from '~/i18n';
 import {
   boardMapValue,
-  playerNamesValue,
+  playerNamesState,
   playerTurnState,
   setActiveBoard,
   setDraw,
@@ -70,7 +70,7 @@ export const handlePlayerGameScreen = async (
 ) => {
   const userName = useValue(userNameState);
   const playerTurn = useValue(playerTurnState);
-  const playerNames = playerNamesValue();
+  const playerNames = useValue(playerNamesState);
   const boardMap = boardMapValue();
   const playerColor: PieceColor = (['W', 'B'] as const)[playerTurn];
 
@@ -166,7 +166,7 @@ export const showAudienceGameScreen = async (
   checked: boolean,
   omitMessage: boolean = false
 ) => {
-  const playerNames = playerNamesValue();
+  const playerNames = useValue(playerNamesState);
 
   // Display player names.
   if (document.getElementById('user-names').innerText === '') {

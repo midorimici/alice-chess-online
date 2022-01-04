@@ -26,7 +26,7 @@ import {
 } from './lib/messageHandlers';
 import { addKeyboardShortcutListener } from './lib/keyboardShortcutHandlers';
 import { getRoomRef, listenPlayerDisconnection, listenRoomDataChange } from './listeners';
-import { setRoomId, userRoleState, userNameState, playerTurnState } from './states';
+import { userRoleState, userNameState, playerTurnState, roomIdState } from './states';
 import { getRoomKey, m2o } from './utils';
 import { useSetState, useValue } from './states/stateManager';
 
@@ -42,6 +42,7 @@ export const handleEnterRoom = (info: {
 }) => {
   const setUserName = useSetState(userNameState);
   const setPlayerTurn = useSetState(playerTurnState);
+  const setRoomId = useSetState(roomIdState);
   const isJoiningAsPlayer = info.role === 'play';
   let roomId: string;
   const roomsRef = ref(db, 'rooms');
