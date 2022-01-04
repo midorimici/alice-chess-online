@@ -1,12 +1,11 @@
 import { BOARD_MAX_INDEX } from '~/config';
 import {
-  lastMovedPiecePositionValue,
-  promotionCandidateIndexValue,
-  setActiveBoard,
-  setPromotionCandidateIndex,
-  switchActiveBoard,
-  useFocusedPosition,
+  activeBoardState,
+  focusedPositionState,
+  lastMovedPiecePositionState,
+  promotionCandidateIndexState,
 } from '~/states';
+import { useSetState, useState, useValue } from '~/states/stateManager';
 import { drawBoard } from './gameHandlers';
 
 const ulim = (val: number) => Math.min(val, BOARD_MAX_INDEX);
@@ -18,9 +17,10 @@ const center = () => Math.floor(BOARD_MAX_INDEX / 2);
 const handleNavigation = (
   action: (x: number, y: number, setFocusedPosition: (state: Vector) => void) => void
 ) => {
-  const { focusedPosition, setFocusedPosition } = useFocusedPosition();
+  const { value: focusedPosition, setState: setFocusedPosition } = useState(focusedPositionState);
+  const setActiveBoard = useSetState(activeBoardState);
   if (focusedPosition === null) {
-    const lastMovedPiecePosition = lastMovedPiecePositionValue();
+    const lastMovedPiecePosition = useValue(lastMovedPiecePositionState);
     const { board, x, y } = lastMovedPiecePosition ?? { board: 0, x: center(), y: center() };
     setActiveBoard(board);
     setFocusedPosition([x, y]);
@@ -32,7 +32,8 @@ const handleNavigation = (
 
 /** Moves the focused square to the opposite board. */
 export const handleSwitchActiveBoard = () => {
-  handleNavigation(() => switchActiveBoard());
+  const { value: activeBoard, setState: setActiveBoard } = useState(activeBoardState);
+  handleNavigation(() => setActiveBoard((1 - activeBoard) as BoardId));
 };
 
 /** Navigates the focused square left. */
@@ -132,7 +133,9 @@ export const handleMoveRightDown = () => {
 };
 
 export const handleSelectPromotionCandidate = (dir: 'left' | 'right') => {
-  const index = promotionCandidateIndexValue();
+  const { value: index, setState: setPromotionCandidateIndex } = useState(
+    promotionCandidateIndexState
+  );
   const len = 4;
   const diff = dir === 'left' ? -1 : 1;
   const newIndex = ((index + len + diff) % len) as 0 | 1 | 2 | 3;

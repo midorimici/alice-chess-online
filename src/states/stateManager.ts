@@ -1,4 +1,6 @@
-type State<T> = { key: string; dflt: T };
+type IgnoreConditionFunction<T> = (state: T) => boolean;
+
+type State<T> = { key: string; dflt: T; ignore?: IgnoreConditionFunction<T> };
 
 type SetState<T> = (newState: T) => void;
 
@@ -13,15 +15,16 @@ const generateRandomKey = () => String(Math.random()).slice(-10);
 /**
  * Defines a state.
  * @param dflt The default value of the state.
+ * @param ignore A condition that the state to be set should be ignored.
  * @returns Unique key of the state.
  * */
-export const s = <T>(dflt: T = null): State<T> => {
+export const s = <T>(dflt: T = null, ignore?: IgnoreConditionFunction<T>): State<T> => {
   let key = generateRandomKey();
   while (states.has(key)) {
     key = generateRandomKey();
   }
   states.set(key, dflt);
-  return { key, dflt };
+  return { key, dflt, ignore };
 };
 
 export const useValue = <T>(state: State<T>): T => {
@@ -29,7 +32,12 @@ export const useValue = <T>(state: State<T>): T => {
 };
 
 export const useSetState = <T>(state: State<T>): SetState<T> => {
+  const ignore = state.ignore;
   return (newState: T) => {
+    if (ignore !== undefined && ignore(newState)) {
+      return;
+    }
+
     states.set(state.key, newState);
   };
 };

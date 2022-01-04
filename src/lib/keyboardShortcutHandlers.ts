@@ -1,4 +1,5 @@
-import { isPromotingValue, promotionCandidateIndexValue, setIsPromoting } from '~/states';
+import { isPromotingState, promotionCandidateIndexState } from '~/states';
+import { useState, useValue } from '~/states/stateManager';
 import {
   handleHideChatList,
   handleShowHide,
@@ -61,14 +62,14 @@ export const setGameKeyboardShortcut = (
 ): { originPos: Vector | null; destPos: Vector | null } => {
   // When the focus is not on any input
   if (document.activeElement.tagName !== 'INPUT') {
-    const isPromoting = isPromotingValue();
+    const { value: isPromoting, setState: setIsPromoting } = useState(isPromotingState);
     if (isPromoting) {
       registerKeyboardShortcut(code, 'KeyH', () => handleSelectPromotionCandidate('left'));
       registerKeyboardShortcut(code, 'ArrowLeft', () => handleSelectPromotionCandidate('left'));
       registerKeyboardShortcut(code, 'KeyL', () => handleSelectPromotionCandidate('right'));
       registerKeyboardShortcut(code, 'ArrowRight', () => handleSelectPromotionCandidate('right'));
       registerKeyboardShortcut(code, 'Enter', () => {
-        const promoteTo = promotionCandidateIndexValue();
+        const promoteTo = useValue(promotionCandidateIndexState);
         promote(originPos, destPos, pieces[promoteTo]);
         setIsPromoting(false);
         return { originPos: null, destPos };

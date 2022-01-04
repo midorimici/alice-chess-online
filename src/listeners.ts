@@ -18,7 +18,7 @@ import {
 import { db } from './firebase';
 import { t } from './i18n';
 import { addChatMessage, showAudienceNumber, showResult } from './lib/messageHandlers';
-import { playerNamesState, playerTurnState, roomIdState, setBoardMap } from './states';
+import { boardMapState, playerNamesState, playerTurnState, roomIdState } from './states';
 import { rotateBoard } from './game/game';
 import { useSetState, useValue } from './states/stateManager';
 
@@ -43,6 +43,7 @@ export const listenPlayerDisconnection = () => {
 export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: boolean) => {
   const roomRef = getRoomRef();
   const playerTurn: Turn = useValue(playerTurnState);
+  const setBoardMap = useSetState(boardMapState);
 
   if (phase === 'preparing') {
     handleRoomValueChange(
