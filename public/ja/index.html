@@ -123,10 +123,16 @@
       alt="info"
       title="このアプリについて"
     />
-    <div id="info-overlay">
-      <div id="info-mask"></div>
-      <div id="info-description">
-        <img id="close-icon" src="../static/svg/times-solid.svg" alt="close" title="閉じる" />
+    <div id="info-overlay" class="overlay">
+      <div id="info-mask" class="overlay-mask"></div>
+      <div id="info-description" class="overlay-description">
+        <img
+          id="info-close-icon"
+          class="close-icon"
+          src="../static/svg/times-solid.svg"
+          alt="close"
+          title="閉じる"
+        />
         <p>このアプリはオンラインでアリスチェスの対戦ができるものです。</p>
         <strong>【対戦する】</strong>
         <p>部屋をつくって対戦者を待ちます。</p>
@@ -140,6 +146,51 @@
         <strong>【注意】</strong>
         <p>チャット機能もありますが、部屋にいる人は誰でも見ることができるので、</p>
         <p>プライベートな情報を書き込まないようにしてください。</p>
+      </div>
+    </div>
+    <div id="key-help-overlay" class="overlay" style="display: none">
+      <div id="key-help-mask" class="overlay-mask"></div>
+      <div id="key-help-description" class="overlay-description">
+        <h2>ショートカットキー</h2>
+        <ul>
+          <li>
+            <div>ミュート / ミュート解除</div>
+            <div>
+              <kbd>m</kbd>
+            </div>
+          </li>
+          <li>
+            <div>反対側の盤面の駒を表示 / 非表示</div>
+            <div>
+              <kbd>,</kbd>
+            </div>
+          </li>
+          <li>
+            <div>チャットを表示 / 非表示</div>
+            <div>
+              <kbd>c</kbd>
+            </div>
+          </li>
+          <li>
+            <div>左 / 下 / 上 / 右を選択</div>
+            <div>
+              <kbd>h</kbd> / <kbd>j</kbd> / <kbd>k</kbd> / <kbd>l</kbd> or <kbd>←</kbd> /
+              <kbd>↓</kbd> / <kbd>↑</kbd> / <kbd>→</kbd>
+            </div>
+          </li>
+          <li>
+            <div>左上 / 右上 / 左下 / 右下を選択</div>
+            <div><kbd>e</kbd> / <kbd>r</kbd> / <kbd>d</kbd> / <kbd>f</kbd></div>
+          </li>
+          <li>
+            <div>選択を確定</div>
+            <div><kbd>enter</kbd></div>
+          </li>
+          <li>
+            <div>このダイアログを表示 / 非表示</div>
+            <div><kbd>?</kbd></div>
+          </li>
+        </ul>
       </div>
     </div>
     <script src="../bundle.js"></script>

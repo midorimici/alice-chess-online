@@ -123,10 +123,16 @@
       alt="info"
       title="About this app"
     />
-    <div id="info-overlay">
-      <div id="info-mask"></div>
-      <div id="info-description">
-        <img id="close-icon" src="./static/svg/times-solid.svg" alt="close" title="Close" />
+    <div id="info-overlay" class="overlay">
+      <div id="info-mask" class="overlay-mask"></div>
+      <div id="info-description" class="overlay-description">
+        <img
+          id="info-close-icon"
+          class="close-icon"
+          src="./static/svg/times-solid.svg"
+          alt="close"
+          title="Close"
+        />
         <p>You can play Alice Chess online in this app.</p>
         <strong>[Play]</strong>
         <p>After making a room, wait for your opponent.</p>
@@ -140,6 +146,51 @@
         <strong>[ATTENTION]</strong>
         <p>The chat system is also available and anyone in the room can see it.</p>
         <p>Beware that you do not write private information.</p>
+      </div>
+    </div>
+    <div id="key-help-overlay" class="overlay" style="display: none">
+      <div id="key-help-mask" class="overlay-mask"></div>
+      <div id="key-help-description" class="overlay-description">
+        <h2>Keyboard shortcuts</h2>
+        <ul>
+          <li>
+            <div>Mute / unmute</div>
+            <div>
+              <kbd>m</kbd>
+            </div>
+          </li>
+          <li>
+            <div>Show / hide pieces on the opposite board</div>
+            <div>
+              <kbd>,</kbd>
+            </div>
+          </li>
+          <li>
+            <div>Show / hide chat list</div>
+            <div>
+              <kbd>c</kbd>
+            </div>
+          </li>
+          <li>
+            <div>Move the selection left / down / up / right</div>
+            <div>
+              <kbd>h</kbd> / <kbd>j</kbd> / <kbd>k</kbd> / <kbd>l</kbd> or <kbd>←</kbd> /
+              <kbd>↓</kbd> / <kbd>↑</kbd> / <kbd>→</kbd>
+            </div>
+          </li>
+          <li>
+            <div>Move the selection left-up / right-up / left-down / right-down</div>
+            <div><kbd>e</kbd> / <kbd>r</kbd> / <kbd>d</kbd> / <kbd>f</kbd></div>
+          </li>
+          <li>
+            <div>Confirm selection</div>
+            <div><kbd>enter</kbd></div>
+          </li>
+          <li>
+            <div>Show / hide this help dialog</div>
+            <div><kbd>?</kbd></div>
+          </li>
+        </ul>
       </div>
     </div>
     <script src="./bundle.js"></script>

@@ -4,6 +4,7 @@ import {
   handleHideChatList,
   handleShowHide,
   handleToggleChatList,
+  handleToggleKeyHelp,
   handleToggleMute,
 } from './gameEventHandlers';
 import { drawBoard, handleBoardSelection, promote } from './gameHandlers';
@@ -30,6 +31,9 @@ export const addKeyboardShortcutListener = () => {
       registerKeyboardShortcut(code, 'KeyM', handleToggleMute);
       registerKeyboardShortcut(code, 'Comma', handleShowHide);
       registerKeyboardShortcut(code, 'KeyC', handleToggleChatList);
+      if (code === 'Slash' && e.shiftKey) {
+        handleToggleKeyHelp();
+      }
     }
     // When the focus is on the chat input
     else if (activeEl.id === 'chat-input') {

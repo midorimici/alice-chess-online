@@ -58,3 +58,13 @@ export const handleHideChatList = () => {
     timeoutId = setTimeout(() => (chat.style.visibility = 'hidden'), 400);
   }
 };
+
+const keyHelpOverlay = document.getElementById('key-help-overlay');
+
+export const handleToggleKeyHelp = () => {
+  if (keyHelpOverlay.style.display === 'none') {
+    keyHelpOverlay.style.display = 'flex';
+  } else {
+    keyHelpOverlay.style.display = 'none';
+  }
+};
