@@ -18,12 +18,13 @@ import {
 import { db } from './firebase';
 import { t } from './i18n';
 import { addChatMessage, showAudienceNumber, showResult } from './lib/messageHandlers';
-import { playerTurnValue, roomIdValue, setBoardMap, setPlayerNames } from './states';
+import { boardMapState, playerNamesState, playerTurnState, roomIdState } from './states';
 import { rotateBoard } from './game/game';
+import { useSetState, useValue } from './states/stateManager';
 
 /** Returns the `Reference` to the current room. */
 export const getRoomRef = () => {
-  const roomId = roomIdValue();
+  const roomId = useValue(roomIdState);
   return ref(db, `rooms/${roomId}`);
 };
 
@@ -41,7 +42,8 @@ export const listenPlayerDisconnection = () => {
  */
 export const listenRoomDataChange = (phase: 'preparing' | 'playing', isPlayer: boolean) => {
   const roomRef = getRoomRef();
-  const playerTurn: Turn = playerTurnValue();
+  const playerTurn: Turn = useValue(playerTurnState);
+  const setBoardMap = useSetState(boardMapState);
 
   if (phase === 'preparing') {
     handleRoomValueChange(
@@ -135,6 +137,7 @@ const handleRoomStateChange = (state: RoomState, isPlayer: boolean) => {
   }
   // When two players are in the room and the game is ongoing
   else {
+    const setPlayerNames = useSetState(playerNamesState);
     // Set the room data to local states
     get(child(getRoomRef(), 'players')).then((snapshot: DataSnapshot) => {
       if (snapshot.exists()) {
@@ -185,7 +188,7 @@ const handleRoomBoardChange = (
   canCastle: CastlingPotentials,
   gameIsOver: boolean
 ) => {
-  const playerTurn = playerTurnValue();
+  const playerTurn = useValue(playerTurnState);
   if (isPlayer) {
     // When the player is black
     if (advanced2Pos !== undefined && playerTurn === 1) {

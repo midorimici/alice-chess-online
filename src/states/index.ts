@@ -1,41 +1,17 @@
-export {
-  isMutedValue,
-  useIsMuted,
-  showOppositePiecesValue,
-  useShowOppositePieces,
-} from './settings';
+export { isMutedState, showOppositePiecesState } from './settings';
+
+export { userRoleState, userNameState, playerTurnState } from './user';
+
+export { roomIdState, playerNamesState } from './room';
 
 export {
-  userNameValue,
-  setUserName,
-  userRoleValue,
-  setUserRole,
-  playerTurnValue,
-  setPlayerTurn,
-} from './user';
-
-export { roomIdValue, setRoomId, playerNamesValue, setPlayerNames } from './room';
-
-export {
-  drawValue,
-  setDraw,
-  boardMapValue,
-  setBoardMap,
-  activeBoardValue,
-  switchActiveBoard,
-  setActiveBoard,
-  focusedPositionValue,
-  setFocusedPosition,
-  useFocusedPosition,
-  selectedPieceBoardValue,
-  setSelectedPieceBoard,
-  useSelectedPieceBoard,
-  pieceDestsValue,
-  setPieceDests,
-  lastMovedPiecePositionValue,
-  setLastMovedPiecePosition,
-  isPromotingValue,
-  setIsPromoting,
-  promotionCandidateIndexValue,
-  setPromotionCandidateIndex,
+  drawState,
+  boardMapState,
+  activeBoardState,
+  focusedPositionState,
+  selectedPieceBoardState,
+  pieceDestsState,
+  lastMovedPiecePositionState,
+  isPromotingState,
+  promotionCandidateIndexState,
 } from './game';

@@ -1,29 +1,27 @@
 import { handleMovePiece } from '~/actions';
 import { abbrPieceDict } from '~/game/piece';
 import {
-  activeBoardValue,
-  boardMapValue,
-  drawValue,
-  isMutedValue,
-  playerTurnValue,
-  focusedPositionValue,
-  pieceDestsValue,
-  selectedPieceBoardValue,
-  setPieceDests,
-  setSelectedPieceBoard,
-  showOppositePiecesValue,
-  setIsPromoting,
-  isPromotingValue,
-  setLastMovedPiecePosition,
-  promotionCandidateIndexValue,
+  playerTurnState,
+  isMutedState,
+  showOppositePiecesState,
+  drawState,
+  boardMapState,
+  activeBoardState,
+  focusedPositionState,
+  selectedPieceBoardState,
+  pieceDestsState,
+  isPromotingState,
+  promotionCandidateIndexState,
+  lastMovedPiecePositionState,
 } from '~/states';
+import { useSetState, useState, useValue } from '~/states/stateManager';
 
 /**
  * Play audio if it is not muted.
  * @param file File name without extension.
  */
 export const snd = (file: string) => {
-  const isMuted = isMutedValue();
+  const isMuted = useValue(isMutedState);
   if (isMuted) {
     return;
   }
@@ -32,17 +30,17 @@ export const snd = (file: string) => {
 
 /** Draw the game board. */
 export const drawBoard = () => {
-  const draw = drawValue();
-  const boardMap: BoardMap = boardMapValue();
-  const playerTurn: Turn = playerTurnValue();
+  const draw = useValue(drawState);
+  const boardMap: BoardMap = useValue(boardMapState);
+  const playerTurn: Turn = useValue(playerTurnState);
   const playerColor: PieceColor = (['W', 'B'] as const)[playerTurn];
-  const showOppositePieces = showOppositePiecesValue();
-  const activeBoard = activeBoardValue();
-  const focusedPosition = focusedPositionValue();
-  const selectedPieceBoard = selectedPieceBoardValue();
-  const dests = pieceDestsValue();
-  const isPromoting = isPromotingValue();
-  const promotionCandidateIndex = promotionCandidateIndexValue();
+  const showOppositePieces = useValue(showOppositePiecesState);
+  const activeBoard = useValue(activeBoardState);
+  const focusedPosition = useValue(focusedPositionState);
+  const selectedPieceBoard = useValue(selectedPieceBoardState);
+  const dests = useValue(pieceDestsState);
+  const isPromoting = useValue(isPromotingState);
+  const promotionCandidateIndex = useValue(promotionCandidateIndexState);
   draw.board(boardMap, playerColor, showOppositePieces);
   if (isPromoting) {
     // Display options of a promotion.
@@ -65,7 +63,10 @@ export const drawBoard = () => {
  * @param piece The piece which the pawn promotes to.
  */
 export const promote = (originPos: Vector, destPos: Vector, piece: PieceName) => {
-  const boardId = activeBoardValue();
+  const boardId = useValue(activeBoardState);
+  const setLastMovedPiecePosition = useSetState(lastMovedPiecePositionState);
+  const setSelectedPieceBoard = useSetState(selectedPieceBoardState);
+  const setPieceDests = useSetState(pieceDestsState);
   snd('move');
   // Apply the promotion to Database.
   handleMovePiece(boardId, originPos, destPos, piece);
@@ -98,9 +99,12 @@ export const handleBoardSelection = (
   advanced2Pos: number[] | null,
   canCastle: CastlingPotentials
 ): { originPos: Vector | null; destPos: Vector | null } => {
-  const sqPos = focusedPositionValue();
-  const boardId = activeBoardValue();
-  const isPromoting = isPromotingValue();
+  const sqPos = useValue(focusedPositionState);
+  const boardId = useValue(activeBoardState);
+  const { value: isPromoting, setState: setIsPromoting } = useState(isPromotingState);
+  const setPieceDests = useSetState(pieceDestsState);
+  const setSelectedPieceBoard = useSetState(selectedPieceBoardState);
+  const setLastMovedPiecePosition = useSetState(lastMovedPiecePositionState);
 
   // When one of the user's own pieces has selected
   if (boardMap.get(`${boardId},${String(sqPos)}`)?.[0] === playerColor) {

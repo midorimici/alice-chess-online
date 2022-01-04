@@ -1,7 +1,9 @@
 import { handleEnterRoom } from './actions';
 import { t } from './i18n';
 import { handleShowHide, handleToggleMute } from './lib/gameEventHandlers';
-import { setUserName, setUserRole } from './states';
+import { userNameState } from './states';
+import { useSetState } from './states/stateManager';
+import { userRoleState } from './states/user';
 
 export const addInfoButtonClickEventListener = () => {
   const infoBtn = document.getElementById('info-icon');
@@ -36,6 +38,8 @@ export const addVisibilityButtonsClickEventListener = () => {
 };
 
 export const addFormEventListener = () => {
+  const setUserRole = useSetState(userRoleState);
+  const setUserName = useSetState(userNameState);
   const form = document.getElementById('form') as HTMLFormElement;
   form.addEventListener(
     'submit',

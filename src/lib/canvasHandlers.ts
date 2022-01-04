@@ -2,14 +2,15 @@ import Draw from '~/game/draw';
 import Mouse from '~/game/mouse';
 import { t } from '~/i18n';
 import {
-  boardMapValue,
-  playerNamesValue,
-  playerTurnValue,
-  setActiveBoard,
-  setDraw,
-  setFocusedPosition,
-  userNameValue,
+  activeBoardState,
+  boardMapState,
+  drawState,
+  focusedPositionState,
+  playerNamesState,
+  playerTurnState,
+  userNameState,
 } from '~/states';
+import { useSetState, useValue } from '~/states/stateManager';
 import { drawBoard, handleBoardSelection, snd } from './gameHandlers';
 import { setGameKeyboardShortcut } from './keyboardShortcutHandlers';
 
@@ -23,6 +24,7 @@ const gameMessage = document.getElementById('game-message');
 
 /** Hides input forms and shows game container including canvas. */
 const initCanvas = async () => {
+  const setDraw = useSetState(drawState);
   document.getElementById('settings').style.display = 'none';
 
   const gameContainer = document.getElementById('game-container');
@@ -67,10 +69,12 @@ export const handlePlayerGameScreen = async (
   advanced2Pos: number[] | null,
   canCastle: CastlingPotentials
 ) => {
-  const userName = userNameValue();
-  const playerTurn = playerTurnValue();
-  const playerNames = playerNamesValue();
-  const boardMap = boardMapValue();
+  const userName = useValue(userNameState);
+  const playerTurn = useValue(playerTurnState);
+  const playerNames = useValue(playerNamesState);
+  const boardMap = useValue(boardMapState);
+  const setActiveBoard = useSetState(activeBoardState);
+  const setFocusedPosition = useSetState(focusedPositionState);
   const playerColor: PieceColor = (['W', 'B'] as const)[playerTurn];
 
   /** The position of the piece that is selected. */
@@ -165,7 +169,7 @@ export const showAudienceGameScreen = async (
   checked: boolean,
   omitMessage: boolean = false
 ) => {
-  const playerNames = playerNamesValue();
+  const playerNames = useValue(playerNamesState);
 
   // Display player names.
   if (document.getElementById('user-names').innerText === '') {
