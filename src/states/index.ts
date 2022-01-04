@@ -1,9 +1,4 @@
-export {
-  isMutedValue,
-  useIsMuted,
-  showOppositePiecesValue,
-  useShowOppositePieces,
-} from './settings';
+export { isMutedState, showOppositePiecesState } from './settings';
 
 export { userRoleState, userNameState, playerTurnState } from './user';
 

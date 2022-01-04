@@ -1,11 +1,12 @@
 import { t } from '~/i18n';
-import { useIsMuted, useShowOppositePieces } from '~/states';
+import { isMutedState, showOppositePiecesState } from '~/states';
+import { useState } from '~/states/stateManager';
 import { drawBoard } from './gameHandlers';
 
 const muteButton = document.getElementById('mute-icon') as HTMLImageElement;
 
 export const handleToggleMute = () => {
-  const { isMuted, toggleIsMuted } = useIsMuted();
+  const { value: isMuted, toggleState: toggleIsMuted } = useState(isMutedState);
   muteButton.src = isMuted
     ? '../static/svg/volume-up-solid.svg'
     : '../static/svg/volume-mute-solid.svg';
@@ -16,7 +17,8 @@ export const handleToggleMute = () => {
 const showHideButton = document.getElementById('eye-icon') as HTMLImageElement;
 
 export const handleShowHide = () => {
-  const { showOppositePieces, toggleShowOppositePieces } = useShowOppositePieces();
+  const { value: showOppositePieces, toggleState: toggleShowOppositePieces } =
+    useState(showOppositePiecesState);
   showHideButton.src = showOppositePieces
     ? '../static/svg/eye-slash-regular.svg'
     : '../static/svg/eye-regular.svg';
