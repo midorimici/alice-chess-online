@@ -24,16 +24,11 @@ import {
   showPublicRoomEmptyMessage,
   showRoomFullMessage,
 } from './lib/messageHandlers';
+import { addKeyboardShortcutListener } from './lib/keyboardShortcutHandlers';
 import { getRoomRef, listenPlayerDisconnection, listenRoomDataChange } from './listeners';
-import {
-  playerTurnValue,
-  setPlayerTurn,
-  setRoomId,
-  setUserName,
-  userNameValue,
-  userRoleValue,
-} from './states';
+import { userRoleState, userNameState, playerTurnState, roomIdState } from './states';
 import { getRoomKey, m2o } from './utils';
+import { useSetState, useValue } from './states/stateManager';
 
 /**
  * Make the user enter the specified room.
@@ -45,6 +40,9 @@ export const handleEnterRoom = (info: {
   role: Role;
   name: string;
 }) => {
+  const setUserName = useSetState(userNameState);
+  const setPlayerTurn = useSetState(playerTurnState);
+  const setRoomId = useSetState(roomIdState);
   const isJoiningAsPlayer = info.role === 'play';
   let roomId: string;
   const roomsRef = ref(db, 'rooms');
@@ -75,6 +73,8 @@ export const handleEnterRoom = (info: {
           // Set states
           setUserName(info.name);
           setPlayerTurn(0);
+          // Setup keyboard shortcuts
+          addKeyboardShortcutListener();
           // Setup disconnection event listener
           listenPlayerDisconnection();
           // Setup room state change event listener
@@ -108,6 +108,8 @@ export const handleEnterRoom = (info: {
             // Set states
             setUserName(info.name);
             setPlayerTurn(1);
+            // Setup keyboard shortcuts
+            addKeyboardShortcutListener();
             // Setup disconnection event listener
             listenPlayerDisconnection();
             // Setup room state change event listener
@@ -126,6 +128,8 @@ export const handleEnterRoom = (info: {
           );
           // Set the viewpoint
           setPlayerTurn(0);
+          // Setup keyboard shortcuts
+          addKeyboardShortcutListener();
           // Setup room state change event listener
           listenRoomDataChange('preparing', false);
         }
@@ -148,7 +152,7 @@ export const handleMovePiece = (
   promoteTo?: PieceName
 ) => {
   const roomRef = getRoomRef();
-  const playerTurn = playerTurnValue();
+  const playerTurn = useValue(playerTurnState);
   const colors = ['W', 'B'] as const;
 
   onValue(
@@ -292,8 +296,8 @@ export const handleMovePiece = (
  * @param message A message content that the user is going to send.
  */
 export const handleChatSend = (message: string) => {
-  const userName = userNameValue();
-  const userRole = userRoleValue();
+  const userName = useValue(userNameState);
+  const userRole = useValue(userRoleState);
   const chatMessageData: ChatMessage = {
     name: userName,
     isPlayer: userRole === 'play',

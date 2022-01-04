@@ -12,3 +12,5 @@ export const scales = {
   squareSize: 9 / 80,
   margin: 1 / 20,
 };
+
+export const BOARD_MAX_INDEX = 7;

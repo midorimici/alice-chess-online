@@ -1,7 +1,9 @@
 import { handleEnterRoom } from './actions';
 import { t } from './i18n';
-import { drawBoard } from './lib/canvasHandlers';
-import { setUserName, setUserRole, useIsMuted, useShowOppositePieces } from './states';
+import { handleShowHide, handleToggleMute } from './lib/gameEventHandlers';
+import { userNameState } from './states';
+import { useSetState } from './states/stateManager';
+import { userRoleState } from './states/user';
 
 export const addInfoButtonClickEventListener = () => {
   const infoBtn = document.getElementById('info-icon');
@@ -9,7 +11,7 @@ export const addInfoButtonClickEventListener = () => {
     document.getElementById('info-overlay').style.display = 'flex';
   };
 
-  const infoCloseBtn = document.getElementById('close-icon');
+  const infoCloseBtn = document.getElementById('info-close-icon');
   infoCloseBtn.onclick = () => {
     document.getElementById('info-overlay').style.display = 'none';
   };
@@ -36,6 +38,8 @@ export const addVisibilityButtonsClickEventListener = () => {
 };
 
 export const addFormEventListener = () => {
+  const setUserRole = useSetState(userRoleState);
+  const setUserName = useSetState(userNameState);
   const form = document.getElementById('form') as HTMLFormElement;
   form.addEventListener(
     'submit',
@@ -61,27 +65,12 @@ export const addFormEventListener = () => {
 
 export const addMuteButtonClickEventListener = () => {
   const muteButton = document.getElementById('mute-icon') as HTMLImageElement;
-  muteButton.onclick = () => {
-    const { isMuted, toggleIsMuted } = useIsMuted();
-    muteButton.src = isMuted
-      ? '../static/svg/volume-up-solid.svg'
-      : '../static/svg/volume-mute-solid.svg';
-    muteButton.title = isMuted ? t('mute') : t('unmute');
-    toggleIsMuted();
-  };
+  muteButton.onclick = handleToggleMute;
 };
 
 export const addShowHideButtonClickEventListener = () => {
   const showHideButton = document.getElementById('eye-icon') as HTMLImageElement;
-  showHideButton.onclick = () => {
-    const { showOppositePieces, toggleShowOppositePieces } = useShowOppositePieces();
-    showHideButton.src = showOppositePieces
-      ? '../static/svg/eye-slash-regular.svg'
-      : '../static/svg/eye-regular.svg';
-    showHideButton.title = showOppositePieces ? t('showOppositePieces') : t('hideOppositePieces');
-    toggleShowOppositePieces();
-    drawBoard();
-  };
+  showHideButton.onclick = handleShowHide;
 };
 
 export const addLanguageButtonClickEventListener = () => {
