@@ -10,6 +10,7 @@ export {
   activeBoardState,
   focusedPositionState,
   selectedPieceBoardState,
+  selectedPieceColorState,
   pieceDestsState,
   lastMovedPiecePositionState,
   isPromotingState,

@@ -183,8 +183,9 @@ export default class Draw {
    * 駒の行先を円で表示する
    * @param boardId 駒のある盤面がどちらか
    * @param dests 行先の配列
+   * @param isMyPiece 選択中の駒が自分の駒か
    */
-  dest(boardId: BoardId, dests: Vector[]) {
+  dest(boardId: BoardId, dests: Vector[], isMyPiece: boolean) {
     const ctx = this.ctxs[boardId];
     for (const dest of dests) {
       const coord = new Vec(dest)
@@ -193,7 +194,7 @@ export default class Draw {
         .val();
       ctx.beginPath();
       ctx.arc(...coord, this.squareSize / 4, 0, 2 * Math.PI);
-      ctx.fillStyle = colors.safe;
+      ctx.fillStyle = isMyPiece ? colors.safe : colors.fuchsia;
       ctx.fill();
     }
   }
@@ -259,7 +260,7 @@ export default class Draw {
     for (let rank = 0; rank <= BOARD_MAX_INDEX; rank++) {
       this.transparentSquare(boardId, [file, rank]);
       ctx.save();
-      ctx.fillStyle = colors.red;
+      ctx.fillStyle = colors.fuchsia;
       ctx.fillText(
         `${BOARD_SIZE - rank}`,
         (file + 1) * this.squareSize,

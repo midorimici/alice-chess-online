@@ -22,6 +22,9 @@ export const focusedPositionState = s<Vector>(null, (state) => {
 /** On which board the selected piece is. */
 export const selectedPieceBoardState = s<BoardId>();
 
+/** The color of the selected piece. */
+export const selectedPieceColorState = s<PieceColor>();
+
 /** Available destination positions of the selected piece. */
 export const pieceDestsState = s<Vector[]>([]);
 
