@@ -142,3 +142,28 @@ export const handleSelectPromotionCandidate = (dir: 'left' | 'right') => {
   setPromotionCandidateIndex(newIndex);
   drawBoard();
 };
+
+let digitRegister: number = null;
+
+export const handleDigitKeyInput = (digit: number) => {
+  if (digit <= 0 || digit >= 9) {
+    return;
+  }
+
+  const setFocusedPosition = useSetState(focusedPositionState);
+
+  // When the register is empty
+  if (digitRegister === null) {
+    // Store the inputted digit to the register
+    digitRegister = digit;
+  }
+  // When the register has a digit
+  else {
+    const file = digitRegister - 1;
+    const rank = digit - 1;
+    // Set selection to the specified position.
+    setFocusedPosition([file, BOARD_MAX_INDEX - rank]);
+    digitRegister = null;
+    drawBoard();
+  }
+};
