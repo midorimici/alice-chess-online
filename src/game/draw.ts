@@ -194,7 +194,7 @@ export default class Draw {
         .val();
       ctx.beginPath();
       ctx.arc(...coord, this.squareSize / 4, 0, 2 * Math.PI);
-      ctx.fillStyle = isMyPiece ? colors.safe : colors.fuchsia;
+      ctx.fillStyle = isMyPiece ? colors.safe : colors.navy;
       ctx.fill();
     }
   }
@@ -219,16 +219,27 @@ export default class Draw {
    * 半透明の正方形を描画する
    * @param boardId どちらの盤面か
    * @param pos 描画する座標
+   * @param alpha 不透明度
    */
-  private transparentSquare(boardId: BoardId, pos: Vector) {
+  private transparentSquare(boardId: BoardId, pos: Vector, alpha: number) {
     const ctx = this.ctxs[boardId];
     const squareSize: number = this.squareSize;
-    const coord: Vector = [this.margin, this.margin];
     ctx.save();
     ctx.fillStyle = colors.safe;
-    ctx.globalAlpha = ALPHA;
-    ctx.fillRect(...new Vec(pos).mul(squareSize).add(coord).val(), squareSize, squareSize);
+    ctx.globalAlpha = alpha;
+    ctx.fillRect(...this.posToCoord(pos), squareSize, squareSize);
     ctx.restore();
+  }
+
+  /**
+   * Converts a position on a board to a coordinate value.
+   * @param pos A position of a piece.
+   * @returns A left-top coordinate of the corresponding square.
+   */
+  private posToCoord(pos: Vector): Vector {
+    const squareSize: number = this.squareSize;
+    const coord: Vector = [this.margin, this.margin];
+    return new Vec(pos).mul(squareSize).add(coord).val();
   }
 
   /**
@@ -237,7 +248,7 @@ export default class Draw {
    * @param pos 選択中のマス
    */
   selectedSquare(boardId: BoardId, pos: Vector) {
-    this.transparentSquare(boardId, pos);
+    this.transparentSquare(boardId, pos, ALPHA);
   }
 
   /**
@@ -247,7 +258,7 @@ export default class Draw {
    */
   selectedPromotionCandidate(boardId: BoardId, index: 0 | 1 | 2 | 3) {
     const pos: Vector = [index + 2, 3.5];
-    this.transparentSquare(boardId, pos);
+    this.transparentSquare(boardId, pos, ALPHA);
   }
 
   /**
@@ -258,15 +269,23 @@ export default class Draw {
   selectedFile(boardId: BoardId, file: number) {
     const ctx = this.ctxs[boardId];
     for (let rank = 0; rank <= BOARD_MAX_INDEX; rank++) {
-      this.transparentSquare(boardId, [file, rank]);
-      ctx.save();
-      ctx.fillStyle = colors.fuchsia;
-      ctx.fillText(
-        `${BOARD_SIZE - rank}`,
-        (file + 1) * this.squareSize,
-        (rank + 1) * this.squareSize
-      );
-      ctx.restore();
+      this.transparentSquare(boardId, [file, rank], ALPHA * 3);
+      this.text(ctx, `${BOARD_SIZE - rank}`, file, rank);
     }
+  }
+
+  /**
+   * Draw a text on the canvas.
+   * @param ctx Canvas context object to draw the text.
+   * @param t The text to draw.
+   * @param x The x position of the text.
+   * @param y The y position of the text.
+   */
+  private text(ctx: CanvasRenderingContext2D, t: string, x: number, y: number) {
+    ctx.save();
+    ctx.font = 'bold 48px "Cica"';
+    ctx.fillStyle = colors.navy;
+    ctx.fillText(t, (x + 1) * this.squareSize, (y + 1) * this.squareSize);
+    ctx.restore();
   }
 }
