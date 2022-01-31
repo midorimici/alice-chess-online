@@ -17,7 +17,8 @@
     "b": "npx webpack",
     "bw": "npx webpack --watch",
     "sass": "npx sass src/sass/main.scss public/static/style.css -s compressed",
-    "build": "npm run b && npm run sass"
+    "build": "npm run b && npm run sass",
+    "s": "firebase serve"
   },
   "author": "midori mici",
   "license": "ISC"
