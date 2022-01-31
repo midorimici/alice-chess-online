@@ -85,7 +85,10 @@ export const setGameKeyboardShortcut = (
         return { originPos: null, destPos };
       });
     } else {
+      // Switch active board.
       registerKeyboardShortcut(code, 'Semicolon', handleSwitchActiveBoard);
+
+      // Navigate selecting position.
       registerKeyboardShortcut(code, 'KeyH', handleMoveLeft);
       registerKeyboardShortcut(code, 'ArrowLeft', handleMoveLeft);
       registerKeyboardShortcut(code, 'KeyL', handleMoveRight);
@@ -98,6 +101,8 @@ export const setGameKeyboardShortcut = (
       registerKeyboardShortcut(code, 'KeyD', handleMoveLeftDown);
       registerKeyboardShortcut(code, 'KeyR', handleMoveRightUp);
       registerKeyboardShortcut(code, 'KeyF', handleMoveRightDown);
+
+      // Go to a specified square directly with file and rank numbers.
       registerKeyboardShortcut(code, 'Digit1', () => handleDigitKeyInput(1));
       registerKeyboardShortcut(code, 'Digit2', () => handleDigitKeyInput(2));
       registerKeyboardShortcut(code, 'Digit3', () => handleDigitKeyInput(3));
