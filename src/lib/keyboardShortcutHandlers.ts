@@ -29,9 +29,9 @@ export const addKeyboardShortcutListener = () => {
     const activeEl = document.activeElement;
     // When the focus is not on any input
     if (activeEl.tagName !== 'INPUT') {
-      registerKeyboardShortcut(key, 'm', handleToggleMute);
-      registerKeyboardShortcut(key, ',', handleShowHide);
-      registerKeyboardShortcut(key, 'c', handleToggleChatList);
+      registerKeyboardShortcut(key, 'M', handleToggleMute);
+      registerKeyboardShortcut(key, '<', handleShowHide);
+      registerKeyboardShortcut(key, 'C', handleToggleChatList);
       if (key === '?') {
         handleToggleKeyHelp();
       }
