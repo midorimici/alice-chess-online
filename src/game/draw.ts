@@ -1,4 +1,4 @@
-import { BOARD_MAX_INDEX, colors, scales } from '~/config';
+import { BOARD_MAX_INDEX, colors, EASY_MOTION_AVAILABLE_KEYS, scales } from '~/config';
 import { Vec } from './vec';
 
 const BOARD_SIZE = BOARD_MAX_INDEX + 1;
@@ -271,6 +271,23 @@ export default class Draw {
     for (let rank = 0; rank <= BOARD_MAX_INDEX; rank++) {
       this.transparentSquare(boardId, [file, rank], ALPHA * 3);
       this.text(ctx, `${BOARD_SIZE - rank}`, file, rank);
+    }
+  }
+
+  /**
+   * Draw text labels displayed on pieces for easy motion.
+   * @param boardmap Board data.
+   * @param color The color of the player. Whether it is seen from the first player or the last player.
+   */
+  labelsOverPieces(boardMap: BoardMap) {
+    const ctxs = this.ctxs;
+    let index = 0;
+    for (const pos of boardMap.keys()) {
+      const [boardId, x, y] = pos.split(',').map((e) => +e);
+      this.transparentSquare(boardId as BoardId, [x, y], ALPHA * 3);
+      const ctx = ctxs[boardId];
+      this.text(ctx, EASY_MOTION_AVAILABLE_KEYS[index], x, y);
+      index++;
     }
   }
 

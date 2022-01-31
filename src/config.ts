@@ -13,3 +13,38 @@ export const scales = {
 };
 
 export const BOARD_MAX_INDEX = 7;
+
+export const EASY_MOTION_AVAILABLE_KEYS = [
+  'f',
+  'j',
+  'd',
+  'k',
+  's',
+  'l',
+  'a',
+  ';',
+  'g',
+  'h',
+  'r',
+  'u',
+  'e',
+  'i',
+  'w',
+  'o',
+  'q',
+  'p',
+  't',
+  'y',
+  'v',
+  'n',
+  'm',
+  'c',
+  ',',
+  'x',
+  '.',
+  'z',
+  '/',
+  'b',
+  '5',
+  '7',
+] as const;
