@@ -42,3 +42,6 @@ export const digitRegisterState = s<number>(
   null,
   (state) => state !== null && (!Number.isInteger(state) || state <= 0 || state >= 9)
 );
+
+/** Whether the easy motion mode has started and waiting for next command. */
+export const easyMotionWaitingState = s<boolean>(false);

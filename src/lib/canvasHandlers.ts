@@ -118,9 +118,9 @@ export const handlePlayerGameScreen = async (
 
     // Keyboard event
     document.onkeydown = (e: KeyboardEvent) => {
-      const code = e.code;
+      const key = e.key;
       const res = setGameKeyboardShortcut(
-        code,
+        key,
         originPos,
         destPos,
         boardMap,
