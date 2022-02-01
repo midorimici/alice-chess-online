@@ -1,11 +1,13 @@
-import { BOARD_MAX_INDEX } from '~/config';
+import { BOARD_MAX_INDEX, EASY_MOTION_AVAILABLE_KEYS } from '~/config';
 import {
   activeBoardState,
+  boardMapState,
   digitRegisterState,
   focusedPositionState,
   lastMovedPiecePositionState,
   promotionCandidateIndexState,
 } from '~/states';
+import { easyMotionWaitingState } from '~/states/game';
 import { useSetState, useState, useValue } from '~/states/stateManager';
 import { drawBoard } from './gameHandlers';
 
@@ -162,6 +164,34 @@ export const handleDigitKeyInput = (digit: number) => {
     // Set selection to the specified position.
     setFocusedPosition([file, BOARD_MAX_INDEX - rank]);
     setDigitRegister(null);
+  }
+  drawBoard();
+};
+
+export const handleEasyMotion = (key: typeof EASY_MOTION_AVAILABLE_KEYS[number] | ' ') => {
+  const setDigitRegister = useSetState(digitRegisterState);
+  setDigitRegister(null);
+
+  const boardMap = useValue(boardMapState);
+  const setActiveBoard = useSetState(activeBoardState);
+  const setFocusedPosition = useSetState(focusedPositionState);
+  const { value: easyMotionWaiting, setState: setEasyMotionWaiting } =
+    useState(easyMotionWaitingState);
+
+  // When the space key is pressed, waits for next command.
+  if (key === ' ') {
+    setEasyMotionWaiting(!easyMotionWaiting);
+  }
+  // When waiting for next command
+  else if (easyMotionWaiting) {
+    const index = EASY_MOTION_AVAILABLE_KEYS.indexOf(key);
+    const [boardId, x, y] = Array.from(boardMap.keys())
+      [index].split(',')
+      .map((e) => +e);
+    // Set selection to the specified position.
+    setActiveBoard(boardId as BoardId);
+    setFocusedPosition([x, y]);
+    setEasyMotionWaiting(false);
   }
   drawBoard();
 };

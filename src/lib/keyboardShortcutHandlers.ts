@@ -1,4 +1,6 @@
+import { EASY_MOTION_AVAILABLE_KEYS } from '~/config';
 import { digitRegisterState, isPromotingState, promotionCandidateIndexState } from '~/states';
+import { easyMotionWaitingState } from '~/states/game';
 import { useSetState, useState, useValue } from '~/states/stateManager';
 import {
   handleHideChatList,
@@ -10,6 +12,7 @@ import {
 import { drawBoard, handleBoardSelection, promote } from './gameHandlers';
 import {
   handleDigitKeyInput,
+  handleEasyMotion,
   handleMoveDown,
   handleMoveLeft,
   handleMoveLeftDown,
@@ -25,20 +28,20 @@ import {
 /** Adds keyup listener to manipulate mute, opposite pieces visibility, and chat list. */
 export const addKeyboardShortcutListener = () => {
   addEventListener('keyup', (e: KeyboardEvent) => {
-    const code = e.code;
+    const key = e.key;
     const activeEl = document.activeElement;
     // When the focus is not on any input
     if (activeEl.tagName !== 'INPUT') {
-      registerKeyboardShortcut(code, 'KeyM', handleToggleMute);
-      registerKeyboardShortcut(code, 'Comma', handleShowHide);
-      registerKeyboardShortcut(code, 'KeyC', handleToggleChatList);
-      if (code === 'Slash' && e.shiftKey) {
+      registerKeyboardShortcut(key, 'M', handleToggleMute);
+      registerKeyboardShortcut(key, '<', handleShowHide);
+      registerKeyboardShortcut(key, 'C', handleToggleChatList);
+      if (key === '?') {
         handleToggleKeyHelp();
       }
     }
     // When the focus is on the chat input
     else if (activeEl.id === 'chat-input') {
-      registerKeyboardShortcut(code, 'Escape', handleHideChatList);
+      registerKeyboardShortcut(key, 'Escape', handleHideChatList);
     }
   });
 };
@@ -47,7 +50,7 @@ const pieces: PieceName[] = ['N', 'B', 'R', 'Q'];
 
 /**
  * Registers shortcut keys to manipulate board.
- * @param code The key inputted.
+ * @param key The key inputted.
  * @param originPos The position of the piece that is selected.
  * @param destPos The destination position of the piece.
  * @param boardMap The current game board.
@@ -57,7 +60,7 @@ const pieces: PieceName[] = ['N', 'B', 'R', 'Q'];
  * @returns `originPos`, `destPos`, `prom`
  */
 export const setGameKeyboardShortcut = (
-  code: string,
+  key: string,
   originPos: Vector | null,
   destPos: Vector | null,
   boardMap: BoardMap,
@@ -66,67 +69,76 @@ export const setGameKeyboardShortcut = (
   canCastle: CastlingPotentials
 ): { originPos: Vector | null; destPos: Vector | null } => {
   // When the focus is not on any input
-  if (document.activeElement.tagName !== 'INPUT') {
-    const { value: isPromoting, setState: setIsPromoting } = useState(isPromotingState);
-    if (isPromoting) {
-      registerKeyboardShortcut(code, 'KeyH', () => handleSelectPromotionCandidate('left'));
-      registerKeyboardShortcut(code, 'ArrowLeft', () => handleSelectPromotionCandidate('left'));
-      registerKeyboardShortcut(code, 'KeyL', () => handleSelectPromotionCandidate('right'));
-      registerKeyboardShortcut(code, 'ArrowRight', () => handleSelectPromotionCandidate('right'));
-      registerKeyboardShortcut(code, 'Enter', () => {
-        const promoteTo = useValue(promotionCandidateIndexState);
-        promote(originPos, destPos, pieces[promoteTo]);
-        setIsPromoting(false);
-        return { originPos: null, destPos };
-      });
-      registerKeyboardShortcut(code, 'Escape', () => {
-        setIsPromoting(false);
-        drawBoard();
-        return { originPos: null, destPos };
-      });
-    } else {
-      // Switch active board.
-      registerKeyboardShortcut(code, 'Semicolon', handleSwitchActiveBoard);
+  if (document.activeElement.tagName === 'INPUT') {
+    return;
+  }
 
-      // Navigate selecting position.
-      registerKeyboardShortcut(code, 'KeyH', handleMoveLeft);
-      registerKeyboardShortcut(code, 'ArrowLeft', handleMoveLeft);
-      registerKeyboardShortcut(code, 'KeyL', handleMoveRight);
-      registerKeyboardShortcut(code, 'ArrowRight', handleMoveRight);
-      registerKeyboardShortcut(code, 'KeyK', handleMoveUp);
-      registerKeyboardShortcut(code, 'ArrowUp', handleMoveUp);
-      registerKeyboardShortcut(code, 'KeyJ', handleMoveDown);
-      registerKeyboardShortcut(code, 'ArrowDown', handleMoveDown);
-      registerKeyboardShortcut(code, 'KeyE', handleMoveLeftUp);
-      registerKeyboardShortcut(code, 'KeyD', handleMoveLeftDown);
-      registerKeyboardShortcut(code, 'KeyR', handleMoveRightUp);
-      registerKeyboardShortcut(code, 'KeyF', handleMoveRightDown);
-
-      // Go to a specified square directly with file and rank numbers.
-      registerKeyboardShortcut(code, 'Digit1', () => handleDigitKeyInput(1));
-      registerKeyboardShortcut(code, 'Digit2', () => handleDigitKeyInput(2));
-      registerKeyboardShortcut(code, 'Digit3', () => handleDigitKeyInput(3));
-      registerKeyboardShortcut(code, 'Digit4', () => handleDigitKeyInput(4));
-      registerKeyboardShortcut(code, 'Digit5', () => handleDigitKeyInput(5));
-      registerKeyboardShortcut(code, 'Digit6', () => handleDigitKeyInput(6));
-      registerKeyboardShortcut(code, 'Digit7', () => handleDigitKeyInput(7));
-      registerKeyboardShortcut(code, 'Digit8', () => handleDigitKeyInput(8));
-      if (code === 'Enter') {
-        const setDigitRegister = useSetState(digitRegisterState);
-        setDigitRegister(null);
-        return handleBoardSelection(
-          originPos,
-          destPos,
-          boardMap,
-          playerColor,
-          advanced2Pos,
-          canCastle
-        );
+  const { value: isPromoting, setState: setIsPromoting } = useState(isPromotingState);
+  if (isPromoting) {
+    registerKeyboardShortcut(key, 'h', () => handleSelectPromotionCandidate('left'));
+    registerKeyboardShortcut(key, 'ArrowLeft', () => handleSelectPromotionCandidate('left'));
+    registerKeyboardShortcut(key, 'l', () => handleSelectPromotionCandidate('right'));
+    registerKeyboardShortcut(key, 'ArrowRight', () => handleSelectPromotionCandidate('right'));
+    registerKeyboardShortcut(key, 'Enter', () => {
+      const promoteTo = useValue(promotionCandidateIndexState);
+      promote(originPos, destPos, pieces[promoteTo]);
+      setIsPromoting(false);
+      return { originPos: null, destPos };
+    });
+    registerKeyboardShortcut(key, 'Escape', () => {
+      setIsPromoting(false);
+      drawBoard();
+      return { originPos: null, destPos };
+    });
+  } else {
+    // Go to a specified piece directly with easy motion.
+    registerKeyboardShortcut(key, ' ', () => handleEasyMotion(' '));
+    const easyMotionWaiting = useValue(easyMotionWaitingState);
+    if (easyMotionWaiting) {
+      for (const keyName of EASY_MOTION_AVAILABLE_KEYS) {
+        registerKeyboardShortcut(key, keyName, () => handleEasyMotion(keyName));
       }
+      return;
+    }
+
+    // Switch active board.
+    registerKeyboardShortcut(key, ';', handleSwitchActiveBoard);
+
+    // Navigate selecting position.
+    registerKeyboardShortcut(key, 'h', handleMoveLeft);
+    registerKeyboardShortcut(key, 'ArrowLeft', handleMoveLeft);
+    registerKeyboardShortcut(key, 'l', handleMoveRight);
+    registerKeyboardShortcut(key, 'ArrowRight', handleMoveRight);
+    registerKeyboardShortcut(key, 'k', handleMoveUp);
+    registerKeyboardShortcut(key, 'ArrowUp', handleMoveUp);
+    registerKeyboardShortcut(key, 'j', handleMoveDown);
+    registerKeyboardShortcut(key, 'ArrowDown', handleMoveDown);
+    registerKeyboardShortcut(key, 'e', handleMoveLeftUp);
+    registerKeyboardShortcut(key, 'd', handleMoveLeftDown);
+    registerKeyboardShortcut(key, 'r', handleMoveRightUp);
+    registerKeyboardShortcut(key, 'f', handleMoveRightDown);
+
+    // Go to a specified square directly with file and rank numbers.
+    for (let i = 1; i <= 8; i++) {
+      registerKeyboardShortcut(key, `${i}`, () => handleDigitKeyInput(i));
+    }
+
+    // Activate the selected square.
+    if (key === 'Enter') {
+      const setDigitRegister = useSetState(digitRegisterState);
+      setDigitRegister(null);
+      return handleBoardSelection(
+        originPos,
+        destPos,
+        boardMap,
+        playerColor,
+        advanced2Pos,
+        canCastle
+      );
     }
   }
 };
 
-const registerKeyboardShortcut = (code: string, key: string, callback: () => void) => {
-  if (code === key) callback();
+const registerKeyboardShortcut = (key: string, keyName: string, callback: () => void) => {
+  if (key === keyName) callback();
 };

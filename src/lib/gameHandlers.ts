@@ -18,6 +18,7 @@ import {
   lastMovedPiecePositionState,
   digitRegisterState,
 } from '~/states';
+import { easyMotionWaitingState } from '~/states/game';
 import { useSetState, useState, useValue } from '~/states/stateManager';
 
 /**
@@ -47,6 +48,7 @@ export const drawBoard = () => {
   const isPromoting = useValue(isPromotingState);
   const promotionCandidateIndex = useValue(promotionCandidateIndexState);
   const digitRegister = useValue(digitRegisterState);
+  const easyMotionWaiting = useValue(easyMotionWaitingState);
   draw.board(boardMap, playerColor, showOppositePieces);
   if (isPromoting) {
     // Display options of a promotion.
@@ -61,6 +63,9 @@ export const drawBoard = () => {
     }
     if (digitRegister !== null) {
       draw.selectedFile(activeBoard, digitRegister - 1);
+    }
+    if (easyMotionWaiting) {
+      draw.labelsOverPieces(boardMap);
     }
   }
 };
